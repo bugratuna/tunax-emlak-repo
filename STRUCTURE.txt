@@ -1,0 +1,7 @@
+apps/
+  web/
+  api/
+packages/
+  shared/
+infra/
+  docker/
