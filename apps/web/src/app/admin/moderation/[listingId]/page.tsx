@@ -3,12 +3,15 @@ import { getListing } from "@/lib/api/listings";
 import {
   getModerationReport,
   getScoringReport,
+  getAuditLog,
 } from "@/lib/api/moderation";
 import { StatusBadge } from "@/components/status-badge";
 import { ApiErrorMessage } from "@/components/api-error-message";
+import { AuditLogTable } from "@/components/audit-log-table";
 import { DecisionBar } from "./decision-bar";
+import { EnrichPanel } from "./enrich-panel";
 import { ApiRequestError } from "@/lib/api/client";
-import type { ModerationReport, ScoringReport } from "@/lib/types";
+import type { AuditLogEntry, ModerationReport, ScoringReport } from "@/lib/types";
 
 interface Props {
   params: Promise<{ listingId: string }>;
@@ -23,20 +26,22 @@ export default async function ModerationDetailPage({ params }: Props) {
     listing = await getListing(listingId);
   } catch (err) {
     if (err instanceof ApiRequestError && err.status === 404) notFound();
-    return <ApiErrorMessage error={err instanceof Error ? err : "Error loading listing."} />;
+    return <ApiErrorMessage error={err instanceof Error ? err : "İlan yüklenemedi."} />;
   }
 
-  // Fetch scoring report and moderation report in parallel — 404 is non-fatal
-  let scoringReport: ScoringReport | null = null;
-  let moderationReport: ModerationReport | null = null;
-
-  const [scoreResult, reportResult] = await Promise.allSettled([
+  // Fetch scoring report, moderation report, and audit log in parallel — 404 is non-fatal
+  const [scoreResult, reportResult, auditResult] = await Promise.allSettled([
     getScoringReport(listingId),
     getModerationReport(listingId),
+    getAuditLog(listingId),
   ]);
 
-  if (scoreResult.status === "fulfilled") scoringReport = scoreResult.value;
-  if (reportResult.status === "fulfilled") moderationReport = reportResult.value;
+  const scoringReport: ScoringReport | null =
+    scoreResult.status === "fulfilled" ? scoreResult.value : null;
+  const moderationReport: ModerationReport | null =
+    reportResult.status === "fulfilled" ? reportResult.value : null;
+  const auditLog: AuditLogEntry[] =
+    auditResult.status === "fulfilled" ? auditResult.value : [];
 
   const isPendingReview = listing.status === "PENDING_REVIEW";
 
@@ -47,16 +52,16 @@ export default async function ModerationDetailPage({ params }: Props) {
         <div>
           <p className="mb-1 text-sm text-zinc-500">
             <a href="/admin/moderation" className="hover:underline">
-              Moderation Queue
+              Onay Kuyruğu
             </a>{" "}
-            / Review
+            / İnceleme
           </p>
           <h1 className="text-xl font-semibold text-zinc-900">
             {listing.title}
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Consultant: {listing.consultantId} · Submitted:{" "}
-            {new Date(listing.submittedAt).toLocaleDateString()}
+            Danışman: {listing.consultantId} · Gönderim:{" "}
+            {new Date(listing.submittedAt).toLocaleDateString("tr-TR")}
           </p>
         </div>
         <StatusBadge status={listing.status} />
@@ -66,23 +71,23 @@ export default async function ModerationDetailPage({ params }: Props) {
         {/* Scoring report */}
         <div className="rounded-lg border border-zinc-200 bg-white p-5">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Scoring Report
+            Puanlama Raporu
           </h2>
           {scoringReport ? (
             <div className="space-y-4">
               <ScoreBar
-                label="Completeness"
+                label="Tamlık"
                 value={scoringReport.deterministicScores.completenessScore}
               />
               <ScoreBar
-                label="Description quality"
+                label="Açıklama kalitesi"
                 value={scoringReport.deterministicScores.descriptionQualityScore}
               />
 
               {scoringReport.deterministicScores.missingFields.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-1">
-                    Missing fields
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    Eksik Alanlar
                   </p>
                   <ul className="list-disc pl-4 text-sm text-zinc-600">
                     {scoringReport.deterministicScores.missingFields.map((f) => (
@@ -94,8 +99,8 @@ export default async function ModerationDetailPage({ params }: Props) {
 
               {scoringReport.deterministicScores.warnings.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">
-                    Warnings
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    Uyarılar
                   </p>
                   <div className="space-y-2">
                     {scoringReport.deterministicScores.warnings.map((w, i) => (
@@ -105,12 +110,16 @@ export default async function ModerationDetailPage({ params }: Props) {
                           w.severity === "HIGH"
                             ? "border-red-200 bg-red-50 text-red-700"
                             : w.severity === "MEDIUM"
-                            ? "border-amber-200 bg-amber-50 text-amber-700"
-                            : "border-zinc-200 bg-zinc-50 text-zinc-600"
+                              ? "border-amber-200 bg-amber-50 text-amber-700"
+                              : "border-zinc-200 bg-zinc-50 text-zinc-600"
                         }`}
                       >
-                        <span className="font-semibold">[{w.severity}] {w.code}</span>
-                        {w.field && <span className="ml-1 opacity-70">· {w.field}</span>}
+                        <span className="font-semibold">
+                          [{w.severity}] {w.code}
+                        </span>
+                        {w.field && (
+                          <span className="ml-1 opacity-70">· {w.field}</span>
+                        )}
                         <p className="mt-0.5">{w.message}</p>
                       </div>
                     ))}
@@ -120,19 +129,19 @@ export default async function ModerationDetailPage({ params }: Props) {
 
               {scoringReport.llmResult && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">
-                    AI Analysis
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    Yapay Zeka Analizi
                   </p>
                   <dl className="space-y-1 text-sm">
                     {scoringReport.llmResult.contentModeration && (
                       <LlmRow
-                        label="Content"
+                        label="İçerik"
                         value={scoringReport.llmResult.contentModeration.status}
                       />
                     )}
                     {scoringReport.llmResult.factVerification && (
                       <LlmRow
-                        label="Facts"
+                        label="Gerçeklik"
                         value={scoringReport.llmResult.factVerification.status}
                       />
                     )}
@@ -148,8 +157,7 @@ export default async function ModerationDetailPage({ params }: Props) {
             </div>
           ) : (
             <p className="text-sm text-zinc-400">
-              Scoring report not yet available. The automation pipeline may
-              still be processing.
+              Puanlama raporu henüz hazır değil. Otomasyon hattı işliyor olabilir.
             </p>
           )}
         </div>
@@ -157,24 +165,24 @@ export default async function ModerationDetailPage({ params }: Props) {
         {/* Previous moderation report */}
         <div className="rounded-lg border border-zinc-200 bg-white p-5">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Previous Decision
+            Önceki Karar
           </h2>
           {moderationReport ? (
             <dl className="space-y-3 text-sm">
-              <Row label="Decision" value={moderationReport.decision} />
-              <Row label="Admin" value={moderationReport.adminId} />
+              <Row label="Karar" value={moderationReport.decision} />
+              <Row label="Yönetici" value={moderationReport.adminId} />
               <Row
-                label="Decided at"
-                value={new Date(moderationReport.decidedAt).toLocaleString()}
+                label="Karar tarihi"
+                value={new Date(moderationReport.decidedAt).toLocaleString("tr-TR")}
               />
               <Row
-                label="Applied rules"
-                value={moderationReport.appliedRules.join(", ")}
+                label="Uygulanan kurallar"
+                value={moderationReport.appliedRules.join(", ") || "—"}
               />
               {moderationReport.feedback && (
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-zinc-400 mb-1">
-                    Feedback to consultant
+                  <dt className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-400">
+                    Danışmana geri bildirim
                   </dt>
                   <dd className="rounded bg-amber-50 px-3 py-2 text-amber-800">
                     {moderationReport.feedback}
@@ -182,11 +190,11 @@ export default async function ModerationDetailPage({ params }: Props) {
                 </div>
               )}
               {moderationReport.notes && (
-                <Row label="Notes" value={moderationReport.notes} />
+                <Row label="Notlar" value={moderationReport.notes} />
               )}
             </dl>
           ) : (
-            <p className="text-sm text-zinc-400">No previous decision for this listing.</p>
+            <p className="text-sm text-zinc-400">Bu ilan için önceki karar yok.</p>
           )}
         </div>
       </div>
@@ -194,17 +202,32 @@ export default async function ModerationDetailPage({ params }: Props) {
       {/* Decision bar — only shown for PENDING_REVIEW */}
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Make a Decision
+          Karar Ver
         </h2>
         {isPendingReview ? (
           <DecisionBar listingId={listingId} />
         ) : (
           <p className="text-sm text-zinc-400">
-            Actions are only available when listing is in{" "}
-            <strong>PENDING_REVIEW</strong> status. Current status:{" "}
-            <strong>{listing.status}</strong>.
+            Kararlar yalnızca ilan <strong>PENDING_REVIEW</strong> durumunda
+            iken alınabilir. Mevcut durum: <strong>{listing.status}</strong>.
           </p>
         )}
+      </div>
+
+      {/* LLM Enrichment panel */}
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          LLM Zenginleştirme
+        </h2>
+        <EnrichPanel listingId={listingId} initialReport={moderationReport} />
+      </div>
+
+      {/* Audit log */}
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          Denetim Kaydı
+        </h2>
+        <AuditLogTable entries={auditLog} />
       </div>
     </div>
   );
@@ -215,11 +238,11 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
     value >= 70
       ? "bg-green-500"
       : value >= 40
-      ? "bg-amber-400"
-      : "bg-red-500";
+        ? "bg-amber-400"
+        : "bg-red-500";
   return (
     <div>
-      <div className="flex justify-between text-xs text-zinc-500 mb-1">
+      <div className="mb-1 flex justify-between text-xs text-zinc-500">
         <span>{label}</span>
         <span className="font-semibold">{value}/100</span>
       </div>

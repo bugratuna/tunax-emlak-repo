@@ -26,6 +26,37 @@ export type LeadTier = "HOT" | "WARM" | "COLD";
 
 export type ModerationDecision = "APPROVE" | "REQUEST_CHANGES" | "REJECT";
 
+// -- Listing sub-types --
+
+export interface ListingPrice {
+  amount: number;
+  currency?: string;
+  isNegotiable?: boolean;
+}
+
+export interface ListingLocation {
+  city?: string;
+  district?: string;
+  neighborhood?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface ListingSpecifications {
+  roomCount?: number;
+  bathroomCount?: number;
+  floorNumber?: number;
+  totalFloors?: number;
+  grossArea?: number;
+  netArea?: number;
+  buildingAge?: number;
+  hasParking?: boolean;
+  hasBalcony?: boolean;
+  heatingType?: string;
+}
+
 // -- Core entities --
 
 export interface Listing {
@@ -33,6 +64,13 @@ export interface Listing {
   title: string;
   consultantId: string;
   status: ListingStatus;
+  description?: string;
+  price?: ListingPrice;
+  propertyType?: PropertyType;
+  category?: ListingCategory;
+  location?: ListingLocation;
+  specifications?: ListingSpecifications;
+  imageCount?: number;
   submittedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -51,6 +89,9 @@ export interface ModerationReport {
   feedback?: string;
   notes?: string;
   scoringReportId?: string;
+  // Populated after POST /admin/moderation/:id/enrich
+  llmPrompt?: string;
+  llmJsonSchema?: unknown;
 }
 
 export interface ScoringWarning {
@@ -105,6 +146,14 @@ export interface ScoringReport {
     };
     error?: { code: string; message: string };
   };
+}
+
+export interface AuditLogEntry {
+  listingId: string;
+  action: string;
+  adminId?: string;
+  timestamp: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Lead {

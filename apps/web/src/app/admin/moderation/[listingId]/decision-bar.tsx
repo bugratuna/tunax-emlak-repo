@@ -44,7 +44,7 @@ export function DecisionBar({ listingId }: { listingId: string }) {
           : err.body.message;
         setError(`${err.status}: ${msg}`);
       } else {
-        setError("Unable to reach server.");
+        setError("Sunucuya ulaşılamıyor.");
       }
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ export function DecisionBar({ listingId }: { listingId: string }) {
   if (done) {
     return (
       <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-        Decision recorded. Refresh the page to see the updated status.
+        Karar kaydedildi. Güncellenmiş durumu görmek için sayfayı yenileyin.
       </div>
     );
   }
@@ -72,90 +72,90 @@ export function DecisionBar({ listingId }: { listingId: string }) {
           onClick={() => setAction("approve")}
           className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
         >
-          Approve
+          Onayla
         </button>
         <button
           onClick={() => setAction("request-changes")}
           className="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
         >
-          Request Changes
+          Değişiklik İste
         </button>
         <button
           onClick={() => setAction("reject")}
           className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
         >
-          Reject
+          Reddet
         </button>
       </div>
 
-      {/* Approve modal */}
+      {/* Onay modalı */}
       <ConfirmModal
         open={action === "approve"}
         onOpenChange={(o) => !o && setAction(null)}
-        title="Approve listing"
-        description="This will publish the listing to the live site."
-        confirmLabel="Approve"
+        title="İlanı onayla"
+        description="Bu işlem ilanı yayınlar ve ziyaretçilere görünür hale getirir."
+        confirmLabel="Onayla"
         onConfirm={handleConfirm}
         loading={loading}
       >
         <label className="block text-sm font-medium text-zinc-700">
-          Notes (optional)
+          Notlar (isteğe bağlı)
         </label>
         <textarea
           rows={2}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Any notes to record with this approval…"
+          placeholder="Bu onaya eklemek istediğiniz notlar…"
           className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
       </ConfirmModal>
 
-      {/* Request changes modal */}
+      {/* Değişiklik iste modalı */}
       <ConfirmModal
         open={action === "request-changes"}
         onOpenChange={(o) => !o && setAction(null)}
-        title="Request changes"
-        description="The listing will be returned to the consultant with your feedback."
-        confirmLabel="Send feedback"
+        title="Değişiklik iste"
+        description="İlan, geri bildiriminizle birlikte danışmana iade edilecek."
+        confirmLabel="Geri bildirim gönder"
         onConfirm={handleConfirm}
         loading={loading || !feedback.trim()}
       >
         <label className="block text-sm font-medium text-zinc-700">
-          Feedback <span className="text-red-500">*</span>
+          Geri bildirim <span className="text-red-500">*</span>
         </label>
         <textarea
           rows={3}
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
-          placeholder="Describe what the consultant must change before resubmitting…"
+          placeholder="Danışmanın yeniden göndermeden önce yapması gereken değişiklikleri açıklayın…"
           className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
         {feedback.trim() === "" && (
           <p className="mt-1 text-xs text-red-600">
-            Feedback is required for this action.
+            Bu işlem için geri bildirim zorunludur.
           </p>
         )}
       </ConfirmModal>
 
-      {/* Reject modal */}
+      {/* Reddet modalı */}
       <ConfirmModal
         open={action === "reject"}
         onOpenChange={(o) => !o && setAction(null)}
-        title="Reject listing"
-        description="This is a permanent action. The listing will be archived and cannot be reinstated."
-        confirmLabel="Reject permanently"
+        title="İlanı reddet"
+        description="Bu işlem kalıcıdır. İlan arşivlenir ve geri alınamaz."
+        confirmLabel="Kalıcı olarak reddet"
         confirmVariant="destructive"
         onConfirm={handleConfirm}
         loading={loading}
       >
         <label className="block text-sm font-medium text-zinc-700">
-          Reason (optional)
+          Red gerekçesi (isteğe bağlı)
         </label>
         <textarea
           rows={2}
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Reason for rejection…"
+          placeholder="Reddetme gerekçesi…"
           className="mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
       </ConfirmModal>

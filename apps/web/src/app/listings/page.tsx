@@ -1,96 +1,99 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { listListings } from "@/lib/api/listings";
 import { StatusBadge } from "@/components/status-badge";
 import { ApiErrorMessage } from "@/components/api-error-message";
+import { FilterSidebar } from "./filter-sidebar";
 import type { Listing } from "@/lib/types";
 
-const DISTRICTS = [
-  "Muratpaşa", "Kepez", "Konyaaltı", "Döşemealtı", "Aksu",
-  "Alanya", "Manavgat", "Serik", "Kemer", "Kumluca",
-  "Finike", "Kaş", "Demre", "Elmalı", "Korkuteli",
-  "Akseki", "Gündoğmuş", "İbradı", "Gazipaşa",
-];
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  APARTMENT: "Daire",
+  VILLA: "Villa",
+  HOUSE: "Müstakil Ev",
+  LAND: "Arsa",
+  COMMERCIAL: "İşyeri",
+  OTHER: "Diğer",
+};
 
-export default async function ListingsPage() {
+interface SearchParams {
+  category?: string;
+  district?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  rooms?: string;
+  balcony?: string;
+}
+
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
+
+export default async function ListingsPage({ searchParams }: Props) {
+  const params = await searchParams;
+
   let listings: Listing[] = [];
   let fetchError: string | null = null;
 
   try {
     listings = await listListings();
+    console.log(listings);
   } catch (e) {
-    fetchError =
-      e instanceof Error ? e.message : "Unable to reach server.";
+    fetchError = e instanceof Error ? e.message : "Sunucuya ulaşılamıyor.";
+  }
+
+  // Client-side filtering (applied after fetch)
+  if (!fetchError) {
+    if (params.category) {
+      listings = listings.filter((l) => l.category === params.category);
+    }
+    if (params.district) {
+      listings = listings.filter(
+        (l) => l.location?.district === params.district,
+      );
+    }
+    if (params.minPrice) {
+      const min = Number(params.minPrice);
+      listings = listings.filter((l) => (l.price?.amount ?? 0) >= min);
+    }
+    if (params.maxPrice) {
+      const max = Number(params.maxPrice);
+      listings = listings.filter(
+        (l) => (l.price?.amount ?? Infinity) <= max,
+      );
+    }
+    if (params.rooms) {
+      const minRooms = Number(params.rooms);
+      listings = listings.filter(
+        (l) => (l.specifications?.roomCount ?? 0) >= minRooms,
+      );
+    }
+    if (params.balcony === "true") {
+      listings = listings.filter((l) => l.specifications?.hasBalcony);
+    }
   }
 
   return (
     <div className="flex gap-6">
-      {/* Filter sidebar */}
-      <aside className="hidden w-56 shrink-0 lg:block">
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Filters
-          </h2>
-
-          <div className="space-y-4 text-sm">
-            <fieldset>
-              <legend className="mb-1 font-medium text-zinc-700">Category</legend>
-              {["RENT", "SALE"].map((c) => (
-                <label key={c} className="flex items-center gap-2 text-zinc-600">
-                  <input type="checkbox" className="rounded border-zinc-300" />
-                  {c}
-                </label>
-              ))}
-            </fieldset>
-
-            <fieldset>
-              <legend className="mb-1 font-medium text-zinc-700">Type</legend>
-              {["APARTMENT", "VILLA", "HOUSE", "LAND", "COMMERCIAL", "OTHER"].map((t) => (
-                <label key={t} className="flex items-center gap-2 text-zinc-600">
-                  <input type="checkbox" className="rounded border-zinc-300" />
-                  {t}
-                </label>
-              ))}
-            </fieldset>
-
-            <fieldset>
-              <legend className="mb-1 font-medium text-zinc-700">District</legend>
-              <select className="w-full rounded border border-zinc-300 px-2 py-1.5 text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400">
-                <option value="">All districts</option>
-                {DISTRICTS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            </fieldset>
-
-            <fieldset>
-              <legend className="mb-1 font-medium text-zinc-700">Price (TRY)</legend>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  className="w-full rounded border border-zinc-300 px-2 py-1.5 text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400"
-                />
-                <span className="text-zinc-400">–</span>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  className="w-full rounded border border-zinc-300 px-2 py-1.5 text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400"
-                />
-              </div>
-            </fieldset>
-          </div>
-
-          <p className="mt-4 text-xs text-zinc-400">
-            Filters will query the API once the list endpoint is available.
-          </p>
-        </div>
-      </aside>
+      {/* Filter sidebar — wrapped in Suspense because it uses useSearchParams */}
+      <Suspense>
+        <FilterSidebar />
+      </Suspense>
 
       {/* Main content */}
       <div className="flex-1 space-y-6">
         {/* Map placeholder */}
-        <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-400">
-          Map coming soon — PostGIS bounding box search not yet implemented
+        <div className="relative flex h-48 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50">
+          <span className="text-sm text-zinc-400">
+            Harita — yakında (PostGIS bounding box araması planlanıyor)
+          </span>
+          <button
+            type="button"
+            disabled
+            className="absolute bottom-3 right-3 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-500 cursor-not-allowed"
+            title="Bu özellik henüz aktif değil"
+          >
+            Bu alanda ara
+          </button>
         </div>
 
         {/* Listing grid */}
@@ -98,9 +101,10 @@ export default async function ListingsPage() {
           <ApiErrorMessage error={fetchError} />
         ) : listings.length === 0 ? (
           <div className="rounded-lg border border-zinc-200 bg-white px-6 py-12 text-center">
-            <p className="text-sm text-zinc-500">No listings available yet.</p>
-            <p className="mt-1 text-xs text-zinc-400">
-              (GET /api/listings endpoint is not yet implemented — stub returns empty array)
+            <p className="text-sm text-zinc-500">
+              {Object.keys(params).length > 0
+                ? "Seçili filtrelere uygun ilan bulunamadı."
+                : "Henüz yayınlanmış ilan bulunmuyor."}
             </p>
           </div>
         ) : (
@@ -115,7 +119,23 @@ export default async function ListingsPage() {
   );
 }
 
+function formatPrice(listing: Listing): string {
+  if (!listing.price) return "";
+  const amount = listing.price.amount.toLocaleString("tr-TR");
+  const currency = listing.price.currency ?? "TRY";
+  const suffix = listing.price.isNegotiable ? " · Pazarlığa açık" : "";
+  return `${amount} ${currency}${suffix}`;
+}
+
 function ListingCard({ listing }: { listing: Listing }) {
+  const price = formatPrice(listing);
+  const typeLabel = listing.propertyType
+    ? PROPERTY_TYPE_LABELS[listing.propertyType] ?? listing.propertyType
+    : null;
+  const district = listing.location?.district;
+  const rooms = listing.specifications?.roomCount;
+  const area = listing.specifications?.grossArea;
+
   return (
     <Link
       href={`/listings/${listing.id}`}
@@ -123,14 +143,30 @@ function ListingCard({ listing }: { listing: Listing }) {
     >
       {/* Image placeholder */}
       <div className="mb-3 flex h-36 items-center justify-center rounded bg-zinc-100 text-xs text-zinc-400">
-        No image
+        Fotoğraf yok
       </div>
+
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-sm font-medium text-zinc-900 line-clamp-2">{listing.title}</h3>
+        <h3 className="text-sm font-medium text-zinc-900 line-clamp-2">
+          {listing.title}
+        </h3>
         <StatusBadge status={listing.status} />
       </div>
+
+      {/* Facts row */}
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
+        {typeLabel && <span>{typeLabel}</span>}
+        {district && <span>{district}</span>}
+        {rooms != null && <span>{rooms} oda</span>}
+        {area != null && <span>{area} m²</span>}
+      </div>
+
+      {price && (
+        <p className="mt-2 text-sm font-semibold text-zinc-800">{price}</p>
+      )}
+
       <p className="mt-1 text-xs text-zinc-400">
-        Submitted {new Date(listing.submittedAt).toLocaleDateString()}
+        {new Date(listing.submittedAt).toLocaleDateString("tr-TR")}
       </p>
     </Link>
   );

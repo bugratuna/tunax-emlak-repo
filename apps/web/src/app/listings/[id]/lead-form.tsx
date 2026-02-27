@@ -8,6 +8,12 @@ import type { LeadChannel } from "@/lib/types";
 
 const E164_REGEX = /^\+[1-9]\d{7,14}$/;
 
+const CHANNEL_LABELS: Record<LeadChannel, string> = {
+  FORM: "Form",
+  WHATSAPP: "WhatsApp",
+  CALL: "Telefon",
+};
+
 export function LeadInquiryForm({ listingId }: { listingId: string }) {
   const [channel, setChannel] = useState<LeadChannel>("FORM");
   const [name, setName] = useState("");
@@ -23,11 +29,11 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
 
   function validate() {
     const e: Record<string, string> = {};
-    if (!name.trim()) e.name = "Name is required.";
-    if (!phone.trim()) e.phone = "Phone is required.";
+    if (!name.trim()) e.name = "Ad Soyad zorunludur.";
+    if (!phone.trim()) e.phone = "Telefon numarası zorunludur.";
     else if (!E164_REGEX.test(phone.trim()))
-      e.phone = "Phone must be in E.164 format (e.g. +905551234567).";
-    if (!consent) e.consent = "You must give consent to proceed.";
+      e.phone = "Telefon numarası E.164 formatında olmalıdır (örn. +905551234567).";
+    if (!consent) e.consent = "Devam etmek için onay vermeniz gerekmektedir.";
     return e;
   }
 
@@ -60,7 +66,7 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
           : err.body.message;
         setApiError(msg);
       } else {
-        setApiError("Unable to reach server.");
+        setApiError("Sunucuya ulaşılamıyor.");
       }
     } finally {
       setLoading(false);
@@ -70,15 +76,15 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
   if (success) {
     return (
       <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-6 text-center">
-        <p className="font-medium text-green-800">Inquiry sent!</p>
+        <p className="font-medium text-green-800">Mesajınız iletildi!</p>
         <p className="mt-1 text-sm text-green-600">
-          We will get back to you as soon as possible.
+          En kısa sürede sizinle iletişime geçeceğiz.
         </p>
         <button
           onClick={() => setSuccess(false)}
           className="mt-4 text-sm text-green-700 underline"
         >
-          Send another inquiry
+          Yeni mesaj gönder
         </button>
       </div>
     );
@@ -86,10 +92,10 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
-      {/* Channel */}
+      {/* Kanal */}
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700">
-          Contact via
+          İletişim yöntemi
         </label>
         <div className="flex gap-2">
           {(["FORM", "WHATSAPP", "CALL"] as LeadChannel[]).map((c) => (
@@ -103,16 +109,16 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
                   : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-400"
               }`}
             >
-              {c}
+              {CHANNEL_LABELS[c]}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Name */}
+      {/* Ad Soyad */}
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700">
-          Full name <span className="text-red-500">*</span>
+          Ad Soyad <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -123,10 +129,10 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
         {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
       </div>
 
-      {/* Phone */}
+      {/* Telefon */}
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700">
-          Phone (E.164) <span className="text-red-500">*</span>
+          Telefon (E.164) <span className="text-red-500">*</span>
         </label>
         <input
           type="tel"
@@ -138,35 +144,35 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
         {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
       </div>
 
-      {/* Message */}
+      {/* Mesaj */}
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700">
-          Message
+          Mesaj
         </label>
         <textarea
           rows={3}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Tell us about your requirements…"
+          placeholder="İhtiyaçlarınızı veya sorularınızı belirtin…"
           className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
       </div>
 
-      {/* Preferred time */}
+      {/* Tercih edilen iletişim saati */}
       <div>
         <label className="mb-1 block text-sm font-medium text-zinc-700">
-          Preferred contact time
+          Tercih edilen iletişim saati
         </label>
         <input
           type="text"
-          placeholder="e.g. Tuesday morning 10:00"
+          placeholder="örn. Salı sabahı 10:00"
           value={preferredTime}
           onChange={(e) => setPreferredTime(e.target.value)}
           className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
       </div>
 
-      {/* Consent */}
+      {/* Onay */}
       <label className="flex items-start gap-2 text-sm text-zinc-600">
         <input
           type="checkbox"
@@ -175,7 +181,7 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
           className="mt-0.5 rounded border-zinc-300"
         />
         <span>
-          I consent to my contact data being processed for this inquiry.
+          İletişim bilgilerimin bu talep kapsamında işlenmesine onay veriyorum.
           <span className="text-red-500"> *</span>
         </span>
       </label>
@@ -190,7 +196,7 @@ export function LeadInquiryForm({ listingId }: { listingId: string }) {
         disabled={loading || !consent}
         className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
       >
-        {loading ? "Sending…" : "Send Inquiry"}
+        {loading ? "Gönderiliyor…" : "Mesaj Gönder"}
       </button>
     </form>
   );

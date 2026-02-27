@@ -6,15 +6,15 @@ export default function NewListingPage() {
       <div className="mb-6">
         <p className="mb-1 text-sm text-zinc-500">
           <a href="/consultant/listings" className="hover:underline">
-            My Listings
+            İlanlarım
           </a>{" "}
-          / New listing
+          / Yeni İlan
         </p>
         <h1 className="text-xl font-semibold text-zinc-900">
-          Create a new listing
+          Yeni ilan oluştur
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Fill in all required fields then click "Submit for Review".
+          Tüm zorunlu alanları doldurun ve &quot;İncelemeye Gönder&quot; düğmesine tıklayın.
         </p>
       </div>
       <ListingForm mode="create" />

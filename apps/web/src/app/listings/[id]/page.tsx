@@ -4,6 +4,16 @@ import { StatusBadge } from "@/components/status-badge";
 import { ApiErrorMessage } from "@/components/api-error-message";
 import { LeadInquiryForm } from "./lead-form";
 import { ApiRequestError } from "@/lib/api/client";
+import type { Listing } from "@/lib/types";
+
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  APARTMENT: "Daire",
+  VILLA: "Villa",
+  HOUSE: "Müstakil Ev",
+  LAND: "Arsa",
+  COMMERCIAL: "İşyeri",
+  OTHER: "Diğer",
+};
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -12,7 +22,7 @@ interface Props {
 export default async function ListingDetailPage({ params }: Props) {
   const { id } = await params;
 
-  let listing;
+  let listing: Listing;
   try {
     listing = await getListing(id);
   } catch (err) {
@@ -21,10 +31,14 @@ export default async function ListingDetailPage({ params }: Props) {
     }
     return (
       <ApiErrorMessage
-        error={err instanceof Error ? err : "Unable to load listing."}
+        error={err instanceof Error ? err : "İlan yüklenemedi."}
       />
     );
   }
+
+  const price = listing.price;
+  const specs = listing.specifications;
+  const loc = listing.location;
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -32,7 +46,7 @@ export default async function ListingDetailPage({ params }: Props) {
       <div className="lg:col-span-2 space-y-6">
         {/* Image gallery placeholder */}
         <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-400">
-          Image gallery — upload endpoint not yet implemented
+          Fotoğraf galerisi — yakında
         </div>
 
         {/* Header */}
@@ -42,36 +56,103 @@ export default async function ListingDetailPage({ params }: Props) {
               {listing.title}
             </h1>
             <p className="mt-1 text-sm text-zinc-500">
-              Consultant: {listing.consultantId}
+              Danışman: {listing.consultantId}
             </p>
           </div>
           <StatusBadge status={listing.status} />
         </div>
 
-        {/* Specs panel */}
+        {/* Description */}
+        {listing.description && (
+          <div className="rounded-lg border border-zinc-200 bg-white p-4">
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+              Açıklama
+            </h2>
+            <p className="text-sm text-zinc-700 leading-relaxed whitespace-pre-line">
+              {listing.description}
+            </p>
+          </div>
+        )}
+
+        {/* Facts table */}
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Details
+            İlan Detayları
           </h2>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-            <SpecRow label="Status" value={listing.status} />
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-3">
+            <SpecRow label="Durum" value={listing.status} />
+            {listing.category && (
+              <SpecRow
+                label="İlan Türü"
+                value={listing.category === "SALE" ? "Satılık" : "Kiralık"}
+              />
+            )}
+            {listing.propertyType && (
+              <SpecRow
+                label="Emlak Tipi"
+                value={
+                  PROPERTY_TYPE_LABELS[listing.propertyType] ??
+                  listing.propertyType
+                }
+              />
+            )}
+            {price && (
+              <SpecRow
+                label="Fiyat"
+                value={`${price.amount.toLocaleString("tr-TR")} ${price.currency ?? "TRY"}${price.isNegotiable ? " · Pazarlığa açık" : ""}`}
+              />
+            )}
+            {specs?.grossArea != null && (
+              <SpecRow label="Brüt Alan" value={`${specs.grossArea} m²`} />
+            )}
+            {specs?.netArea != null && (
+              <SpecRow label="Net Alan" value={`${specs.netArea} m²`} />
+            )}
+            {specs?.roomCount != null && (
+              <SpecRow label="Oda Sayısı" value={String(specs.roomCount)} />
+            )}
+            {specs?.bathroomCount != null && (
+              <SpecRow
+                label="Banyo Sayısı"
+                value={String(specs.bathroomCount)}
+              />
+            )}
+            {specs?.floorNumber != null && (
+              <SpecRow label="Kat" value={String(specs.floorNumber)} />
+            )}
+            {specs?.totalFloors != null && (
+              <SpecRow
+                label="Toplam Kat"
+                value={String(specs.totalFloors)}
+              />
+            )}
+            {specs?.buildingAge != null && (
+              <SpecRow
+                label="Bina Yaşı"
+                value={`${specs.buildingAge} yıl`}
+              />
+            )}
+            {specs?.heatingType && (
+              <SpecRow label="Isıtma" value={specs.heatingType} />
+            )}
+            {specs?.hasBalcony && <SpecRow label="Balkon" value="Var" />}
+            {specs?.hasParking && <SpecRow label="Otopark" value="Var" />}
+            {loc?.district && (
+              <SpecRow label="İlçe" value={loc.district} />
+            )}
+            {loc?.neighborhood && (
+              <SpecRow label="Mahalle" value={loc.neighborhood} />
+            )}
             <SpecRow
-              label="Submitted"
-              value={new Date(listing.submittedAt).toLocaleDateString()}
-            />
-            <SpecRow
-              label="Created"
-              value={new Date(listing.createdAt).toLocaleDateString()}
-            />
-            <SpecRow
-              label="Updated"
-              value={new Date(listing.updatedAt).toLocaleDateString()}
+              label="Gönderim Tarihi"
+              value={new Date(listing.submittedAt).toLocaleDateString("tr-TR")}
             />
           </dl>
-          <p className="mt-4 text-xs text-zinc-400">
-            Additional specs (price, type, area, etc.) will be shown once the
-            full listing form endpoint is implemented.
-          </p>
+        </div>
+
+        {/* Map placeholder */}
+        <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-400">
+          Harita — yakında
         </div>
       </div>
 
@@ -79,14 +160,14 @@ export default async function ListingDetailPage({ params }: Props) {
       {listing.status === "PUBLISHED" ? (
         <aside className="rounded-lg border border-zinc-200 bg-white p-5">
           <h2 className="mb-4 text-base font-semibold text-zinc-900">
-            Contact about this listing
+            Bu ilan hakkında iletişim
           </h2>
           <LeadInquiryForm listingId={listing.id} />
         </aside>
       ) : (
         <aside className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
           <p className="text-sm text-zinc-500">
-            This listing is not currently available for inquiries (status:{" "}
+            Bu ilan şu anda sorgulara açık değil (durum:{" "}
             <strong>{listing.status}</strong>).
           </p>
         </aside>

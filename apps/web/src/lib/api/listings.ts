@@ -1,31 +1,37 @@
 import { apiFetch } from "./client";
-import type { Listing } from "@/lib/types";
+import type {
+  Listing,
+  ListingCategory,
+  ListingLocation,
+  ListingPrice,
+  ListingSpecifications,
+  PropertyType,
+} from "@/lib/types";
 
-/**
- * TODO: No list endpoint exists yet.
- * Needs: GET /api/listings?status=PUBLISHED
- * Returns empty array until the endpoint is implemented.
- */
+export interface CreateListingDto {
+  title: string;
+  consultantId?: string;
+  description?: string;
+  category?: ListingCategory;
+  propertyType?: PropertyType;
+  price?: ListingPrice;
+  location?: ListingLocation;
+  specifications?: ListingSpecifications;
+  imageCount?: number;
+}
+
 export async function listListings(): Promise<Listing[]> {
-  return [];
+  return apiFetch<Listing[]>("/api/listings");
 }
 
 export async function getListing(id: string): Promise<Listing> {
   return apiFetch<Listing>(`/api/listings/${id}`);
 }
 
-/**
- * Create a listing.
- * NOTE: Current API only accepts { title, consultantId }.
- * Full form fields will be wired once the endpoint is expanded.
- */
-export async function createListing(
-  title: string,
-  consultantId?: string,
-): Promise<Listing> {
+export async function createListing(dto: CreateListingDto): Promise<Listing> {
   return apiFetch<Listing>("/api/listings", {
     method: "POST",
-    body: JSON.stringify({ title, consultantId }),
+    body: JSON.stringify(dto),
   });
 }
 

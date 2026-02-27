@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createListing } from "@/lib/api/listings";
+import type { CreateListingDto } from "@/lib/api/listings";
 import { ApiErrorMessage } from "@/components/api-error-message";
 import { ApiRequestError } from "@/lib/api/client";
 
@@ -13,9 +14,27 @@ const DISTRICTS = [
   "Akseki", "Gündoğmuş", "İbradı", "Gazipaşa",
 ];
 
+const HEATING_TYPES = [
+  { value: "", label: "Belirtilmemiş" },
+  { value: "MERKEZI", label: "Merkezi" },
+  { value: "KOMBI", label: "Kombi" },
+  { value: "KLIMA", label: "Klima" },
+  { value: "YERDEN_ISITMA", label: "Yerden Isıtma" },
+  { value: "YOK", label: "Yok" },
+];
+
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  APARTMENT: "Daire",
+  VILLA: "Villa",
+  HOUSE: "Müstakil Ev",
+  LAND: "Arsa",
+  COMMERCIAL: "İşyeri",
+  OTHER: "Diğer",
+};
+
 export function ListingForm({
   mode,
-  consultantId = "anonymous",
+  consultantId: initialConsultantId = "",
 }: {
   mode: "create" | "edit";
   consultantId?: string;
@@ -29,6 +48,7 @@ export function ListingForm({
   const [propertyType, setPropertyType] = useState<
     "APARTMENT" | "VILLA" | "HOUSE" | "LAND" | "COMMERCIAL" | "OTHER"
   >("APARTMENT");
+  const [consultantId, setConsultantId] = useState(initialConsultantId);
 
   // --- Price ---
   const [priceAmount, setPriceAmount] = useState("");
@@ -36,29 +56,23 @@ export function ListingForm({
   const [isNegotiable, setIsNegotiable] = useState(false);
 
   // --- Specifications ---
-  const [squareMeters, setSquareMeters] = useState("");
+  const [grossArea, setGrossArea] = useState("");
+  const [netArea, setNetArea] = useState("");
   const [roomCount, setRoomCount] = useState("");
   const [bathroomCount, setBathroomCount] = useState("");
   const [floorNumber, setFloorNumber] = useState("");
   const [totalFloors, setTotalFloors] = useState("");
-  const [buildYear, setBuildYear] = useState("");
-  const [furnished, setFurnished] = useState(false);
+  const [buildingAge, setBuildingAge] = useState("");
   const [balcony, setBalcony] = useState(false);
   const [parking, setParking] = useState(false);
-  const [elevator, setElevator] = useState(false);
-  const [pool, setPool] = useState(false);
-  const [seaView, setSeaView] = useState(false);
+  const [heatingType, setHeatingType] = useState("");
+  const [imageCount, setImageCount] = useState("");
 
   // --- Location ---
   const [district, setDistrict] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
-
-  // --- Contact ---
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
@@ -67,17 +81,19 @@ export function ListingForm({
   function validate() {
     const e: Record<string, string> = {};
     if (!title.trim() || title.trim().length < 10)
-      e.title = "Title must be at least 10 characters.";
+      e.title = "Başlık en az 10 karakter olmalıdır.";
     if (!description.trim() || description.trim().length < 50)
-      e.description = "Description must be at least 50 characters.";
-    if (!district) e.district = "District is required.";
-    if (!neighborhood.trim()) e.neighborhood = "Neighborhood is required.";
-    if (!squareMeters || Number(squareMeters) < 1)
-      e.squareMeters = "Square meters must be at least 1.";
+      e.description = "Açıklama en az 50 karakter olmalıdır.";
+    if (!district)
+      e.district = "İlçe zorunludur.";
+    if (!neighborhood.trim())
+      e.neighborhood = "Mahalle zorunludur.";
+    if (!grossArea || Number(grossArea) < 1)
+      e.grossArea = "Brüt alan en az 1 m² olmalıdır.";
     if (roomCount === "" || Number(roomCount) < 0)
-      e.roomCount = "Room count is required.";
+      e.roomCount = "Oda sayısı zorunludur.";
     if (bathroomCount === "" || Number(bathroomCount) < 0)
-      e.bathroomCount = "Bathroom count is required.";
+      e.bathroomCount = "Banyo sayısı zorunludur.";
     return e;
   }
 
@@ -90,14 +106,42 @@ export function ListingForm({
 
     setLoading(true);
     try {
-      /**
-       * NOTE: Current API (POST /api/listings) only accepts { title, consultantId }.
-       * All remaining form fields are collected and validated client-side but NOT sent
-       * until the endpoint is expanded to accept the full listing payload.
-       * TODO: send full body when API supports it.
-       */
-      const listing = await createListing(title.trim(), consultantId);
-      
+      const dto: CreateListingDto = {
+        title: title.trim(),
+        consultantId: consultantId.trim() || undefined,
+        description: description.trim() || undefined,
+        category,
+        propertyType,
+        price: priceAmount
+          ? { amount: Number(priceAmount), currency: priceCurrency, isNegotiable }
+          : undefined,
+        location: district
+          ? {
+              city: "Antalya",
+              district,
+              neighborhood: neighborhood.trim() || undefined,
+              coordinates:
+                lat && lng
+                  ? { latitude: Number(lat), longitude: Number(lng) }
+                  : undefined,
+            }
+          : undefined,
+        specifications: {
+          roomCount: roomCount !== "" ? Number(roomCount) : undefined,
+          bathroomCount: bathroomCount !== "" ? Number(bathroomCount) : undefined,
+          floorNumber: floorNumber !== "" ? Number(floorNumber) : undefined,
+          totalFloors: totalFloors !== "" ? Number(totalFloors) : undefined,
+          grossArea: grossArea !== "" ? Number(grossArea) : undefined,
+          netArea: netArea !== "" ? Number(netArea) : undefined,
+          buildingAge: buildingAge !== "" ? Number(buildingAge) : undefined,
+          hasParking: parking || undefined,
+          hasBalcony: balcony || undefined,
+          heatingType: heatingType || undefined,
+        },
+        imageCount: imageCount !== "" ? Number(imageCount) : undefined,
+      };
+
+      const listing = await createListing(dto);
       router.push(`/consultant/listings/${listing.id}`);
     } catch (err) {
       if (err instanceof ApiRequestError) {
@@ -106,8 +150,7 @@ export function ListingForm({
           : err.body.message;
         setApiError(msg);
       } else {
-        console.log(err);
-        setApiError("Unable to reach server.");
+        setApiError("Sunucuya ulaşılamıyor.");
       }
     } finally {
       setLoading(false);
@@ -116,62 +159,91 @@ export function ListingForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-8">
-      {/* Basic info */}
-      <Section title="Basic Information">
-        <Field label="Title" required error={errors.title}>
+      {/* Temel Bilgiler */}
+      <Section title="Temel Bilgiler">
+        <Field label="İlan Başlığı" required error={errors.title}>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             minLength={10}
             maxLength={200}
+            placeholder="Örn: Lüks 3+1 Daire, Muratpaşa Merkez"
             className={input()}
           />
         </Field>
 
-        <Field label="Description" required error={errors.description}>
+        <Field label="Açıklama" required error={errors.description}>
           <textarea
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             minLength={50}
             maxLength={5000}
+            placeholder="İlanı detaylı biçimde tanımlayın (en az 50 karakter)…"
             className={input()}
           />
         </Field>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Category">
-            <select value={category} onChange={(e) => setCategory(e.target.value as typeof category)} className={input()}>
-              <option value="SALE">SALE</option>
-              <option value="RENT">RENT</option>
+          <Field label="İlan Türü">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as typeof category)}
+              className={input()}
+            >
+              <option value="SALE">Satılık</option>
+              <option value="RENT">Kiralık</option>
             </select>
           </Field>
-          <Field label="Property type">
-            <select value={propertyType} onChange={(e) => setPropertyType(e.target.value as typeof propertyType)} className={input()}>
-              {["APARTMENT", "VILLA", "HOUSE", "LAND", "COMMERCIAL", "OTHER"].map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
+          <Field label="Emlak Tipi">
+            <select
+              value={propertyType}
+              onChange={(e) => setPropertyType(e.target.value as typeof propertyType)}
+              className={input()}
+            >
+              {(["APARTMENT", "VILLA", "HOUSE", "LAND", "COMMERCIAL", "OTHER"] as const).map(
+                (t) => (
+                  <option key={t} value={t}>
+                    {PROPERTY_TYPE_LABELS[t]}
+                  </option>
+                ),
+              )}
             </select>
           </Field>
         </div>
+
+        <Field label="Danışman Kimliği">
+          <input
+            type="text"
+            value={consultantId}
+            onChange={(e) => setConsultantId(e.target.value)}
+            placeholder="Örn: c-001"
+            className={input()}
+          />
+        </Field>
       </Section>
 
-      {/* Price */}
-      <Section title="Price">
+      {/* Fiyat */}
+      <Section title="Fiyat">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <Field label="Amount" required>
+          <Field label="Tutar">
             <input
               type="number"
               min={0}
-              step="0.01"
+              step="1"
               value={priceAmount}
               onChange={(e) => setPriceAmount(e.target.value)}
+              placeholder="0"
               className={input()}
             />
           </Field>
-          <Field label="Currency">
-            <select value={priceCurrency} onChange={(e) => setPriceCurrency(e.target.value as typeof priceCurrency)} className={input()}>
+          <Field label="Para Birimi">
+            <select
+              value={priceCurrency}
+              onChange={(e) => setPriceCurrency(e.target.value as typeof priceCurrency)}
+              className={input()}
+            >
               <option>TRY</option>
               <option>USD</option>
               <option>EUR</option>
@@ -179,116 +251,212 @@ export function ListingForm({
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm text-zinc-600">
-          <input type="checkbox" checked={isNegotiable} onChange={(e) => setIsNegotiable(e.target.checked)} className="rounded border-zinc-300" />
-          Price is negotiable
+          <input
+            type="checkbox"
+            checked={isNegotiable}
+            onChange={(e) => setIsNegotiable(e.target.checked)}
+            className="rounded border-zinc-300"
+          />
+          Pazarlığa açık
         </label>
       </Section>
 
-      {/* Specifications */}
-      <Section title="Specifications">
+      {/* Özellikler */}
+      <Section title="Özellikler">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <Field label="Area (m²)" required error={errors.squareMeters}>
-            <input type="number" min={1} max={100000} value={squareMeters} onChange={(e) => setSquareMeters(e.target.value)} className={input()} />
+          <Field label="Brüt m²" required error={errors.grossArea}>
+            <input
+              type="number"
+              min={1}
+              max={100000}
+              value={grossArea}
+              onChange={(e) => setGrossArea(e.target.value)}
+              className={input()}
+            />
           </Field>
-          <Field label="Rooms" required error={errors.roomCount}>
-            <input type="number" min={0} max={20} value={roomCount} onChange={(e) => setRoomCount(e.target.value)} className={input()} />
+          <Field label="Net m²">
+            <input
+              type="number"
+              min={1}
+              max={100000}
+              value={netArea}
+              onChange={(e) => setNetArea(e.target.value)}
+              className={input()}
+            />
           </Field>
-          <Field label="Bathrooms" required error={errors.bathroomCount}>
-            <input type="number" min={0} max={20} value={bathroomCount} onChange={(e) => setBathroomCount(e.target.value)} className={input()} />
+          <Field label="Oda Sayısı" required error={errors.roomCount}>
+            <input
+              type="number"
+              min={0}
+              max={20}
+              value={roomCount}
+              onChange={(e) => setRoomCount(e.target.value)}
+              className={input()}
+            />
           </Field>
-          <Field label="Floor no.">
-            <input type="number" value={floorNumber} onChange={(e) => setFloorNumber(e.target.value)} className={input()} />
+          <Field label="Banyo Sayısı" required error={errors.bathroomCount}>
+            <input
+              type="number"
+              min={0}
+              max={20}
+              value={bathroomCount}
+              onChange={(e) => setBathroomCount(e.target.value)}
+              className={input()}
+            />
           </Field>
-          <Field label="Total floors">
-            <input type="number" value={totalFloors} onChange={(e) => setTotalFloors(e.target.value)} className={input()} />
+          <Field label="Bulunduğu Kat">
+            <input
+              type="number"
+              value={floorNumber}
+              onChange={(e) => setFloorNumber(e.target.value)}
+              className={input()}
+            />
           </Field>
-          <Field label="Build year">
-            <input type="number" min={1800} max={new Date().getFullYear() + 1} value={buildYear} onChange={(e) => setBuildYear(e.target.value)} className={input()} />
+          <Field label="Toplam Kat">
+            <input
+              type="number"
+              min={1}
+              value={totalFloors}
+              onChange={(e) => setTotalFloors(e.target.value)}
+              className={input()}
+            />
+          </Field>
+          <Field label="Bina Yaşı (yıl)">
+            <input
+              type="number"
+              min={0}
+              max={200}
+              value={buildingAge}
+              onChange={(e) => setBuildingAge(e.target.value)}
+              className={input()}
+            />
+          </Field>
+          <Field label="Isıtma Tipi">
+            <select
+              value={heatingType}
+              onChange={(e) => setHeatingType(e.target.value)}
+              className={input()}
+            >
+              {HEATING_TYPES.map((h) => (
+                <option key={h.value} value={h.value}>
+                  {h.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Fotoğraf Sayısı">
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={imageCount}
+              onChange={(e) => setImageCount(e.target.value)}
+              placeholder="0"
+              className={input()}
+            />
           </Field>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {[
-            { label: "Furnished", val: furnished, set: setFurnished },
-            { label: "Balcony", val: balcony, set: setBalcony },
-            { label: "Parking", val: parking, set: setParking },
-            { label: "Elevator", val: elevator, set: setElevator },
-            { label: "Pool", val: pool, set: setPool },
-            { label: "Sea view", val: seaView, set: setSeaView },
-          ].map(({ label, val, set }) => (
-            <label key={label} className="flex items-center gap-1.5 text-xs text-zinc-600">
-              <input type="checkbox" checked={val} onChange={(e) => set(e.target.checked)} className="rounded border-zinc-300" />
-              {label}
-            </label>
-          ))}
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2 text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              checked={balcony}
+              onChange={(e) => setBalcony(e.target.checked)}
+              className="rounded border-zinc-300"
+            />
+            Balkon
+          </label>
+          <label className="flex items-center gap-2 text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              checked={parking}
+              onChange={(e) => setParking(e.target.checked)}
+              className="rounded border-zinc-300"
+            />
+            Otopark
+          </label>
         </div>
       </Section>
 
-      {/* Location */}
-      <Section title="Location">
-        <p className="text-xs text-zinc-400">City is fixed to Antalya.</p>
+      {/* Konum */}
+      <Section title="Konum">
+        <p className="text-xs text-zinc-400">Şehir Antalya olarak sabitlenmiştir.</p>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="District" required error={errors.district}>
-            <select value={district} onChange={(e) => setDistrict(e.target.value)} className={input()}>
-              <option value="">Select district…</option>
-              {DISTRICTS.map((d) => <option key={d} value={d}>{d}</option>)}
+          <Field label="İlçe" required error={errors.district}>
+            <select
+              value={district}
+              onChange={(e) => setDistrict(e.target.value)}
+              className={input()}
+            >
+              <option value="">İlçe seçin…</option>
+              {DISTRICTS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
             </select>
           </Field>
-          <Field label="Neighborhood (Mahalle)" required error={errors.neighborhood}>
-            <input type="text" value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} className={input()} />
+          <Field label="Mahalle" required error={errors.neighborhood}>
+            <input
+              type="text"
+              value={neighborhood}
+              onChange={(e) => setNeighborhood(e.target.value)}
+              placeholder="Mahalle adı"
+              className={input()}
+            />
           </Field>
-          <Field label="Latitude (optional)">
-            <input type="number" step="0.00000001" placeholder="36.88…" value={lat} onChange={(e) => setLat(e.target.value)} className={input()} />
+          <Field label="Enlem (isteğe bağlı)">
+            <input
+              type="number"
+              step="0.00000001"
+              placeholder="36.88…"
+              value={lat}
+              onChange={(e) => setLat(e.target.value)}
+              className={input()}
+            />
           </Field>
-          <Field label="Longitude (optional)">
-            <input type="number" step="0.00000001" placeholder="30.70…" value={lng} onChange={(e) => setLng(e.target.value)} className={input()} />
+          <Field label="Boylam (isteğe bağlı)">
+            <input
+              type="number"
+              step="0.00000001"
+              placeholder="30.70…"
+              value={lng}
+              onChange={(e) => setLng(e.target.value)}
+              className={input()}
+            />
           </Field>
         </div>
         <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-xs text-zinc-400">
-          Map pin placement — coming soon
+          Harita konumu — yakında
         </div>
       </Section>
 
-      {/* Contact */}
-      <Section title="Contact (optional)">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Phone">
-            <input type="tel" placeholder="+90…" value={phone} onChange={(e) => setPhone(e.target.value)} className={input()} />
-          </Field>
-          <Field label="Email">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={input()} />
-          </Field>
-          <Field label="WhatsApp">
-            <input type="tel" placeholder="+90…" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={input()} />
-          </Field>
-        </div>
-      </Section>
-
-      {/* Media */}
-      <Section title="Images">
+      {/* Medya */}
+      <Section title="Medya">
         <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-xs text-zinc-400">
-          Image upload — coming soon (min 1 required for submission)
+          Fotoğraf yükleme — yakında (fotoğraf sayısını yukarıdan girin)
         </div>
       </Section>
 
       {apiError && <ApiErrorMessage error={apiError} />}
 
-      {/* Action bar */}
+      {/* Aksiyon butonu */}
       <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-6">
         <button
           type="button"
           disabled
           className="rounded-md border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-400 cursor-not-allowed"
-          title="Save as Draft — endpoint not yet implemented"
+          title="Taslak Kaydetme — henüz desteklenmiyor"
         >
-          Save as Draft
+          Taslak Olarak Kaydet
         </button>
         <button
           type="submit"
           disabled={loading}
           className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
         >
-          {loading ? "Submitting…" : "Submit for Review"}
+          {loading ? "Gönderiliyor…" : "İncelemeye Gönder"}
         </button>
       </div>
     </form>
