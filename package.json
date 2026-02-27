@@ -7,7 +7,11 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:all": "npx concurrently -n \"api,worker,web\" -c \"blue,green,magenta\" \"npm run start:api\" \"npm run start:worker\" \"npm run start:web\"",
+    "start:api": "cd apps/api && npm run start:dev",
+    "start:worker": "cd apps/worker && npm run start:dev",
+    "start:web": "cd apps/web && npm run dev"
   },
   "repository": {
     "type": "git",
