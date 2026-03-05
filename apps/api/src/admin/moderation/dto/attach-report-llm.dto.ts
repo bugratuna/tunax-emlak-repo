@@ -1,9 +1,21 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsObject } from 'class-validator';
 
 // Body DTO for PATCH /api/admin/moderation/:listingId/report/llm
 // The service performs deep structural validation against LLM_RESULT_SCHEMA;
 // class-validator only guards that the field is a non-null object (not a string/array).
 export class AttachReportLlmDto {
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    description: 'Operator-pasted LLM output validated against the stored llmJsonSchema',
+    example: {
+      status: 'SUCCESS',
+      contentModeration: { status: 'PASS', passed: true, issues: [] },
+      factVerification: { status: 'CONSISTENT', consistencyScore: 0.92, inconsistencies: [] },
+      riskAssessment: { riskLevel: 'LOW', requiresManualReview: false, fraudIndicators: [] },
+    },
+  })
   @IsObject()
   @IsNotEmpty()
   llmResult: {

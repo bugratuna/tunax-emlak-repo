@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
+import { getServerToken } from "@/lib/auth.server";
 import { getListing } from "@/lib/api/listings";
 import {
   getModerationReport,
@@ -10,6 +12,7 @@ import { ApiErrorMessage } from "@/components/api-error-message";
 import { AuditLogTable } from "@/components/audit-log-table";
 import { DecisionBar } from "./decision-bar";
 import { EnrichPanel } from "./enrich-panel";
+import { FeaturedToggle } from "./featured-toggle";
 import { ApiRequestError } from "@/lib/api/client";
 import type { AuditLogEntry, ModerationReport, ScoringReport } from "@/lib/types";
 
@@ -19,6 +22,7 @@ interface Props {
 
 export default async function ModerationDetailPage({ params }: Props) {
   const { listingId } = await params;
+  const token = await getServerToken();
 
   // Fetch listing — 404 = not found
   let listing;
@@ -31,15 +35,19 @@ export default async function ModerationDetailPage({ params }: Props) {
 
   // Fetch scoring report, moderation report, and audit log in parallel — 404 is non-fatal
   const [scoreResult, reportResult, auditResult] = await Promise.allSettled([
-    getScoringReport(listingId),
-    getModerationReport(listingId),
-    getAuditLog(listingId),
+    getScoringReport(listingId, token ?? undefined),
+    getModerationReport(listingId, token ?? undefined),
+    getAuditLog(listingId, token ?? undefined),
   ]);
 
   const scoringReport: ScoringReport | null =
     scoreResult.status === "fulfilled" ? scoreResult.value : null;
-  const moderationReport: ModerationReport | null =
+  const rawModerationReport: ModerationReport | null =
     reportResult.status === "fulfilled" ? reportResult.value : null;
+  // Normalise array fields so the page never calls .join() on undefined.
+  const moderationReport = rawModerationReport
+    ? normalizeModerationReport(rawModerationReport)
+    : null;
   const auditLog: AuditLogEntry[] =
     auditResult.status === "fulfilled" ? auditResult.value : [];
 
@@ -60,11 +68,117 @@ export default async function ModerationDetailPage({ params }: Props) {
             {listing.title}
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Danışman: {listing.consultantId} · Gönderim:{" "}
-            {new Date(listing.submittedAt).toLocaleDateString("tr-TR")}
+            Danışman: {listing.consultantName ?? listing.consultantId} · Gönderim:{" "}
+            {listing.submittedAt.slice(0, 10)}
           </p>
         </div>
         <StatusBadge status={listing.status} />
+      </div>
+
+      {/* Listing preview */}
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          İlan Önizleme
+        </h2>
+        <div className="flex flex-col gap-4 sm:flex-row">
+          {/* Photos strip */}
+          {listing.media && listing.media.length > 0 ? (
+            <div className="flex shrink-0 gap-1.5 overflow-x-auto">
+              {listing.media.slice(0, 5).map((photo, i) => (
+                <div
+                  key={photo.id}
+                  className={`relative h-24 shrink-0 overflow-hidden rounded-md bg-zinc-100 ${
+                    i === 0 ? "w-36" : "w-24"
+                  }`}
+                >
+                  <Image
+                    src={photo.publicUrl}
+                    alt={`Fotoğraf ${i + 1}`}
+                    fill
+                    sizes="144px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                  {i === 0 && (
+                    <span className="absolute left-1 top-1 rounded bg-blue-600/80 px-1.5 py-0.5 text-[9px] font-medium text-white">
+                      Kapak
+                    </span>
+                  )}
+                </div>
+              ))}
+              {listing.media.length > 5 && (
+                <div className="flex h-24 w-16 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-xs text-zinc-400">
+                  +{listing.media.length - 5}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex h-24 w-36 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-xs text-zinc-400">
+              Fotoğraf yok
+            </div>
+          )}
+
+          {/* Key facts */}
+          <div className="min-w-0 space-y-2 text-sm">
+            {listing.price && (
+              <p className="text-lg font-bold text-zinc-900">
+                {listing.price.amount.toLocaleString("tr-TR")}{" "}
+                {listing.price.currency ?? "TRY"}
+                {listing.price.isNegotiable && (
+                  <span className="ml-2 text-xs font-normal text-zinc-400">
+                    Pazarlığa açık
+                  </span>
+                )}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-600">
+              {listing.category && (
+                <span>
+                  {listing.category === "SALE" ? "Satılık" : "Kiralık"}
+                </span>
+              )}
+              {(listing.subtype ?? listing.propertyType) && (
+                <span>{listing.subtype ?? listing.propertyType}</span>
+              )}
+              {listing.location?.city && (
+                <span>
+                  {[
+                    listing.location.city,
+                    listing.location.district,
+                    listing.location.neighborhood,
+                  ]
+                    .filter(Boolean)
+                    .join(" › ")}
+                </span>
+              )}
+              {listing.specifications?.roomCount != null && (
+                <span>{listing.specifications.roomCount} oda</span>
+              )}
+              {listing.specifications?.grossArea != null && (
+                <span>{listing.specifications.grossArea} m²</span>
+              )}
+              {listing.specifications?.floorNumber != null && (
+                <span>
+                  {listing.specifications.floorNumber}. kat
+                  {listing.specifications.totalFloors != null
+                    ? ` / ${listing.specifications.totalFloors}`
+                    : ""}
+                </span>
+              )}
+            </div>
+            {listing.location?.coordinates && (
+              <p className="text-xs text-zinc-400">
+                📍 {listing.location.coordinates.latitude.toFixed(5)},{" "}
+                {listing.location.coordinates.longitude.toFixed(5)}
+              </p>
+            )}
+            {listing.description && (
+              <p className="line-clamp-2 text-xs text-zinc-500">
+                {listing.description}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -84,7 +198,8 @@ export default async function ModerationDetailPage({ params }: Props) {
                 value={scoringReport.deterministicScores.descriptionQualityScore}
               />
 
-              {scoringReport.deterministicScores.missingFields.length > 0 && (
+              {Array.isArray(scoringReport.deterministicScores.missingFields) &&
+                scoringReport.deterministicScores.missingFields.length > 0 && (
                 <div>
                   <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
                     Eksik Alanlar
@@ -97,7 +212,8 @@ export default async function ModerationDetailPage({ params }: Props) {
                 </div>
               )}
 
-              {scoringReport.deterministicScores.warnings.length > 0 && (
+              {Array.isArray(scoringReport.deterministicScores.warnings) &&
+                scoringReport.deterministicScores.warnings.length > 0 && (
                 <div>
                   <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
                     Uyarılar
@@ -167,13 +283,17 @@ export default async function ModerationDetailPage({ params }: Props) {
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
             Önceki Karar
           </h2>
-          {moderationReport ? (
+          {moderationReport?.decision ? (
             <dl className="space-y-3 text-sm">
               <Row label="Karar" value={moderationReport.decision} />
-              <Row label="Yönetici" value={moderationReport.adminId} />
+              <Row label="Yönetici" value={moderationReport.adminId ?? "—"} />
               <Row
                 label="Karar tarihi"
-                value={new Date(moderationReport.decidedAt).toLocaleString("tr-TR")}
+                value={
+                  moderationReport.decidedAt
+                    ? moderationReport.decidedAt.slice(0, 16).replace("T", " ")
+                    : "—"
+                }
               />
               <Row
                 label="Uygulanan kurallar"
@@ -222,6 +342,22 @@ export default async function ModerationDetailPage({ params }: Props) {
         <EnrichPanel listingId={listingId} initialReport={moderationReport} />
       </div>
 
+      {/* Featured toggle — only for PUBLISHED listings */}
+      {listing.status === "PUBLISHED" && (
+        <div className="rounded-lg border border-zinc-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+            Öne Çıkan
+          </h2>
+          <p className="mb-3 text-xs text-zinc-400">
+            Öne çıkan ilanlar ana sayfada ve arama sonuçlarında ön plana çıkar.
+          </p>
+          <FeaturedToggle
+            listingId={listingId}
+            isFeatured={listing.isFeatured ?? false}
+          />
+        </div>
+      )}
+
       {/* Audit log */}
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
@@ -231,6 +367,26 @@ export default async function ModerationDetailPage({ params }: Props) {
       </div>
     </div>
   );
+}
+
+// ─── Data contract guard ──────────────────────────────────────────────────────
+// The backend may return a pre-decision enrichment scaffold that lacks decision
+// fields (adminId, appliedRules, decidedAt, …).  This function normalises every
+// array field to an empty array so the page never calls .join() on undefined.
+// It emits a console.warn when a field is missing so future API shape changes
+// are easy to diagnose without hiding the discrepancy silently.
+function normalizeModerationReport(
+  r: ModerationReport,
+): ModerationReport & { appliedRules: string[] } {
+  if (!Array.isArray(r.appliedRules)) {
+    console.warn(
+      `[ModerationDetailPage] Unexpected response shape: appliedRules is ${typeof r.appliedRules} — defaulting to []`,
+    );
+  }
+  return {
+    ...r,
+    appliedRules: Array.isArray(r.appliedRules) ? r.appliedRules : [],
+  };
 }
 
 function ScoreBar({ label, value }: { label: string; value: number }) {

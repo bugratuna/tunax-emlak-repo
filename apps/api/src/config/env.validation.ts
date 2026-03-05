@@ -18,6 +18,11 @@ const RULES: EnvRule[] = [
     description: 'Runtime environment (development|production|test)',
   },
   {
+    key: 'DATABASE_URL',
+    required: true,
+    description: 'PostgreSQL connection URL (e.g. postgresql://tunax:tunax123@localhost:5432/tunax)',
+  },
+  {
     key: 'REDIS_URL',
     required: true,
     description: 'Redis connection URL (e.g. redis://localhost:6379)',
@@ -27,10 +32,42 @@ const RULES: EnvRule[] = [
     required: true,
     description: 'Comma-separated list of valid internal API keys for worker→API calls',
   },
-  // Uncomment when Prisma / JWT are wired up:
-  // { key: 'DATABASE_URL', required: true, description: 'PostgreSQL connection URL' },
-  // { key: 'JWT_ACCESS_SECRET', required: true, description: 'JWT access token secret' },
-  // { key: 'JWT_REFRESH_SECRET', required: true, description: 'JWT refresh token secret' },
+  {
+    key: 'JWT_ACCESS_SECRET',
+    required: true,
+    description: 'Secret used to sign JWT access tokens (min 32 chars recommended)',
+  },
+  {
+    key: 'JWT_ACCESS_TOKEN_EXPIRES_IN',
+    required: false,
+    description: 'JWT access token expiry duration (default: 24h)',
+  },
+  // ── AWS S3 (listing media upload) ──────────────────────────────────────────
+  {
+    key: 'AWS_ACCESS_KEY_ID',
+    required: true,
+    description: 'AWS IAM access key for S3 presigned URL generation',
+  },
+  {
+    key: 'AWS_SECRET_ACCESS_KEY',
+    required: true,
+    description: 'AWS IAM secret key for S3 presigned URL generation',
+  },
+  {
+    key: 'AWS_REGION',
+    required: true,
+    description: 'AWS region where the S3 bucket lives (e.g. eu-north-1)',
+  },
+  {
+    key: 'AWS_BUCKET_NAME',
+    required: true,
+    description: 'S3 bucket name for listing media (e.g. tunax-repo)',
+  },
+  {
+    key: 'S3_PUBLIC_BASE_URL',
+    required: false,
+    description: 'Base URL for public S3 reads; defaults to https://{bucket}.s3.{region}.amazonaws.com',
+  },
 ];
 
 export function validateEnv(): void {

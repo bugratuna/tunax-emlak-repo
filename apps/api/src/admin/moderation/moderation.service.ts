@@ -15,6 +15,7 @@ import {
   ScoringReport,
 } from '../../store/store';
 import { CrmSyncService } from '../../crm-sync/crm-sync.service';
+import { ListingsService } from '../../listings/listings.service';
 
 // ─── HITL Enrichment constants (Module 3) ─────────────────────────────────────
 
@@ -339,13 +340,11 @@ export class ModerationService {
   constructor(
     private readonly store: InMemoryStore,
     private readonly crmSync: CrmSyncService,
+    private readonly listingsService: ListingsService,
   ) {}
 
-  private requirePendingReview(listingId: string): Listing {
-    const listing = this.store.getListing(listingId);
-    if (!listing) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  private async requirePendingReview(listingId: string): Promise<Listing> {
+    const listing = await this.listingsService.findById(listingId);
     if (listing.status !== 'PENDING_REVIEW') {
       throw new ConflictException(
         `Listing is not in PENDING_REVIEW status (current: ${listing.status})`,
@@ -356,12 +355,12 @@ export class ModerationService {
 
   // --- Admin decision actions ---
 
-  approve(
+  async approve(
     listingId: string,
     adminId?: string,
     notes?: string,
-  ): { listing: Listing; report: ModerationReport } {
-    const listing = this.requirePendingReview(listingId);
+  ): Promise<{ listing: Listing; report: ModerationReport }> {
+    const listing = await this.requirePendingReview(listingId);
     const scoring = this.store.getScoringReport(listingId);
 
     const report = this.store.saveReport({
@@ -396,7 +395,7 @@ export class ModerationService {
     this.store.appendAuditLog(auditEntry);
     this.logger.log(JSON.stringify(auditEntry));
 
-    const updated = this.store.updateListingStatus(listingId, 'PUBLISHED');
+    const updated = await this.listingsService.updateStatus(listingId, 'PUBLISHED');
 
     // Post-publish automation: create marketing pack request
     this.store.createPackRequest(listingId, listing.title);
@@ -411,12 +410,12 @@ export class ModerationService {
     return { listing: updated, report };
   }
 
-  requestChanges(
+  async requestChanges(
     listingId: string,
     feedback: string,
     adminId?: string,
-  ): { listing: Listing; report: ModerationReport } {
-    const listing = this.requirePendingReview(listingId);
+  ): Promise<{ listing: Listing; report: ModerationReport }> {
+    const listing = await this.requirePendingReview(listingId);
     const scoring = this.store.getScoringReport(listingId);
 
     const report = this.store.saveReport({
@@ -452,16 +451,16 @@ export class ModerationService {
     this.store.appendAuditLog(auditEntry);
     this.logger.log(JSON.stringify(auditEntry));
 
-    const updated = this.store.updateListingStatus(listingId, 'NEEDS_CHANGES');
+    const updated = await this.listingsService.updateStatus(listingId, 'NEEDS_CHANGES');
     return { listing: updated, report };
   }
 
-  reject(
+  async reject(
     listingId: string,
     adminId?: string,
     reason?: string,
-  ): { listing: Listing; report: ModerationReport } {
-    const listing = this.requirePendingReview(listingId);
+  ): Promise<{ listing: Listing; report: ModerationReport }> {
+    const listing = await this.requirePendingReview(listingId);
     const scoring = this.store.getScoringReport(listingId);
 
     const report = this.store.saveReport({
@@ -496,19 +495,16 @@ export class ModerationService {
     this.store.appendAuditLog(auditEntry);
     this.logger.log(JSON.stringify(auditEntry));
 
-    const updated = this.store.updateListingStatus(listingId, 'ARCHIVED');
+    const updated = await this.listingsService.updateStatus(listingId, 'ARCHIVED');
     return { listing: updated, report };
   }
 
-  getQueue(): { items: Listing[]; count: number } {
-    const items = this.store.getPendingQueue();
-    return { items, count: items.length };
+  async getQueue(): Promise<{ items: Listing[]; count: number }> {
+    return this.listingsService.getPendingQueue();
   }
 
-  getReport(listingId: string): ModerationReport {
-    if (!this.store.getListing(listingId)) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  async getReport(listingId: string): Promise<ModerationReport> {
+    await this.listingsService.findById(listingId); // throws 404 if not found
     const report = this.store.getReport(listingId);
     if (!report) {
       throw new NotFoundException(
@@ -520,20 +516,16 @@ export class ModerationService {
 
   // --- Scoring / analysis actions ---
 
-  generateScore(
+  async generateScore(
     listingId: string,
     deterministicScores: DeterministicScores,
-  ): ScoringReport {
-    if (!this.store.getListing(listingId)) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  ): Promise<ScoringReport> {
+    await this.listingsService.findById(listingId); // throws 404 if not found
     return this.store.createScoringReport(listingId, deterministicScores);
   }
 
-  attachLlm(listingId: string, llmResult: LlmResult): ScoringReport {
-    if (!this.store.getListing(listingId)) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  async attachLlm(listingId: string, llmResult: LlmResult): Promise<ScoringReport> {
+    await this.listingsService.findById(listingId); // throws 404 if not found
     if (!this.store.getScoringReport(listingId)) {
       throw new NotFoundException(
         `No scoring report for listing ${listingId}. Call POST /score first.`,
@@ -542,10 +534,8 @@ export class ModerationService {
     return this.store.attachLlmToReport(listingId, llmResult);
   }
 
-  getScoringReport(listingId: string): ScoringReport {
-    if (!this.store.getListing(listingId)) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  async getScoringReport(listingId: string): Promise<ScoringReport> {
+    await this.listingsService.findById(listingId); // throws 404 if not found
     const report = this.store.getScoringReport(listingId);
     if (!report) {
       throw new NotFoundException(
@@ -560,11 +550,8 @@ export class ModerationService {
   // Called by the worker immediately after POST /score.
   // Builds the copy-paste LLM prompt from listing + deterministicScores and
   // saves the enrichment scaffold (llmPrompt + llmJsonSchema) to ModerationReport.
-  initEnrichment(listingId: string): ModerationReport {
-    const listing = this.store.getListing(listingId);
-    if (!listing) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  async initEnrichment(listingId: string): Promise<ModerationReport> {
+    const listing = await this.listingsService.findById(listingId); // throws 404 if not found
     const scoring = this.store.getScoringReport(listingId);
     if (!scoring) {
       throw new NotFoundException(
@@ -615,10 +602,8 @@ export class ModerationService {
 
   // Called by the human operator after running llmPrompt through an external LLM.
   // Validates the result against LLM_RESULT_SCHEMA; throws 422 on any mismatch.
-  attachReportLlm(listingId: string, llmResult: unknown): ModerationReport {
-    if (!this.store.getListing(listingId)) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  async attachReportLlm(listingId: string, llmResult: unknown): Promise<ModerationReport> {
+    await this.listingsService.findById(listingId); // throws 404 if not found
     const report = this.store.getReport(listingId);
     if (!report) {
       throw new NotFoundException(
@@ -631,10 +616,8 @@ export class ModerationService {
 
   // ─── Audit Log (Module 4) ────────────────────────────────────────────────────
 
-  getModerationAuditLog(listingId: string): AuditLogEntry[] {
-    if (!this.store.getListing(listingId)) {
-      throw new NotFoundException(`Listing ${listingId} not found`);
-    }
+  async getModerationAuditLog(listingId: string): Promise<AuditLogEntry[]> {
+    await this.listingsService.findById(listingId); // throws 404 if not found
     return this.store.getAuditLogs(listingId);
   }
 }

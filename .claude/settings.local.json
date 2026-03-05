@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(timeout 12 npx nest start)",
+      "Bash(timeout 10 npx nest start)",
+      "Bash(python3 -c \":*)",
+      "Bash(node -e \":*)",
+      "Bash(npm ls @nestjs/typeorm typeorm pg)",
+      "Bash(test -d /mnt/data)",
+      "Bash(npm run migration:show)",
+      "Bash(ls \"c:\\\\Users\\\\screa\\\\WebstormProjects\\\\tunax-emlak-repo\\\\apps\\\\api\\\\src\\\\database\"\" 2>/dev/null || echo \"no dir \")",
+      "Bash(grep -n \"toLocaleDateString\\\\|toLocaleString\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/web/src/app/admin/moderation/[listingId]/page.tsx)"
     ]
   }
 }

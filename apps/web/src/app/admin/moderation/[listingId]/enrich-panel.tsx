@@ -114,7 +114,7 @@ export function EnrichPanel({ listingId, initialReport }: Props) {
             </pre>
           </div>
 
-          {report?.llmJsonSchema && (
+          {!!report?.llmJsonSchema && (
             <div>
               <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
                 LLM JSON Şeması

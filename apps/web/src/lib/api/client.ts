@@ -1,3 +1,4 @@
+import { getClientToken } from "@/lib/auth";
 import type { ApiError } from "@/lib/types";
 
 export class ApiRequestError extends Error {
@@ -26,14 +27,38 @@ function baseUrl(): string {
   return url.replace(/\/$/, "");
 }
 
+// Extended init type: _token is an escape-hatch for server components that
+// read the JWT from cookies() and need to pass it explicitly.
+type ApiFetchInit = RequestInit & { _token?: string };
+
 export async function apiFetch<T>(
   path: string,
-  init?: RequestInit,
+  init?: ApiFetchInit,
 ): Promise<T> {
   const url = `${baseUrl()}${path}`;
+
+  // Token resolution order:
+  //   1. Explicit _token (server component passing cookie-sourced token)
+  //   2. Module-level store (client component, set by AuthProvider on mount)
+  //   3. None (unauthenticated public request)
+  const token =
+    init?._token ?? (typeof window !== "undefined" ? getClientToken() : null);
+
+  const authHeader: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+
+  // Strip _token before passing init to fetch (not a standard fetch option)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _token: _ignored, ...restInit } = (init ?? {}) as ApiFetchInit;
+
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader,
+      ...(restInit.headers ?? {}),
+    },
+    ...restInit,
   });
 
   if (!res.ok) {

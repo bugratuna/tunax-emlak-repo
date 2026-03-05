@@ -1,5 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { Role } from '../common/enums/role.enum';
+
+// ─── User ─────────────────────────────────────────────────────────────────────
+
+export interface User {
+  id: string;
+  email: string;
+  passwordHash: string;
+  role: Role;
+  name: string;
+  status: string; // 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL'
+  isActive: boolean;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  createdAt: string;
+}
 
 // ─── Listing ──────────────────────────────────────────────────────────────────
 
@@ -16,6 +33,7 @@ export interface Listing {
   id: string;
   title: string;
   consultantId: string;
+  consultantName?: string | null;
   status: ListingStatus;
   submittedAt: string;
   createdAt: string;
@@ -24,6 +42,8 @@ export interface Listing {
   price?: { amount?: number; currency?: string; isNegotiable?: boolean } | null;
   propertyType?: string | null;
   category?: string | null;
+  subtype?: string | null;
+  listingType?: string | null;
   location?: {
     city?: string;
     district?: string;
@@ -41,8 +61,28 @@ export interface Listing {
     hasParking?: boolean;
     hasBalcony?: boolean;
     heatingType?: string;
+    kitchenState?: string;
+    isFurnished?: boolean;
+    hasElevator?: boolean;
+    inComplex?: boolean;
+    isLoanEligible?: boolean;
+    isSwapAvailable?: boolean;
+    duesAmount?: number;
   } | null;
+  detailInfos?: Record<string, string[]> | null;
   imageCount?: number;
+  isFeatured?: boolean;
+  featuredSortOrder?: number;
+  media?: Array<{
+    id: string;
+    url: string;
+    s3Key: string;
+    contentType?: string;
+    sizeBytes?: number;
+    sortOrder: number;
+    isCover: boolean;
+    uploadedAt: string;
+  }>;
 }
 
 // ─── Moderation (admin decision) ─────────────────────────────────────────────
@@ -261,6 +301,8 @@ export interface CreateListingInput {
 
 @Injectable()
 export class InMemoryStore {
+  private readonly users = new Map<string, User>();
+  private readonly usersByEmail = new Map<string, string>(); // email → id
   private readonly listings = new Map<string, Listing>();
   private readonly moderationReports = new Map<string, ModerationReport>();
   private readonly scoringReports = new Map<string, ScoringReport>();
@@ -271,6 +313,41 @@ export class InMemoryStore {
   private readonly crmSyncResults = new Map<string, CRMSyncResult[]>();
   private readonly syncedKeys = new Set<string>();
   private readonly auditLogs = new Map<string, AuditLogEntry[]>();
+
+  // --- User ---
+
+  createUser(input: Omit<User, 'id' | 'createdAt'>): User {
+    const user: User = {
+      id: randomUUID(),
+      createdAt: new Date().toISOString(),
+      ...input,
+    };
+    this.users.set(user.id, user);
+    this.usersByEmail.set(user.email.toLowerCase(), user.id);
+    return user;
+  }
+
+  findUserById(id: string): User | undefined {
+    return this.users.get(id);
+  }
+
+  findUserByEmail(email: string): User | undefined {
+    const id = this.usersByEmail.get(email.toLowerCase());
+    return id ? this.users.get(id) : undefined;
+  }
+
+  listAllUsers(): User[] {
+    return Array.from(this.users.values());
+  }
+
+  resetUsers(): void {
+    this.users.clear();
+    this.usersByEmail.clear();
+  }
+
+  listAllListings(): Listing[] {
+    return Array.from(this.listings.values());
+  }
 
   // --- Listing ---
 

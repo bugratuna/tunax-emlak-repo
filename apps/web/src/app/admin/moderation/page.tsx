@@ -1,89 +1,60 @@
-import Link from "next/link";
-import { getModerationQueue } from "@/lib/api/moderation";
+import { getServerToken } from "@/lib/auth.server";
+import { apiFetch } from "@/lib/api/client";
 import { ApiErrorMessage } from "@/components/api-error-message";
-import type { Listing } from "@/lib/types";
+import { QueueContent } from "./queue-content";
+import type { Listing, ListAllResult, ModerationQueue } from "@/lib/types";
 
-export default async function ModerationQueuePage() {
+interface Props {
+  searchParams: Promise<{ status?: string }>;
+}
+
+export default async function ModerationQueuePage({ searchParams }: Props) {
+  const { status: rawStatus } = await searchParams;
+  const currentStatus =
+    rawStatus === "NEEDS_CHANGES" ? "NEEDS_CHANGES" : "PENDING_REVIEW";
+
   let items: Listing[] = [];
-  let count = 0;
+  let total = 0;
   let fetchError: string | null = null;
 
   try {
-    const queue = await getModerationQueue();
-    items = queue.items;
-    count = queue.count;
+    const token = await getServerToken();
+    if (currentStatus === "NEEDS_CHANGES") {
+      const result = await apiFetch<ListAllResult>(
+        "/api/listings?status=NEEDS_CHANGES&sortBy=newest&limit=100",
+        token ? { _token: token } : undefined,
+      );
+      items = result.data;
+      total = result.total;
+    } else {
+      const queue = await apiFetch<ModerationQueue>(
+        "/api/admin/moderation/queue",
+        token ? { _token: token } : undefined,
+      );
+      items = queue.items;
+      total = queue.count;
+    }
   } catch (err) {
     fetchError = err instanceof Error ? err.message : "Kuyruk yüklenemedi.";
   }
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900">
-            Onay Kuyruğu
-          </h1>
-          <p className="text-sm text-zinc-500">
-            İnceleme bekleyen ilanlar
-          </p>
-        </div>
-        {!fetchError && (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-            {count} bekliyor
-          </span>
-        )}
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold text-zinc-900">Onay Kuyruğu</h1>
+        <p className="text-sm text-zinc-500">
+          İnceleme ve değişiklik bekleyen ilanlar
+        </p>
       </div>
 
       {fetchError ? (
         <ApiErrorMessage error={fetchError} />
-      ) : items.length === 0 ? (
-        <div className="rounded-lg border border-zinc-200 bg-white px-6 py-12 text-center">
-          <p className="text-sm text-zinc-500">İnceleme bekleyen ilan yok.</p>
-        </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  Başlık
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  Danışman
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  Gönderim Tarihi
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  İşlem
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {items.map((listing) => (
-                <tr key={listing.id} className="hover:bg-zinc-50">
-                  <td className="px-4 py-3 font-medium text-zinc-900">
-                    {listing.title}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-500">
-                    {listing.consultantId}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-500">
-                    {new Date(listing.submittedAt).toLocaleDateString("tr-TR")}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/moderation/${listing.id}`}
-                      className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-700"
-                    >
-                      İncele
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <QueueContent
+          items={items}
+          total={total}
+          currentStatus={currentStatus}
+        />
       )}
     </div>
   );

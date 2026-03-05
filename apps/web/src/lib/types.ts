@@ -10,13 +10,9 @@ export type ListingStatus =
 
 export type ListingCategory = "RENT" | "SALE";
 
-export type PropertyType =
-  | "APARTMENT"
-  | "VILLA"
-  | "HOUSE"
-  | "LAND"
-  | "COMMERCIAL"
-  | "OTHER";
+// PropertyType is a free string matching the backend taxonomy
+// (e.g. 'Konut', 'İşyeri', 'Arsa', 'Turistik Tesis', 'Devremülk', 'Arazi').
+export type PropertyType = string;
 
 export type Currency = "TRY" | "USD" | "EUR";
 
@@ -55,37 +51,116 @@ export interface ListingSpecifications {
   hasParking?: boolean;
   hasBalcony?: boolean;
   heatingType?: string;
+  kitchenState?: string;
+  isFurnished?: boolean;
+  hasElevator?: boolean;
+  inComplex?: boolean;
+  isLoanEligible?: boolean;
+  isSwapAvailable?: boolean;
+  duesAmount?: number;
 }
 
 // -- Core entities --
+
+export interface MediaItem {
+  id: string;
+  url: string;
+  s3Key: string;
+  publicUrl: string;
+  contentType?: string;
+  width?: number;
+  height?: number;
+  sortOrder: number;
+  isCover: boolean;
+  uploadedAt: string;
+}
 
 export interface Listing {
   id: string;
   title: string;
   consultantId: string;
+  /** Full name of the consultant — populated by backend JOIN (avoids N+1). */
+  consultantName?: string | null;
   status: ListingStatus;
   description?: string;
   price?: ListingPrice;
   propertyType?: PropertyType;
+  /** Taxonomy level 2 — e.g. 'Daire', 'Villa', 'Dükkan'. */
+  subtype?: string;
   category?: ListingCategory;
   location?: ListingLocation;
   specifications?: ListingSpecifications;
+  /** Feature group selections keyed by group name. */
+  detailInfos?: Record<string, string[]>;
   imageCount?: number;
+  isFeatured?: boolean;
+  featuredSortOrder?: number;
+  /** Ordered photo list — present on GET /listings/:id */
+  media?: MediaItem[];
   submittedAt: string;
   createdAt: string;
   updatedAt: string;
 }
 
+// ── Public consultant profile (for /team page) ─────────────────────────────────
+
+export interface ConsultantPublicProfile {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  name: string;
+  email: string;
+  phoneNumber: string | null;
+  bio: string | null;
+  profilePhotoUrl: string | null;
+  title: string | null;
+  role: string;
+  createdAt: string;
+}
+
+// ── Admin user management ──────────────────────────────────────────────────────
+
+export type UserStatus = "ACTIVE" | "SUSPENDED" | "PENDING_APPROVAL";
+export type UserRole = "ADMIN" | "CONSULTANT";
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  name: string;
+  status: UserStatus;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface ContactInfo {
+  consultantName: string;
+  phone: string | null;
+}
+
+/** Paginated listing response from GET /api/listings. */
+export interface ListAllResult {
+  data: Listing[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface ModerationReport {
   reportId: string;
   listingId: string;
-  adminId: string;
-  decision: ModerationDecision;
-  appliedRules: string[];
-  previousStatus: ListingStatus;
-  newStatus: ListingStatus;
-  decidedAt: string;
-  reason: string;
+  // Decision fields are optional: a pre-decision enrichment scaffold only
+  // populates llmPrompt / llmJsonSchema and leaves these absent.
+  adminId?: string;
+  decision?: ModerationDecision;
+  appliedRules?: string[];
+  previousStatus?: ListingStatus;
+  newStatus?: ListingStatus;
+  decidedAt?: string;
+  reason?: string;
   feedback?: string;
   notes?: string;
   scoringReportId?: string;
@@ -110,6 +185,7 @@ export interface ScoringReport {
     descriptionQualityScore: number;
     missingFields: string[];
     warnings: ScoringWarning[];
+    detectedTags?: string[];
   };
   llmResult?: {
     status: "SUCCESS" | "PARTIAL" | "ERROR";

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
+import { AuthProvider } from "@/context/auth-context";
 import { Nav } from "@/components/nav";
+import { SiteFooter } from "@/components/site-footer";
+import { RouteTransitionOverlay } from "@/components/route-transition-overlay";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +18,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AREP — Antalya Real Estate Platform",
-  description: "Property listings for the Antalya region",
+  title: {
+    default: "Realty Tunax — Antalya Gayrimenkul Platformu",
+    template: "%s | Realty Tunax",
+  },
+  description:
+    "Antalya'nın güvenilir gayrimenkul danışmanlık platformu. Satılık ve kiralık konut, ticari gayrimenkul ilanları.",
+  openGraph: {
+    siteName: "Realty Tunax",
+    locale: "tr_TR",
+  },
+  icons: {
+    icon: "/brand/logo-icon.jpeg",
+  },
 };
 
 export default function RootLayout({
@@ -24,10 +39,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Nav />
-        <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+    <html lang="tr" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
+        {/* Route transition bar — must be inside Suspense because it calls useSearchParams() */}
+        <Suspense fallback={null}>
+          <RouteTransitionOverlay />
+        </Suspense>
+        <AuthProvider>
+          <Nav />
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>
+          <SiteFooter />
+        </AuthProvider>
       </body>
     </html>
   );

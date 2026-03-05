@@ -1,22 +1,67 @@
-version: "3.8"
 services:
-  postgres:
-    image: postgis/postgis:15-3.3
-    container_name: arep_postgres
+  # 1. Servis: PostGIS (Coğrafi Veritabanı)
+  postgres_gis:
+    image: postgis/postgis:16-3.4
+    container_name: arep_postgis
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: arep_db
+      POSTGRES_USER: ${POSTGRES_USER:-tunax}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tunax123}
+      POSTGRES_DB: ${POSTGRES_DB:-tunax}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tunax} -d ${POSTGRES_DB:-tunax}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # 2. Servis: Standart PostgreSQL — NOT USED BY AREP (primary DB is PostGIS on 5432)
+  # db:
+  #   image: postgres:17
+  #   container_name: arep_postgres_db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: bgrtn93
+  #     POSTGRES_PASSWORD: bgrtn123
+  #     POSTGRES_DB: mydatabase
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - postgres_std_data:/var/lib/postgresql/data
+
+  # 3. Servis: Redis
   redis:
-    image: redis:7
+    image: redis:7-alpine
     container_name: arep_redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 4. Servis: pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: arep_pgadmin_ui
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@test.com
+      PGADMIN_DEFAULT_PASSWORD: bgrtn123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres_gis
 
 volumes:
-  postgres_data:
+  postgis_data:      # PostGIS için ayrı alan
+  postgres_std_data: # Standart Postgres için ayrı alan
+  redis_data:

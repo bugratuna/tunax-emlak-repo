@@ -1,6 +1,17 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsObject } from 'class-validator';
 
 export class AttachLlmDto {
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    description: 'LLM analysis result to attach to the scoring report',
+    example: {
+      status: 'SUCCESS',
+      contentModeration: { status: 'PASS', passed: true, issues: [] },
+      riskAssessment: { riskLevel: 'LOW', requiresManualReview: false, fraudIndicators: [] },
+    },
+  })
   @IsObject()
   @IsNotEmpty()
   llmResult: {

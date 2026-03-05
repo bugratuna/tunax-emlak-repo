@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getServerUser } from "@/lib/auth.server";
 import { listListings } from "@/lib/api/listings";
 import { StatusBadge } from "@/components/status-badge";
 import { ApiErrorMessage } from "@/components/api-error-message";
@@ -9,10 +10,20 @@ export default async function ConsultantListingsPage() {
   let listings: Listing[] = [];
   let fetchError: string | null = null;
 
+  // G-2: Backend has no consultantId filter; read sub from JWT cookie to filter client-side.
+  const serverUser = await getServerUser();
+  const myId = serverUser?.sub ?? null;
+
   try {
-    listings = await listListings();
+    const result = await listListings();
+    listings = result.data;
   } catch (err) {
     fetchError = err instanceof Error ? err.message : "Sunucuya ulaşılamıyor.";
+  }
+
+  // G-2: Show only this consultant's listings.
+  if (myId) {
+    listings = listings.filter((l) => l.consultantId === myId);
   }
 
   return (
@@ -71,15 +82,24 @@ export default async function ConsultantListingsPage() {
                     <StatusBadge status={listing.status} />
                   </td>
                   <td className="px-4 py-3 text-zinc-500">
-                    {new Date(listing.submittedAt).toLocaleDateString("tr-TR")}
+                    {listing.submittedAt ? listing.submittedAt.slice(0, 10) : "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/listings/${listing.id}`}
-                      className="mr-3 text-zinc-600 underline hover:text-zinc-900"
+                      href={`/consultant/listings/${listing.id}`}
+                      className="mr-2 text-zinc-600 underline hover:text-zinc-900"
                     >
                       Görüntüle
                     </Link>
+                    {(listing.status === "DRAFT" ||
+                      listing.status === "NEEDS_CHANGES") && (
+                      <Link
+                        href={`/consultant/listings/${listing.id}/edit`}
+                        className="mr-2 inline-flex items-center rounded-md bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
+                      >
+                        Düzenle
+                      </Link>
+                    )}
                     {listing.status === "NEEDS_CHANGES" && (
                       <ResubmitButton listingId={listing.id} />
                     )}

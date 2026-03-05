@@ -17,30 +17,30 @@ export default async function EditListingPage({ params }: Props) {
     listing = await getListing(id);
   } catch (err) {
     if (err instanceof ApiRequestError && err.status === 404) notFound();
-    return <ApiErrorMessage error={err instanceof Error ? err : "Error loading listing."} />;
+    return <ApiErrorMessage error={err instanceof Error ? err : "İlan yüklenemedi."} />;
   }
 
-  // Edit is only allowed for DRAFT or NEEDS_CHANGES
+  // Düzenleme yalnızca DRAFT veya NEEDS_CHANGES durumlarında izin verilir
   if (listing.status !== "DRAFT" && listing.status !== "NEEDS_CHANGES") {
     return (
       <div className="max-w-2xl">
         <p className="mb-1 text-sm text-zinc-500">
           <Link href="/consultant/listings" className="hover:underline">
-            My Listings
+            İlanlarım
           </Link>{" "}
-          / Edit
+          / Düzenle
         </p>
         <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-600">
-          This listing cannot be edited in its current state (
-          <strong>{listing.status}</strong>). Editing is only allowed when the
-          listing is in <strong>DRAFT</strong> or <strong>NEEDS_CHANGES</strong>{" "}
-          status.
+          Bu ilan mevcut durumunda düzenlenemez (
+          <strong>{listing.status}</strong>). Düzenleme yalnızca{" "}
+          <strong>DRAFT</strong> veya <strong>NEEDS_CHANGES</strong> durumunda
+          mümkündür.
           <div className="mt-3">
             <Link
               href={`/consultant/listings/${id}`}
               className="text-zinc-900 underline"
             >
-              View listing status
+              İlan durumunu görüntüle
             </Link>
           </div>
         </div>
@@ -53,20 +53,34 @@ export default async function EditListingPage({ params }: Props) {
       <div className="mb-6">
         <p className="mb-1 text-sm text-zinc-500">
           <Link href="/consultant/listings" className="hover:underline">
-            My Listings
+            İlanlarım
           </Link>{" "}
           /{" "}
           <Link href={`/consultant/listings/${id}`} className="hover:underline">
             {listing.title}
           </Link>{" "}
-          / Edit
+          / Düzenle
         </p>
-        <h1 className="text-xl font-semibold text-zinc-900">Edit listing</h1>
+        <h1 className="text-xl font-semibold text-zinc-900">İlanı Düzenle</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Current status: <strong>{listing.status}</strong>
+          Mevcut durum: <strong>{listing.status}</strong>
         </p>
       </div>
-      <ListingForm mode="edit" consultantId={listing.consultantId} />
+
+      {/* Admin geri bildirim banneri */}
+      {listing.status === "NEEDS_CHANGES" && (
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-800">
+            Değişiklik Talebi
+          </p>
+          <p className="mt-1 text-sm text-amber-700">
+            Yönetici bu ilan için değişiklik talep etti. Lütfen gerekli
+            düzenlemeleri yapıp tekrar incelemeye gönderin.
+          </p>
+        </div>
+      )}
+
+      <ListingForm mode="edit" initialValues={listing} listingId={id} />
     </div>
   );
 }

@@ -28,7 +28,7 @@ export function DecisionBar({ listingId }: { listingId: string }) {
     setLoading(true);
     try {
       if (action === "approve") {
-        await approveListing(listingId, undefined, notes || undefined);
+        await approveListing(listingId, notes || undefined);
       } else if (action === "request-changes") {
         await requestChanges(listingId, feedback);
       } else if (action === "reject") {

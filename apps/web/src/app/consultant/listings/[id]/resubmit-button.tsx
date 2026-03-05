@@ -22,9 +22,9 @@ export function ResubmitButton({ listingId }: { listingId: string }) {
         const msg = Array.isArray(err.body.message)
           ? err.body.message.join(", ")
           : err.body.message;
-        setError(`${err.status}: ${msg}`);
+        setError(`Hata ${err.status}: ${msg}`);
       } else {
-        setError("Unable to reach server.");
+        setError("Sunucuya ulaşılamadı. Lütfen tekrar deneyin.");
       }
     } finally {
       setLoading(false);
@@ -37,9 +37,9 @@ export function ResubmitButton({ listingId }: { listingId: string }) {
       <button
         onClick={handleResubmit}
         disabled={loading}
-        className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
+        className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
       >
-        {loading ? "Resubmitting…" : "Resubmit for Review"}
+        {loading ? "Gönderiliyor…" : "Yeniden Gönder"}
       </button>
     </div>
   );

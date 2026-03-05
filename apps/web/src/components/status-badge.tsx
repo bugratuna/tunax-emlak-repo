@@ -6,23 +6,23 @@ const statusConfig: Record<
   { label: string; classes: string }
 > = {
   DRAFT: {
-    label: "Draft",
+    label: "Taslak",
     classes: "bg-zinc-100 text-zinc-600 border-zinc-200",
   },
   PENDING_REVIEW: {
-    label: "Pending Review",
+    label: "İnceleme Bekliyor",
     classes: "bg-amber-50 text-amber-700 border-amber-200",
   },
   NEEDS_CHANGES: {
-    label: "Needs Changes",
+    label: "Düzenleme Gerekiyor",
     classes: "bg-orange-50 text-orange-700 border-orange-200",
   },
   PUBLISHED: {
-    label: "Published",
+    label: "Yayında",
     classes: "bg-green-50 text-green-700 border-green-200",
   },
   ARCHIVED: {
-    label: "Archived",
+    label: "Arşivde",
     classes: "bg-red-50 text-red-700 border-red-200",
   },
 };
