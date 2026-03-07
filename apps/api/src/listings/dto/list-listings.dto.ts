@@ -336,6 +336,12 @@ export class ListListingsDto {
   @IsOptional()
   isFeatured?: boolean;
 
+  @ApiProperty({ required: false, example: true, description: 'Return only isShowcase=true (Vitrin) listings.' })
+  @Transform(boolTransform)
+  @IsBoolean()
+  @IsOptional()
+  isShowcase?: boolean;
+
   @ApiProperty({
     required: false,
     enum: ['price_asc', 'price_desc', 'newest', 'oldest'],
@@ -344,4 +350,15 @@ export class ListListingsDto {
   @IsIn(['price_asc', 'price_desc', 'newest', 'oldest'])
   @IsOptional()
   sortBy?: string;
+
+  // ── Full-text search (admin) ───────────────────────────────────────────────
+
+  @ApiProperty({
+    required: false,
+    example: 'deniz manzaralı',
+    description: 'Case-insensitive substring match against listing title. Admin endpoint only.',
+  })
+  @IsString()
+  @IsOptional()
+  search?: string;
 }

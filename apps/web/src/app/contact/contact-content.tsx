@@ -200,8 +200,8 @@ export function ContactContent() {
                   rel="noopener noreferrer"
                   className="text-gray-600 hover:text-primary transition-colors duration-300"
                 >
-                  Güvenlik, Derya Cd. Lidya park apt No:20/b, 07230
-                  Muratpaşa/Antalya
+                  Kütükçü, Şelale Cd. No:123 D:117, 07080, 07000
+                  Kepez/Antalya
                 </a>
               </div>
             </div>
@@ -223,7 +223,7 @@ export function ContactContent() {
                   </a>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="font-bold text-sm">Recep Tuna</p>
+                  <p className="font-bold text-sm">Ertuğrul Uygun</p>
                   <a
                     href="tel:+905367259510"
                     className="text-gray-600 hover:text-primary transition-colors duration-300 text-sm"

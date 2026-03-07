@@ -9,6 +9,7 @@ import { ApiRequestError } from "@/lib/api/client";
 import type { Listing } from "@/lib/types";
 import { PhotoGalleryWidget, MapWidget } from "./client-widgets";
 import { ContactReveal } from "@/components/contact-reveal";
+import { RichTextRenderer } from "@/components/rich-text-renderer";
 import { FEATURE_GROUP_LABELS } from "@/lib/taxonomy";
 
 // ── Label maps ────────────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ const STATUS_LABELS: Record<string, string> = {
   NEEDS_CHANGES: "Düzenleme Gerekiyor",
   PUBLISHED: "Yayında",
   ARCHIVED: "Arşivde",
+  UNPUBLISHED: "Yayından Kaldırıldı",
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -114,6 +116,14 @@ export default async function ListingDetailPage({ params }: Props) {
             <h1 className="text-2xl font-bold leading-snug text-zinc-900 sm:text-3xl">
               {listing.title}
             </h1>
+            {listing.listingNumber && (
+              <p className="mt-1 flex items-center gap-2 font-mono text-xs tracking-widest text-zinc-400">
+                <span className="font-sans text-[10px] uppercase tracking-widest">İlan No</span>
+                <span className="rounded bg-zinc-100 px-2 py-0.5 text-zinc-600">
+                  {listing.listingNumber}
+                </span>
+              </p>
+            )}
             <div className="mt-2.5 flex flex-wrap items-center gap-2">
               {listing.category && (
                 <span className="rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold text-white">
@@ -145,62 +155,73 @@ export default async function ListingDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* Key facts chips */}
+          {/* Key facts — Row 1: metric chips */}
           {specs && (
-            <div className="flex flex-wrap gap-2">
-              <Fact
-                label="Oda Sayısı"
-                value={specs.roomCount != null ? String(specs.roomCount) : null}
-              />
-              <Fact
-                label="Brüt m²"
-                value={specs.grossArea != null ? `${specs.grossArea} m²` : null}
-              />
-              <Fact
-                label="Net m²"
-                value={specs.netArea != null ? `${specs.netArea} m²` : null}
-              />
-              <Fact
-                label="Kat"
-                value={
-                  specs.floorNumber != null
-                    ? specs.totalFloors != null
-                      ? `${specs.floorNumber} / ${specs.totalFloors}`
-                      : String(specs.floorNumber)
-                    : null
-                }
-              />
-              <Fact
-                label="Bina Yaşı"
-                value={
-                  specs.buildingAge != null ? `${specs.buildingAge} yıl` : null
-                }
-              />
-              <Fact label="Isıtma" value={specs.heatingType ?? null} />
-              <Fact
-                label="Banyo"
-                value={
-                  specs.bathroomCount != null
-                    ? String(specs.bathroomCount)
-                    : null
-                }
-              />
-              {specs.hasBalcony && <Tag label="Balkon" />}
-              {specs.hasParking && <Tag label="Otopark" />}
-              {specs.hasElevator && <Tag label="Asansör" />}
-              {specs.isFurnished && <Tag label="Eşyalı" />}
-              {specs.inComplex && <Tag label="Site İçi" />}
-              {specs.isLoanEligible && <Tag label="Krediye Uygun" />}
-              {specs.isSwapAvailable && <Tag label="Takasa Açık" />}
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <Fact
+                  label="Oda Sayısı"
+                  value={specs.roomCount != null ? String(specs.roomCount) : null}
+                />
+                <Fact
+                  label="Brüt m²"
+                  value={specs.grossArea != null ? `${specs.grossArea} m²` : null}
+                />
+                <Fact
+                  label="Net m²"
+                  value={specs.netArea != null ? `${specs.netArea} m²` : null}
+                />
+                <Fact
+                  label="Kat"
+                  value={
+                    specs.floorNumber != null
+                      ? specs.totalFloors != null
+                        ? `${specs.floorNumber} / ${specs.totalFloors}`
+                        : String(specs.floorNumber)
+                      : null
+                  }
+                />
+                <Fact
+                  label="Bina Yaşı"
+                  value={
+                    specs.buildingAge != null ? `${specs.buildingAge} yıl` : null
+                  }
+                />
+                <Fact label="Isıtma" value={specs.heatingType ?? null} />
+                <Fact
+                  label="Banyo"
+                  value={
+                    specs.bathroomCount != null
+                      ? String(specs.bathroomCount)
+                      : null
+                  }
+                />
+              </div>
+              {/* Row 2: boolean feature tags (new row for breathing room) */}
+              {(specs.hasBalcony ||
+                specs.hasParking ||
+                specs.hasElevator ||
+                specs.isFurnished ||
+                specs.inComplex ||
+                specs.isLoanEligible ||
+                specs.isSwapAvailable) && (
+                <div className="flex flex-wrap gap-2">
+                  {specs.hasBalcony && <Tag label="Balkon" />}
+                  {specs.hasParking && <Tag label="Otopark" />}
+                  {specs.hasElevator && <Tag label="Asansör" />}
+                  {specs.isFurnished && <Tag label="Eşyalı" />}
+                  {specs.inComplex && <Tag label="Site İçi" />}
+                  {specs.isLoanEligible && <Tag label="Krediye Uygun" />}
+                  {specs.isSwapAvailable && <Tag label="Takasa Açık" />}
+                </div>
+              )}
             </div>
           )}
 
           {/* Description */}
           {listing.description && (
             <Card title="Açıklama">
-              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-700">
-                {listing.description}
-              </p>
+              <RichTextRenderer html={listing.description} />
             </Card>
           )}
 

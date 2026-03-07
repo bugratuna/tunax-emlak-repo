@@ -22,7 +22,7 @@ export function SiteFooter() {
               <img
                 src="/brand/logo.png"
                 alt="Realty Tunax"
-                className="h-10 w-auto object-contain brightness-0 invert"
+                className="h-8 w-auto object-contain brightness-0 invert"
               />
               <span className="text-sm font-bold text-white">Realty Tunax</span>
             </Link>
@@ -59,22 +59,22 @@ export function SiteFooter() {
             <ul className="space-y-3 text-sm text-zinc-400">
               <li className="flex items-center gap-2">
                 <Phone size={13} className="shrink-0" />
-                <a href="tel:+902420000000" className="hover:text-white transition-colors">
-                  0242 000 00 00
+                <a href="tel:+905530842270" className="hover:text-white transition-colors">
+                  +90 553 084 22 70
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={13} className="shrink-0" />
-                <a href="mailto:info@realtytunax.com.tr" className="hover:text-white transition-colors">
-                  info@realtytunax.com.tr
+                <a href="mailto:ismail.tuna@realtytunax.com" className="hover:text-white transition-colors">
+                  ismail.tuna@realtytunax.com
                 </a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin size={13} className="mt-0.5 shrink-0" />
-                <span>
-                  Konyaaltı, Antalya<br />
+                <a href="https://www.google.com/maps/place/Realty+Tunax+%7C+Yeni+Nesil+Gayrimenkul/@36.9244543,30.692245,17z/data=!3m1!4b1!4m6!3m5!1s0x14c38fac7ca31347:0x8949b9f942d8394!8m2!3d36.9244543!4d30.692245!16s%2Fg%2F11ygwxh6vw?entry=ttu&g_ep=EgoyMDI2MDMwNC4xIKXMDSoASAFQAw%3D%3D" target="_blank"  className="hover:text-white transition-colors">
+                  Kütükçü, Şelale Cd. No:123 D:117, 07080, 07000 Kepez,Antalya<br />
                   Türkiye
-                </span>
+                </a>
               </li>
             </ul>
           </div>

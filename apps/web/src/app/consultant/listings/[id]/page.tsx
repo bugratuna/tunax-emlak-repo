@@ -4,6 +4,7 @@ import { getListing, getListingFeedback } from "@/lib/api/listings";
 import { StatusBadge } from "@/components/status-badge";
 import { ApiErrorMessage } from "@/components/api-error-message";
 import { ResubmitButton } from "./resubmit-button";
+import { UnpublishButton } from "../unpublish-button";
 import { ApiRequestError } from "@/lib/api/client";
 import { getServerToken } from "@/lib/auth.server";
 import ConsultantListingWidgets from "./client-widgets";
@@ -116,14 +117,39 @@ export default async function ConsultantListingStatusPage({ params }: Props) {
         </div>
       )}
       {listing.status === "PUBLISHED" && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-          İlanınız platformda yayında.
-          <Link
-            href={`/listings/${listing.id}`}
-            className="ml-2 font-medium underline"
-          >
-            Genel sayfayı görüntüle →
-          </Link>
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700 space-y-3">
+          <p>
+            İlanınız platformda yayında.{" "}
+            <Link
+              href={`/listings/${listing.id}`}
+              className="font-medium underline"
+            >
+              Genel sayfayı görüntüle →
+            </Link>
+          </p>
+          <UnpublishButton listingId={listing.id} block />
+        </div>
+      )}
+      {listing.status === "UNPUBLISHED" && (
+        <div className="rounded-lg border border-orange-200 bg-orange-50 p-5 space-y-4">
+          <div>
+            <h2 className="mb-1 text-sm font-semibold text-orange-800">
+              İlan Yayından Kaldırıldı
+            </h2>
+            <p className="text-sm text-orange-700">
+              Bu ilan herkese açık listeden kaldırılmıştır. Yeniden yayına almak için
+              incelemeye gönderebilirsiniz.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/consultant/listings/${listing.id}/edit`}
+              className="inline-flex items-center gap-1.5 rounded-md bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-500 transition-colors"
+            >
+              İlanı Düzenle
+            </Link>
+            <ResubmitButton listingId={listing.id} />
+          </div>
         </div>
       )}
       {listing.status === "ARCHIVED" && (

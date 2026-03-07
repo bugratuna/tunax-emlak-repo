@@ -25,12 +25,14 @@ export type ListingStatus =
   | 'PENDING_REVIEW'
   | 'NEEDS_CHANGES'
   | 'PUBLISHED'
-  | 'ARCHIVED';
+  | 'ARCHIVED'
+  | 'UNPUBLISHED';
 
 export type ModerationDecision = 'APPROVE' | 'REQUEST_CHANGES' | 'REJECT';
 
 export interface Listing {
   id: string;
+  listingNumber?: string | null;
   title: string;
   consultantId: string;
   consultantName?: string | null;
@@ -73,6 +75,8 @@ export interface Listing {
   imageCount?: number;
   isFeatured?: boolean;
   featuredSortOrder?: number;
+  isShowcase?: boolean;
+  showcaseOrder?: number;
   media?: Array<{
     id: string;
     url: string;

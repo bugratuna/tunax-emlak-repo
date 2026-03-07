@@ -3,64 +3,58 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { NeighborhoodCombobox } from "@/components/neighborhood-combobox";
-import { NEIGHBORHOODS } from "@/lib/geo/antalya";
 
-/** Returns the district for a given neighborhood, or null if not found. */
-function findDistrict(neighborhood: string): string | null {
-  for (const [district, neighborhoods] of Object.entries(NEIGHBORHOODS)) {
-    if (
-      neighborhoods.some(
-        (n) => n.toLowerCase() === neighborhood.toLowerCase(),
-      )
-    ) {
-      return district;
-    }
-  }
-  return null;
-}
+/** Matches RT-XXXXXX listing number patterns (1–6 digits). */
+const LISTING_NUMBER_RE = /^RT-\d{1,6}$/i;
 
 export function HeroSearchInput() {
   const router = useRouter();
-  const [neighborhood, setNeighborhood] = useState("");
-  const [isValid, setIsValid] = useState(false);
+  const [value, setValue] = useState("");
 
-  function handleSearch() {
-    if (!isValid || !neighborhood) return;
-    const district = findDistrict(neighborhood);
-    const params = new URLSearchParams();
-    params.set("neighborhood", neighborhood);
-    if (district) params.set("district", district);
-    router.push(`/listings?${params.toString()}`);
+  function navigate(q: string) {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    // Listing number exact match → uppercase before sending so backend UPPER compare works
+    const param = LISTING_NUMBER_RE.test(trimmed)
+      ? trimmed.toUpperCase()
+      : trimmed;
+    router.push(`/listings?search=${encodeURIComponent(param)}`);
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter" && isValid) handleSearch();
+  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    navigate(value);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") navigate(value);
   }
 
   return (
-    <div
-      className="relative flex w-full max-w-lg flex-col gap-2 sm:flex-row"
-      onKeyDown={handleKeyDown}
+    <form
+      onSubmit={handleSubmit}
+      className="relative flex w-full max-w-lg items-stretch overflow-hidden rounded-xl bg-white shadow-lg"
     >
-      <div className="flex-1">
-        <NeighborhoodCombobox
-          value={neighborhood}
-          onChange={setNeighborhood}
-          onValidChange={setIsValid}
-          placeholder="Mahalle seçin… (örn: Lara, Konyaaltı)"
+      <div className="flex flex-1 items-center gap-2 px-4 py-3">
+        <Search size={16} className="shrink-0 text-zinc-400" />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="İlan No, başlık veya konum… (örn: RT-000124)"
+          className="flex-1 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400"
+          autoComplete="off"
+          spellCheck={false}
         />
       </div>
       <button
-        type="button"
-        disabled={!isValid}
-        onClick={handleSearch}
-        title={isValid ? undefined : "Lütfen listeden bir mahalle seçin"}
-        className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+        type="submit"
+        disabled={!value.trim()}
+        className="shrink-0 bg-amber-500 px-5 text-sm font-semibold text-white transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Search size={15} />
         Ara
       </button>
-    </div>
+    </form>
   );
 }

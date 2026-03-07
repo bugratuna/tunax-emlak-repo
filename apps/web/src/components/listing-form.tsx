@@ -7,6 +7,7 @@ import type { Listing } from "@/lib/types";
 import { ApiErrorMessage } from "@/components/api-error-message";
 import { ApiRequestError } from "@/lib/api/client";
 import { NeighborhoodCombobox } from "@/components/neighborhood-combobox";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import {
   PROPERTY_TYPES,
   HEATING_TYPES,
@@ -128,7 +129,8 @@ export function ListingForm({ mode, initialValues, listingId }: ListingFormProps
     const e: Record<string, string> = {};
     if (!title.trim() || title.trim().length < 10)
       e.title = "Başlık en az 10 karakter olmalıdır.";
-    if (!description.trim() || description.trim().length < 50)
+    const descText = description.replace(/<[^>]*>/g, "").trim();
+    if (!descText || descText.length < 50)
       e.description = "Açıklama en az 50 karakter olmalıdır.";
     if (!district) e.district = "İlçe zorunludur.";
     if (!neighborhood.trim()) e.neighborhood = "Mahalle zorunludur.";
@@ -307,14 +309,10 @@ export function ListingForm({ mode, initialValues, listingId }: ListingFormProps
         </Field>
 
         <Field label="Açıklama" required error={errors.description}>
-          <textarea
-            rows={5}
+          <RichTextEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            minLength={50}
-            maxLength={5000}
+            onChange={setDescription}
             placeholder="İlanı detaylı biçimde tanımlayın (en az 50 karakter)…"
-            className={inputCls()}
           />
         </Field>
       </Section>

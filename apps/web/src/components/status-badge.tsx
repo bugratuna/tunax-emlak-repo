@@ -25,6 +25,10 @@ const statusConfig: Record<
     label: "Arşivde",
     classes: "bg-red-50 text-red-700 border-red-200",
   },
+  UNPUBLISHED: {
+    label: "Yayından Kaldırıldı",
+    classes: "bg-slate-100 text-slate-600 border-slate-200",
+  },
 };
 
 export function StatusBadge({ status }: { status: ListingStatus }) {

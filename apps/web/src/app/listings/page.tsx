@@ -104,6 +104,8 @@ export default async function ListingsPage({ searchParams }: Props) {
 
   // ── Build backend params ──────────────────────────────────────────────────
   const backendParams: ListingsQueryParams = {
+    // Public page always scoped to PUBLISHED listings only
+    status: "PUBLISHED",
     category: str(params.category),
     propertyType: str(params.propertyType),
     subtype,

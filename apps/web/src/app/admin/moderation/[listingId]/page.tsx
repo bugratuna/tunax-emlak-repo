@@ -13,6 +13,8 @@ import { AuditLogTable } from "@/components/audit-log-table";
 import { DecisionBar } from "./decision-bar";
 import { EnrichPanel } from "./enrich-panel";
 import { FeaturedToggle } from "./featured-toggle";
+import { ShowcaseToggle } from "./showcase-toggle";
+import { AdminUnpublishButton } from "./unpublish-button";
 import { ApiRequestError } from "@/lib/api/client";
 import type { AuditLogEntry, ModerationReport, ScoringReport } from "@/lib/types";
 
@@ -67,12 +69,25 @@ export default async function ModerationDetailPage({ params }: Props) {
           <h1 className="text-xl font-semibold text-zinc-900">
             {listing.title}
           </h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Danışman: {listing.consultantName ?? listing.consultantId} · Gönderim:{" "}
-            {listing.submittedAt.slice(0, 10)}
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-500">
+            <span>Danışman: {listing.consultantName ?? listing.consultantId}</span>
+            <span>· Gönderim: {listing.submittedAt.slice(0, 10)}</span>
+            {listing.listingNumber && (
+              <span className="inline-flex items-center gap-1">
+                ·{" "}
+                <span className="rounded bg-zinc-100 px-2 py-0.5 font-mono text-xs font-medium text-zinc-700">
+                  {listing.listingNumber}
+                </span>
+              </span>
+            )}
+          </div>
         </div>
-        <StatusBadge status={listing.status} />
+        <div className="flex items-center gap-3">
+          <StatusBadge status={listing.status} />
+          {listing.status === "PUBLISHED" && (
+            <AdminUnpublishButton listingId={listingId} />
+          )}
+        </div>
       </div>
 
       {/* Listing preview */}
@@ -355,6 +370,15 @@ export default async function ModerationDetailPage({ params }: Props) {
             listingId={listingId}
             isFeatured={listing.isFeatured ?? false}
           />
+          <div className="mt-4 border-t border-zinc-100 pt-4">
+            <p className="mb-3 text-xs text-zinc-400">
+              Vitrin ilanları ana sayfanın &quot;Vitrin İlanları&quot; bölümünde gösterilir.
+            </p>
+            <ShowcaseToggle
+              listingId={listingId}
+              isShowcase={listing.isShowcase ?? false}
+            />
+          </div>
         </div>
       )}
 

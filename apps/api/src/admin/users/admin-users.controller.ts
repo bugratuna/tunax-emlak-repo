@@ -22,6 +22,8 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { JwtPayload } from '../../common/decorators/current-user.decorator';
 import { UsersService } from '../../users/users.service';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
 
@@ -76,7 +78,17 @@ export class AdminUsersController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
-  suspendUser(@Param('id') id: string) {
-    return this.usersService.suspendUser(id);
+  suspendUser(@Param('id') id: string, @CurrentUser() requester: JwtPayload) {
+    return this.usersService.suspendUser(id, requester.sub);
+  }
+
+  @Patch(':id/activate')
+  @ApiOperation({ summary: 'Activate a suspended user — sets status to ACTIVE (ADMIN only)' })
+  @ApiOkResponse({ description: 'SafeUser with status ACTIVE' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  activateUser(@Param('id') id: string) {
+    return this.usersService.activateUser(id);
   }
 }

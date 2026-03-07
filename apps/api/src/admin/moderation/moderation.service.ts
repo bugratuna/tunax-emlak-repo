@@ -397,6 +397,9 @@ export class ModerationService {
 
     const updated = await this.listingsService.updateStatus(listingId, 'PUBLISHED');
 
+    // Assign RT-XXXXXX listing number atomically (idempotent)
+    await this.listingsService.assignListingNumber(listingId);
+
     // Post-publish automation: create marketing pack request
     this.store.createPackRequest(listingId, listing.title);
 

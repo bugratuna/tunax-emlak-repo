@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Phone, Mail, Users, Crown } from "lucide-react";
+import { Phone, Mail, Users, Crown, ArrowRight } from "lucide-react";
 import { listTeam } from "@/lib/api/users";
 import type { ConsultantPublicProfile } from "@/lib/types";
 
@@ -21,26 +21,94 @@ const LEADERSHIP_TITLES = new Set([
   "Genel Müdür",
   "Partner",
   "Yönetici",
-  "Ofis Sahibi",
-  "Booker",
+  "Ofis Sahibi (Booker)",
 ]);
 
 function isLeadership(c: ConsultantPublicProfile): boolean {
   if (c.title && LEADERSHIP_TITLES.has(c.title)) return true;
-  // ADMIN users without a title also appear in leadership by default
   if (c.role === "ADMIN" && !c.title) return true;
   return false;
 }
 
-// ── Card ──────────────────────────────────────────────────────────────────────
+// ── Leadership Card (premium, rectangular portrait) ───────────────────────────
 
-function ConsultantCard({
-  consultant,
-  highlight = false,
-}: {
-  consultant: ConsultantPublicProfile;
-  highlight?: boolean;
-}) {
+function LeadershipCard({ consultant }: { consultant: ConsultantPublicProfile }) {
+  const fullName =
+    consultant.firstName && consultant.lastName
+      ? `${consultant.firstName} ${consultant.lastName}`
+      : consultant.name;
+
+  const titleLabel =
+    consultant.title ?? (consultant.role === "ADMIN" ? "Yönetici" : "Ofis Ortağı");
+
+  return (
+    <Link
+      href={`/team/${consultant.id}`}
+      className="group flex flex-col overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+    >
+      {/* Portrait photo — 4:3 rectangular */}
+      <div className="relative aspect-4/3 w-full overflow-hidden bg-linear-to-br from-amber-50 to-amber-100">
+        {consultant.profilePhotoUrl ? (
+          <Image
+            src={consultant.profilePhotoUrl}
+            alt={fullName}
+            fill
+            className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <span className="text-6xl font-bold text-amber-300">
+              {(fullName[0] ?? "?").toUpperCase()}
+            </span>
+          </div>
+        )}
+        {/* Gradient overlay at bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/40 to-transparent" />
+        {/* Title chip */}
+        <div className="absolute bottom-3 left-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white shadow">
+            <Crown size={10} />
+            {titleLabel}
+          </span>
+        </div>
+      </div>
+
+      {/* Card body */}
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="text-xl font-bold text-zinc-900 transition-colors group-hover:text-amber-700">
+          {fullName}
+        </h3>
+
+        {consultant.bio && (
+          <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+            {consultant.bio}
+          </p>
+        )}
+
+        <div className="mt-auto border-t border-zinc-100 pt-5 flex flex-wrap gap-4 text-xs text-zinc-400">
+          {consultant.phoneNumber && (
+            <span className="flex items-center gap-1.5">
+              <Phone size={12} className="text-amber-500" />
+              {consultant.phoneNumber}
+            </span>
+          )}
+          <span className="flex items-center gap-1.5">
+            <Mail size={12} className="text-amber-500" />
+            {consultant.email}
+          </span>
+        </div>
+
+        <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 transition-opacity group-hover:opacity-100">
+          Profili Görüntüle <ArrowRight size={12} />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ── Consultant Card (compact, circular photo) ─────────────────────────────────
+
+function ConsultantCard({ consultant }: { consultant: ConsultantPublicProfile }) {
   const fullName =
     consultant.firstName && consultant.lastName
       ? `${consultant.firstName} ${consultant.lastName}`
@@ -52,19 +120,10 @@ function ConsultantCard({
   return (
     <Link
       href={`/team/${consultant.id}`}
-      className={`group flex flex-col items-center rounded-2xl border p-6 text-center shadow-sm transition-all hover:shadow-md ${
-        highlight
-          ? "border-amber-200 bg-amber-50 hover:border-amber-300"
-          : "border-zinc-200 bg-white hover:border-zinc-300"
-      }`}
+      className="group flex flex-col items-center rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-sm transition-all hover:shadow-md hover:border-zinc-300"
     >
-      <div
-        className={`relative mb-4 h-24 w-24 overflow-hidden rounded-full ring-4 transition-all ${
-          highlight
-            ? "bg-amber-100 ring-amber-100 group-hover:ring-amber-200"
-            : "bg-zinc-100 ring-zinc-50 group-hover:ring-amber-100"
-        }`}
-      >
+      {/* Circular avatar */}
+      <div className="relative mb-4 h-20 w-20 overflow-hidden rounded-full bg-zinc-100 ring-4 ring-zinc-50 transition-all group-hover:ring-amber-100">
         {consultant.profilePhotoUrl ? (
           <Image
             src={consultant.profilePhotoUrl}
@@ -73,17 +132,13 @@ function ConsultantCard({
             className="object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-zinc-400">
+          <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-zinc-400">
             {(fullName[0] ?? "?").toUpperCase()}
           </div>
         )}
       </div>
 
-      <h3
-        className={`text-base font-semibold transition-colors group-hover:text-amber-600 ${
-          highlight ? "text-amber-900" : "text-zinc-900"
-        }`}
-      >
+      <h3 className="text-base font-semibold text-zinc-900 transition-colors group-hover:text-amber-600">
         {fullName}
       </h3>
       <p className="mt-0.5 text-xs font-medium uppercase tracking-wide text-amber-600">
@@ -128,7 +183,7 @@ export default async function TeamPage() {
   return (
     <div className="py-4">
       {/* Header */}
-      <div className="mb-10 text-center">
+      <div className="mb-12 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-amber-700 mb-4">
           <Users size={13} />
           Çalışanlarımız
@@ -142,31 +197,36 @@ export default async function TeamPage() {
         </p>
       </div>
 
-      {/* Leadership section */}
+      {/* Leadership section — wider cards, 2 col max */}
       {leaders.length > 0 && (
-        <section className="mb-14">
-          <div className="mb-5 flex items-center gap-2">
+        <section className="mb-16">
+          <div className="mb-6 flex items-center gap-2">
             <Crown size={16} className="text-amber-500" />
             <h2 className="text-lg font-bold text-zinc-900">
-              Liderlik & Ofis Sahipleri
+              Liderlik &amp; Ofis Sahipleri
             </h2>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
             {leaders.map((c) => (
-              <ConsultantCard key={c.id} consultant={c} highlight />
+              <LeadershipCard key={c.id} consultant={c} />
             ))}
           </div>
         </section>
       )}
 
-      {/* Consultants section */}
+      {/* Divider */}
+      {leaders.length > 0 && agents.length > 0 && (
+        <div className="mb-10 border-t border-zinc-100" />
+      )}
+
+      {/* Consultants section — compact 3-col grid */}
       {agents.length > 0 ? (
         <section>
           {leaders.length > 0 && (
             <div className="mb-5 flex items-center gap-2">
               <Users size={16} className="text-zinc-400" />
               <h2 className="text-lg font-bold text-zinc-900">
-                Çalışanlarımız
+                Danışmanlarımız
               </h2>
             </div>
           )}

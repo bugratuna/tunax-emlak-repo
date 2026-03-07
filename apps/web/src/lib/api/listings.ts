@@ -85,6 +85,11 @@ export interface ListingsQueryParams {
   accessibility?: string[];
   // sort & pagination
   sortBy?: string;
+  // status filter
+  status?: string;
+  // featured/showcase flags
+  isFeatured?: boolean | string;
+  isShowcase?: boolean | string;
 }
 
 export async function listListings(params?: ListingsQueryParams): Promise<ListAllResult> {
@@ -119,7 +124,17 @@ export async function createListing(dto: CreateListingDto): Promise<Listing> {
 }
 
 /**
- * Resubmit a listing from NEEDS_CHANGES → PENDING_REVIEW.
+ * Unpublish a PUBLISHED listing (CONSULTANT = own; ADMIN = any).
+ * Moves status PUBLISHED → UNPUBLISHED. Resets isFeatured and isShowcase.
+ */
+export async function unpublishListing(id: string): Promise<Listing> {
+  return apiFetch<Listing>(`/api/listings/${id}/unpublish`, {
+    method: "PATCH",
+  });
+}
+
+/**
+ * Resubmit a listing from NEEDS_CHANGES or UNPUBLISHED → PENDING_REVIEW.
  */
 export async function resubmitListing(id: string): Promise<Listing> {
   return apiFetch<Listing>(`/api/listings/${id}/resubmit`, {
@@ -166,6 +181,29 @@ export async function getListingContact(
 }
 
 /**
+ * Admin: list all listings across all statuses.
+ * Calls GET /api/admin/listings (ADMIN JWT required).
+ * Pass `token` when calling from a Server Component.
+ */
+export async function adminListListings(
+  params?: { status?: string; search?: string; page?: number; limit?: number },
+  token?: string,
+): Promise<ListAllResult> {
+  const qs = new URLSearchParams();
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== "") {
+        qs.set(key, String(value));
+      }
+    }
+  }
+  const query = qs.toString();
+  return apiFetch<ListAllResult>(`/api/admin/listings${query ? `?${query}` : ""}`, {
+    ...(token ? { _token: token } : {}),
+  });
+}
+
+/**
  * Admin: toggle featured status for a listing.
  */
 export async function setFeaturedListing(
@@ -176,6 +214,20 @@ export async function setFeaturedListing(
   return apiFetch<Listing>(`/api/admin/listings/${id}/featured`, {
     method: "PATCH",
     body: JSON.stringify({ isFeatured, sortOrder }),
+  });
+}
+
+/**
+ * Admin: toggle Vitrin (showcase) status for a listing.
+ */
+export async function setShowcaseListing(
+  id: string,
+  isShowcase: boolean,
+  sortOrder?: number,
+): Promise<Listing> {
+  return apiFetch<Listing>(`/api/admin/listings/${id}/showcase`, {
+    method: "PATCH",
+    body: JSON.stringify({ isShowcase, sortOrder }),
   });
 }
 
