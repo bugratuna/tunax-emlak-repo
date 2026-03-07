@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
@@ -18,6 +18,7 @@ export interface PublicConsultant {
   email: string;
   phoneNumber: string | null;
   bio: string | null;
+  title: string | null;
   profilePhotoUrl: string | null;
   createdAt: string;
 }
@@ -32,6 +33,7 @@ function toPublicConsultant(e: UserEntity): PublicConsultant {
     phoneNumber: e.phoneNumber ?? null,
     bio: e.bio ?? null,
     profilePhotoUrl: e.profilePhotoUrl ?? null,
+    title: e.title ?? null,
     createdAt: e.createdAt.toISOString(),
   };
 }
@@ -118,6 +120,7 @@ export class UsersService implements OnModuleInit {
     firstName?: string;
     lastName?: string;
     phoneNumber?: string;
+    profilePhotoUrl?: string;
     status?: UserStatus;
   }): Promise<SafeUser> {
     const existing = await this.repo.findOneBy({ email: input.email });
@@ -133,6 +136,7 @@ export class UsersService implements OnModuleInit {
         firstName: input.firstName ?? null,
         lastName: input.lastName ?? null,
         phoneNumber: input.phoneNumber ?? null,
+        profilePhotoUrl: input.profilePhotoUrl ?? null,
         status: input.status ?? 'PENDING_APPROVAL',
       }),
     );
@@ -146,10 +150,23 @@ export class UsersService implements OnModuleInit {
     return toSafeUser(await this.repo.save(e));
   }
 
-  async suspendUser(id: string): Promise<SafeUser> {
+  async suspendUser(id: string, requesterId?: string): Promise<SafeUser> {
+    if (requesterId && requesterId === id) {
+      throw new ForbiddenException('Kendi hesabınızı askıya alamazsınız.');
+    }
     const e = await this.repo.findOneBy({ id });
     if (!e) throw new NotFoundException(`User ${id} not found`);
+    if (e.role === Role.ADMIN) {
+      throw new ForbiddenException('Yönetici hesabı askıya alınamaz.');
+    }
     e.status = 'SUSPENDED';
+    return toSafeUser(await this.repo.save(e));
+  }
+
+  async activateUser(id: string): Promise<SafeUser> {
+    const e = await this.repo.findOneBy({ id });
+    if (!e) throw new NotFoundException(`User ${id} not found`);
+    e.status = 'ACTIVE';
     return toSafeUser(await this.repo.save(e));
   }
 

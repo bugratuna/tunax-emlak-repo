@@ -16,7 +16,8 @@ export type ListingStatus =
   | 'PENDING_REVIEW'
   | 'NEEDS_CHANGES'
   | 'PUBLISHED'
-  | 'ARCHIVED';
+  | 'ARCHIVED'
+  | 'UNPUBLISHED';
 
 export type ListingCategory = 'SALE' | 'RENT';
 
@@ -117,6 +118,15 @@ export class ListingEntity {
 
   @Column({ name: 'featured_sort_order', type: 'smallint', default: 0 })
   featuredSortOrder: number;
+
+  @Column({ name: 'is_showcase', type: 'boolean', default: false })
+  isShowcase: boolean;
+
+  @Column({ name: 'showcase_order', type: 'smallint', default: 0 })
+  showcaseOrder: number;
+
+  @Column({ name: 'listing_number', type: 'varchar', length: 12, nullable: true, unique: true })
+  listingNumber: string | null;
 
   @Column({ name: 'submitted_at', type: 'timestamptz', nullable: true })
   submittedAt: Date | null;

@@ -222,7 +222,7 @@ export function NeighborhoodCombobox({
           ref={listRef}
           role="listbox"
           aria-label="Mahalle listesi"
-          className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg"
+          className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg z-999"
         >
           {filtered.map((opt, i) => (
             <li

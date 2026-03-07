@@ -6,7 +6,8 @@ export type ListingStatus =
   | "PENDING_REVIEW"
   | "NEEDS_CHANGES"
   | "PUBLISHED"
-  | "ARCHIVED";
+  | "ARCHIVED"
+  | "UNPUBLISHED";
 
 export type ListingCategory = "RENT" | "SALE";
 
@@ -77,6 +78,8 @@ export interface MediaItem {
 
 export interface Listing {
   id: string;
+  /** Assigned on admin approval — format: RT-000001. Null for draft/pending. */
+  listingNumber?: string | null;
   title: string;
   consultantId: string;
   /** Full name of the consultant — populated by backend JOIN (avoids N+1). */
@@ -95,6 +98,8 @@ export interface Listing {
   imageCount?: number;
   isFeatured?: boolean;
   featuredSortOrder?: number;
+  isShowcase?: boolean;
+  showcaseOrder?: number;
   /** Ordered photo list — present on GET /listings/:id */
   media?: MediaItem[];
   submittedAt: string;

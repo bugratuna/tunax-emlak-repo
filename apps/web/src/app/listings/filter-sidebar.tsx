@@ -8,6 +8,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react";
 import { DISTRICTS, NEIGHBORHOODS } from "@/lib/geo/antalya";
 import {
   FEATURE_GROUP_LABELS,
@@ -22,14 +24,9 @@ import {
   type FeatureGroup,
 } from "@/lib/taxonomy";
 
-// ── URL helper: toggle a value inside a comma-separated single param ──────────
-// roomCounts is stored as a single param with comma-separated values:
-//   ?roomCounts=1%2B1%2C2%2B1   (URL-encoded commas)
-function toggleCsvParam(
-  base: URLSearchParams,
-  key: string,
-  value: string,
-): URLSearchParams {
+// ── URL helpers ───────────────────────────────────────────────────────────────
+
+function toggleCsvParam(base: URLSearchParams, key: string, value: string): URLSearchParams {
   const existing = (base.get(key) ?? "").split(",").filter(Boolean);
   const next = new URLSearchParams();
   for (const [k, v] of base.entries()) {
@@ -38,18 +35,11 @@ function toggleCsvParam(
   const newValues = existing.includes(value)
     ? existing.filter((v) => v !== value)
     : [...existing, value];
-  if (newValues.length > 0) {
-    next.set(key, newValues.join(","));
-  }
+  if (newValues.length > 0) next.set(key, newValues.join(","));
   return next;
 }
 
-// ── URL helper: toggle one value inside a repeated-key param ─────────────────
-function toggleArrayParam(
-  base: URLSearchParams,
-  key: string,
-  value: string,
-): URLSearchParams {
+function toggleArrayParam(base: URLSearchParams, key: string, value: string): URLSearchParams {
   const existing = base.getAll(key);
   const next = new URLSearchParams();
   for (const [k, v] of base.entries()) {
@@ -66,16 +56,9 @@ function toggleArrayParam(
   return next;
 }
 
-// ── Debounced text/number input ───────────────────────────────────────────────
-function DebouncedInput({
-  paramKey,
-  min,
-  className,
-}: {
-  paramKey: string;
-  min?: number;
-  className?: string;
-}) {
+// ── Debounced number input ─────────────────────────────────────────────────────
+
+function DebouncedInput({ paramKey, min, className }: { paramKey: string; min?: number; className?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [local, setLocal] = useState(searchParams.get(paramKey) ?? "");
@@ -91,11 +74,8 @@ function DebouncedInput({
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      if (v !== "") {
-        params.set(paramKey, v);
-      } else {
-        params.delete(paramKey);
-      }
+      if (v !== "") params.set(paramKey, v);
+      else params.delete(paramKey);
       router.push("?" + params.toString());
     }, 400);
   }
@@ -109,13 +89,14 @@ function DebouncedInput({
       suppressHydrationWarning
       className={
         className ??
-        "w-full rounded border border-zinc-300 px-2 py-1.5 text-sm text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+        "w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-xs transition focus:border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-100"
       }
     />
   );
 }
 
-// ── Collapsible section wrapper ───────────────────────────────────────────────
+// ── Animated collapsible section ──────────────────────────────────────────────
+
 function SidebarSection({
   title,
   children,
@@ -126,22 +107,43 @@ function SidebarSection({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+
   return (
-    <div className="border-t border-zinc-100 pt-4">
+    <div className="border-t border-stone-100 pt-4">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500"
+        className="flex w-full items-center justify-between pb-2 text-xs font-semibold uppercase tracking-widest text-amber-700/70 transition hover:text-amber-700"
       >
         {title}
-        <span className="text-zinc-400">{open ? "−" : "+"}</span>
+        <motion.span
+          animate={{ rotate: open ? 0 : -90 }}
+          transition={{ duration: 0.2 }}
+          className="text-amber-400"
+        >
+          {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        </motion.span>
       </button>
-      {open && <div className="space-y-2">{children}</div>}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-2 pb-1">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ── Feature group accordion (lazy render chips) ───────────────────────────────
+// ── Feature group accordion ────────────────────────────────────────────────────
+
 function FeatureGroupAccordion({
   group,
   selected,
@@ -157,49 +159,81 @@ function FeatureGroupAccordion({
   const count = selected.length;
 
   return (
-    <div className="border-t border-zinc-100 first:border-0">
+    <div className="border-t border-stone-100 first:border-0">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between py-2 text-sm text-zinc-700"
+        className="flex w-full items-center justify-between py-2.5 text-sm text-zinc-700"
       >
-        <span className="font-medium">
+        <span className="font-medium flex items-center gap-1.5">
           {label}
-          {count > 0 && (
-            <span className="ml-1.5 rounded-full bg-zinc-800 px-1.5 py-0.5 text-xs text-white">
-              {count}
-            </span>
-          )}
+          <AnimatePresence>
+            {count > 0 && (
+              <motion.span
+                key="badge"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                className="rounded-full bg-amber-500 px-1.5 py-0.5 text-xs text-white"
+              >
+                {count}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </span>
-        <span className="text-zinc-400 text-xs">{open ? "−" : "+"}</span>
+        <span className="text-amber-400 text-xs">
+          {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        </span>
       </button>
 
-      {open && (
-        <div className="pb-2 flex flex-wrap gap-1.5">
-          {options.map((opt) => {
-            const active = selected.includes(opt);
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => onToggle(opt)}
-                className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                  active
-                    ? "border-zinc-800 bg-zinc-800 text-white"
-                    : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400"
-                }`}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="chips"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="pb-3 flex flex-wrap gap-1.5">
+              {options.map((opt, i) => {
+                const active = selected.includes(opt);
+                return (
+                  <motion.button
+                    key={opt}
+                    type="button"
+                    onClick={() => onToggle(opt)}
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.025, duration: 0.18 }}
+                    className={`rounded-full border px-2.5 py-1 text-xs transition-all ${
+                      active
+                        ? "border-amber-500 bg-amber-500 text-white shadow-sm"
+                        : "border-stone-200 bg-white text-zinc-600 hover:border-amber-300 hover:bg-amber-50"
+                    }`}
+                  >
+                    {opt}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Shared class strings ───────────────────────────────────────────────────────
+
+const inputCls =
+  "w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-xs transition focus:border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-100";
+const selectCls = inputCls;
+const checkboxLabelCls =
+  "flex items-center gap-2 text-sm text-zinc-600 cursor-pointer select-none accent-amber-500";
+
+// ── Main component ─────────────────────────────────────────────────────────────
 
 export function FilterSidebar() {
   const router = useRouter();
@@ -209,94 +243,60 @@ export function FilterSidebar() {
   const subtype = searchParams.get("subtype") ?? undefined;
   const blocked = useMemo(() => getBlockedFilters(subtype), [subtype]);
 
-  // ── Generic single-value update ───────────────────────────────────────────
   const update = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
+      if (value) params.set(key, value);
+      else params.delete(key);
       router.push("?" + params.toString());
     },
     [router, searchParams],
   );
 
-  // ── propertyType cascade ──────────────────────────────────────────────────
   function handlePropertyTypeChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("propertyType", value);
-    } else {
-      params.delete("propertyType");
-    }
+    if (value) params.set("propertyType", value);
+    else params.delete("propertyType");
     params.delete("subtype");
     router.push("?" + params.toString());
   }
 
-  // ── subtype cascade ───────────────────────────────────────────────────────
   function handleSubtypeChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("subtype", value);
-    } else {
-      params.delete("subtype");
-    }
+    if (value) params.set("subtype", value);
+    else params.delete("subtype");
     const newBlocked = getBlockedFilters(value || undefined);
-    for (const k of newBlocked) {
-      params.delete(k);
-    }
+    for (const k of newBlocked) params.delete(k);
     router.push("?" + params.toString());
   }
 
-  // ── district cascade ──────────────────────────────────────────────────────
   function handleDistrictChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("district", value);
-    } else {
-      params.delete("district");
-    }
+    if (value) params.set("district", value);
+    else params.delete("district");
     params.delete("neighborhood");
     router.push("?" + params.toString());
   }
 
-  // ── boolean flag toggle ───────────────────────────────────────────────────
   function toggleBool(key: string, checked: boolean) {
     update(key, checked ? "true" : "");
   }
 
-  // ── roomCounts multi-select (comma-separated) ─────────────────────────────
   function toggleRoomCount(label: string) {
-    const next = toggleCsvParam(
-      new URLSearchParams(searchParams.toString()),
-      "roomCounts",
-      label,
-    );
+    const next = toggleCsvParam(new URLSearchParams(searchParams.toString()), "roomCounts", label);
     router.push("?" + next.toString());
   }
 
-  // ── feature group multi-select (repeated params) ──────────────────────────
   function toggleFeature(group: FeatureGroup, value: string) {
-    const next = toggleArrayParam(
-      new URLSearchParams(searchParams.toString()),
-      group,
-      value,
-    );
+    const next = toggleArrayParam(new URLSearchParams(searchParams.toString()), group, value);
     router.push("?" + next.toString());
   }
 
-  // ── derived state ─────────────────────────────────────────────────────────
   const propertyType = searchParams.get("propertyType") ?? "";
   const district = searchParams.get("district") ?? "";
   const subtypes = getSubtypes(propertyType || undefined);
   const neighborhoods = district ? (NEIGHBORHOODS[district] ?? []) : [];
-
-  // Active roomCounts (comma-separated → string[])
-  const selectedRoomCounts = (searchParams.get("roomCounts") ?? "")
-    .split(",")
-    .filter(Boolean);
+  const selectedRoomCounts = (searchParams.get("roomCounts") ?? "").split(",").filter(Boolean);
 
   const activeCount = useMemo(() => {
     let n = 0;
@@ -308,15 +308,11 @@ export function FilterSidebar() {
 
   const hasAnyFilter = activeCount > 0 || searchParams.has("bbox");
 
-  const inputCls =
-    "w-full rounded border border-zinc-300 px-2 py-1.5 text-sm text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400";
-  const selectCls = inputCls;
-  const checkboxLabelCls =
-    "flex items-center gap-2 text-sm text-zinc-600 cursor-pointer select-none";
+  // ── Filter panel body ──────────────────────────────────────────────────────
 
   const body = (
     <div className="space-y-0">
-      {/* ── Emlak Tipi + Kategori + Alt Tip ── */}
+      {/* Emlak Tipi */}
       <SidebarSection title="Emlak Tipi">
         <select
           value={propertyType}
@@ -325,9 +321,7 @@ export function FilterSidebar() {
         >
           <option value="">Tüm tipler</option>
           {PROPERTY_TYPES.map((pt) => (
-            <option key={pt} value={pt}>
-              {pt}
-            </option>
+            <option key={pt} value={pt}>{pt}</option>
           ))}
         </select>
 
@@ -339,9 +333,7 @@ export function FilterSidebar() {
           >
             <option value="">Tüm alt tipler</option>
             {subtypes.map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
+              <option key={st} value={st}>{st}</option>
             ))}
           </select>
         )}
@@ -368,7 +360,7 @@ export function FilterSidebar() {
         </fieldset>
       </SidebarSection>
 
-      {/* ── Konum ── */}
+      {/* Konum */}
       <SidebarSection title="Konum">
         <select
           value={district}
@@ -377,9 +369,7 @@ export function FilterSidebar() {
         >
           <option value="">Tüm ilçeler</option>
           {DISTRICTS.map((d) => (
-            <option key={d} value={d}>
-              {d}
-            </option>
+            <option key={d} value={d}>{d}</option>
           ))}
         </select>
 
@@ -391,26 +381,23 @@ export function FilterSidebar() {
           >
             <option value="">Tüm mahalleler</option>
             {neighborhoods.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
+              <option key={n} value={n}>{n}</option>
             ))}
           </select>
         )}
       </SidebarSection>
 
-      {/* ── Fiyat ── */}
+      {/* Fiyat */}
       <SidebarSection title="Fiyat (TRY)">
         <div className="flex items-center gap-2">
           <DebouncedInput paramKey="minPrice" min={0} />
-          <span className="text-zinc-400 shrink-0">–</span>
+          <span className="shrink-0 text-stone-400">–</span>
           <DebouncedInput paramKey="maxPrice" min={0} />
         </div>
       </SidebarSection>
 
-      {/* ── Emlak Bilgileri ── */}
+      {/* Emlak Bilgileri */}
       <SidebarSection title="Emlak Bilgileri" defaultOpen={false}>
-        {/* Oda Sayısı — multi-select chips (comma-separated in URL) */}
         {!blocked.has("roomCount") && (
           <div>
             <p className="mb-1.5 text-xs text-zinc-500">Oda Sayısı</p>
@@ -422,10 +409,10 @@ export function FilterSidebar() {
                     key={label}
                     type="button"
                     onClick={() => toggleRoomCount(label)}
-                    className={`rounded border px-2.5 py-1 text-xs transition-colors ${
+                    className={`rounded-lg border px-2.5 py-1 text-xs transition-all ${
                       active
-                        ? "border-zinc-800 bg-zinc-800 text-white"
-                        : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400"
+                        ? "border-amber-500 bg-amber-500 text-white shadow-sm"
+                        : "border-stone-200 bg-white text-zinc-600 hover:border-amber-300 hover:bg-amber-50"
                     }`}
                   >
                     {label}
@@ -436,7 +423,6 @@ export function FilterSidebar() {
           </div>
         )}
 
-        {/* Banyo Sayısı */}
         {!blocked.has("bathroomCount") && (
           <div>
             <p className="mb-1 text-xs text-zinc-500">Banyo Sayısı</p>
@@ -444,39 +430,35 @@ export function FilterSidebar() {
           </div>
         )}
 
-        {/* Brüt m² */}
         <div>
           <p className="mb-1 text-xs text-zinc-500">Brüt m²</p>
           <div className="flex items-center gap-2">
             <DebouncedInput paramKey="minM2Gross" min={0} />
-            <span className="text-zinc-400 shrink-0">–</span>
+            <span className="shrink-0 text-stone-400">–</span>
             <DebouncedInput paramKey="maxM2Gross" min={0} />
           </div>
         </div>
 
-        {/* Net m² */}
         <div>
           <p className="mb-1 text-xs text-zinc-500">Net m²</p>
           <div className="flex items-center gap-2">
             <DebouncedInput paramKey="minM2Net" min={0} />
-            <span className="text-zinc-400 shrink-0">–</span>
+            <span className="shrink-0 text-stone-400">–</span>
             <DebouncedInput paramKey="maxM2Net" min={0} />
           </div>
         </div>
 
-        {/* Bina Yaşı */}
         {!blocked.has("minBuildingAge") && (
           <div>
             <p className="mb-1 text-xs text-zinc-500">Bina Yaşı (yıl)</p>
             <div className="flex items-center gap-2">
               <DebouncedInput paramKey="minBuildingAge" min={0} />
-              <span className="text-zinc-400 shrink-0">–</span>
+              <span className="shrink-0 text-stone-400">–</span>
               <DebouncedInput paramKey="maxBuildingAge" min={0} />
             </div>
           </div>
         )}
 
-        {/* Kat No / Toplam Kat */}
         {!blocked.has("floorNumber") && (
           <div className="flex gap-2">
             <div className="flex-1">
@@ -490,7 +472,6 @@ export function FilterSidebar() {
           </div>
         )}
 
-        {/* Isıtma Tipi */}
         {!blocked.has("heatingType") && (
           <div>
             <p className="mb-1 text-xs text-zinc-500">Isıtma Tipi</p>
@@ -501,15 +482,12 @@ export function FilterSidebar() {
             >
               <option value="">Fark etmez</option>
               {HEATING_TYPES.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
+                <option key={h} value={h}>{h}</option>
               ))}
             </select>
           </div>
         )}
 
-        {/* Mutfak Durumu */}
         {!blocked.has("kitchenState") && (
           <div>
             <p className="mb-1 text-xs text-zinc-500">Mutfak</p>
@@ -520,120 +498,85 @@ export function FilterSidebar() {
             >
               <option value="">Fark etmez</option>
               {KITCHEN_STATES.map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
+                <option key={k} value={k}>{k}</option>
               ))}
             </select>
           </div>
         )}
 
-        {/* Aidat */}
         {!blocked.has("minDues") && (
           <div>
             <p className="mb-1 text-xs text-zinc-500">Aidat (TRY/ay)</p>
             <div className="flex items-center gap-2">
               <DebouncedInput paramKey="minDues" min={0} />
-              <span className="text-zinc-400 shrink-0">–</span>
+              <span className="shrink-0 text-stone-400">–</span>
               <DebouncedInput paramKey="maxDues" min={0} />
             </div>
           </div>
         )}
       </SidebarSection>
 
-      {/* ── Özellikler ── */}
+      {/* Özellikler */}
       <SidebarSection title="Özellikler" defaultOpen={false}>
         <div className="space-y-2">
           {!blocked.has("isFurnished") && (
             <label className={checkboxLabelCls}>
-              <input
-                type="checkbox"
-                checked={searchParams.get("isFurnished") === "true"}
-                onChange={(e) => toggleBool("isFurnished", e.target.checked)}
-              />
+              <input type="checkbox" checked={searchParams.get("isFurnished") === "true"} onChange={(e) => toggleBool("isFurnished", e.target.checked)} />
               Eşyalı
             </label>
           )}
           {!blocked.has("hasBalcony") && (
             <label className={checkboxLabelCls}>
-              <input
-                type="checkbox"
-                checked={searchParams.get("hasBalcony") === "true"}
-                onChange={(e) => toggleBool("hasBalcony", e.target.checked)}
-              />
+              <input type="checkbox" checked={searchParams.get("hasBalcony") === "true"} onChange={(e) => toggleBool("hasBalcony", e.target.checked)} />
               Balkon
             </label>
           )}
           {!blocked.has("hasElevator") && (
             <label className={checkboxLabelCls}>
-              <input
-                type="checkbox"
-                checked={searchParams.get("hasElevator") === "true"}
-                onChange={(e) => toggleBool("hasElevator", e.target.checked)}
-              />
+              <input type="checkbox" checked={searchParams.get("hasElevator") === "true"} onChange={(e) => toggleBool("hasElevator", e.target.checked)} />
               Asansör
             </label>
           )}
           {!blocked.has("inComplex") && (
             <label className={checkboxLabelCls}>
-              <input
-                type="checkbox"
-                checked={searchParams.get("inComplex") === "true"}
-                onChange={(e) => toggleBool("inComplex", e.target.checked)}
-              />
+              <input type="checkbox" checked={searchParams.get("inComplex") === "true"} onChange={(e) => toggleBool("inComplex", e.target.checked)} />
               Site İçinde
             </label>
           )}
           <label className={checkboxLabelCls}>
-            <input
-              type="checkbox"
-              checked={searchParams.get("isLoanEligible") === "true"}
-              onChange={(e) => toggleBool("isLoanEligible", e.target.checked)}
-            />
+            <input type="checkbox" checked={searchParams.get("isLoanEligible") === "true"} onChange={(e) => toggleBool("isLoanEligible", e.target.checked)} />
             Krediye Uygun
           </label>
           <label className={checkboxLabelCls}>
-            <input
-              type="checkbox"
-              checked={searchParams.get("isSwapAvailable") === "true"}
-              onChange={(e) => toggleBool("isSwapAvailable", e.target.checked)}
-            />
+            <input type="checkbox" checked={searchParams.get("isSwapAvailable") === "true"} onChange={(e) => toggleBool("isSwapAvailable", e.target.checked)} />
             Takas
           </label>
           <label className={checkboxLabelCls}>
-            <input
-              type="checkbox"
-              checked={searchParams.get("carPark") === "true"}
-              onChange={(e) => toggleBool("carPark", e.target.checked)}
-            />
+            <input type="checkbox" checked={searchParams.get("carPark") === "true"} onChange={(e) => toggleBool("carPark", e.target.checked)} />
             Otopark
           </label>
         </div>
       </SidebarSection>
 
-      {/* ── Detaylar (feature groups from detailedFeaturesData) ── */}
+      {/* Detaylar (feature groups) */}
       <SidebarSection title="Detaylar" defaultOpen={false}>
-        <div className="divide-y divide-zinc-100">
-          {FILTER_FEATURE_GROUP_NAMES.filter((g) => !blocked.has(g)).map(
-            (group) => (
-              <FeatureGroupAccordion
-                key={group}
-                group={group}
-                selected={searchParams.getAll(group)}
-                onToggle={(value) => toggleFeature(group, value)}
-              />
-            ),
-          )}
+        <div className="divide-y divide-stone-100">
+          {FILTER_FEATURE_GROUP_NAMES.filter((g) => !blocked.has(g)).map((group) => (
+            <FeatureGroupAccordion
+              key={group}
+              group={group}
+              selected={searchParams.getAll(group)}
+              onToggle={(value) => toggleFeature(group, value)}
+            />
+          ))}
         </div>
       </SidebarSection>
 
-      {/* ── Sıralama ── */}
+      {/* Sıralama */}
       <SidebarSection title="Sıralama" defaultOpen={false}>
         <select
           value={searchParams.get("sortBy") ?? "newest"}
-          onChange={(e) =>
-            update("sortBy", e.target.value === "newest" ? "" : e.target.value)
-          }
+          onChange={(e) => update("sortBy", e.target.value === "newest" ? "" : e.target.value)}
           className={selectCls}
         >
           <option value="newest">En Yeni</option>
@@ -643,18 +586,27 @@ export function FilterSidebar() {
         </select>
       </SidebarSection>
 
-      {/* ── Reset ── */}
-      {hasAnyFilter && (
-        <div className="pt-4">
-          <button
-            type="button"
-            onClick={() => router.push("?")}
-            className="w-full rounded border border-zinc-200 py-2 text-xs text-zinc-500 hover:bg-zinc-50"
+      {/* Reset */}
+      <AnimatePresence>
+        {hasAnyFilter && (
+          <motion.div
+            key="reset"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.18 }}
+            className="pt-4"
           >
-            Filtreleri Sıfırla
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              onClick={() => router.push("?")}
+              className="w-full rounded-lg border border-amber-200 bg-amber-50 py-2 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
+            >
+              Filtreleri Sıfırla
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 
@@ -664,48 +616,88 @@ export function FilterSidebar() {
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-4 left-4 z-40 flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-md"
+        className="lg:hidden fixed bottom-4 left-4 z-40 flex items-center gap-2 rounded-full border border-amber-200 bg-white px-4 py-2 text-sm font-medium text-amber-700 shadow-lg transition hover:bg-amber-50"
       >
+        <SlidersHorizontal size={15} />
         Filtrele
-        {activeCount > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800 text-xs text-white">
-            {activeCount}
-          </span>
-        )}
+        <AnimatePresence>
+          {activeCount > 0 && (
+            <motion.span
+              key="count"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs text-white"
+            >
+              {activeCount}
+            </motion.span>
+          )}
+        </AnimatePresence>
       </button>
 
       {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-y-0 left-0 z-50 w-80 overflow-y-auto bg-white p-4 shadow-xl lg:hidden">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="text-sm font-semibold text-zinc-700">
-              Filtreler
-            </span>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="text-zinc-400 hover:text-zinc-600"
-            >
-              ✕
-            </button>
-          </div>
-          {body}
-        </div>
-      )}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="drawer"
+            initial={{ x: -320, opacity: 0.5 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -320, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="fixed inset-y-0 left-0 z-50 w-80 overflow-y-auto bg-white p-4 shadow-2xl lg:hidden"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm font-semibold text-zinc-700">
+                <SlidersHorizontal size={15} className="text-amber-500" />
+                Filtreler
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {body}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-56 shrink-0 lg:block">
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+      <aside className="hidden w-60 shrink-0 lg:block">
+        <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-amber-700/70">
+            <SlidersHorizontal size={13} />
             Filtreler
+            <AnimatePresence>
+              {activeCount > 0 && (
+                <motion.span
+                  key="badge"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.5, opacity: 0 }}
+                  className="ml-auto rounded-full bg-amber-500 px-1.5 py-0.5 text-xs text-white"
+                >
+                  {activeCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </h2>
           {body}
         </div>

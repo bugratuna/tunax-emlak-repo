@@ -4,6 +4,7 @@ import { listListings } from "@/lib/api/listings";
 import { StatusBadge } from "@/components/status-badge";
 import { ApiErrorMessage } from "@/components/api-error-message";
 import { ResubmitButton } from "./resubmit-button";
+import { UnpublishButton } from "./unpublish-button";
 import type { Listing } from "@/lib/types";
 
 export default async function ConsultantListingsPage() {
@@ -101,6 +102,12 @@ export default async function ConsultantListingsPage() {
                       </Link>
                     )}
                     {listing.status === "NEEDS_CHANGES" && (
+                      <ResubmitButton listingId={listing.id} />
+                    )}
+                    {listing.status === "PUBLISHED" && (
+                      <UnpublishButton listingId={listing.id} />
+                    )}
+                    {listing.status === "UNPUBLISHED" && (
                       <ResubmitButton listingId={listing.id} />
                     )}
                   </td>

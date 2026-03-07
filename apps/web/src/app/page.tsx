@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   ChevronRight,
   Star,
+  Sparkles,
   MapPin,
   ArrowRight,
   Phone,
@@ -75,11 +76,21 @@ function ListingCard({ listing }: { listing: Listing }) {
             {listing.category === "SALE" ? "Satılık" : "Kiralık"}
           </span>
         )}
+        {listing.listingNumber && (
+          <span className="absolute bottom-2 left-2 rounded bg-black/55 px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-wider text-white/90 backdrop-blur-sm">
+            {listing.listingNumber}
+          </span>
+        )}
       </div>
       <div className="p-4">
         <h3 className="line-clamp-2 text-sm font-medium text-zinc-900 group-hover:text-amber-600 transition-colors">
           {listing.title}
         </h3>
+        {listing.listingNumber && (
+          <p className="mt-0.5 font-mono text-[10px] tracking-wider text-zinc-400">
+            İlan No: {listing.listingNumber}
+          </p>
+        )}
         {location?.district && (
           <p className="mt-1 flex items-center gap-1 text-xs text-zinc-500">
             <MapPin size={11} />
@@ -146,14 +157,17 @@ const SERVICES = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
+  let showcaseListings: Listing[] = [];
   let featuredListings: Listing[] = [];
   let recentListings: Listing[] = [];
 
   try {
-    const [featuredRes, recentRes] = await Promise.all([
+    const [showcaseRes, featuredRes, recentRes] = await Promise.all([
+      listListings({ status: "PUBLISHED", isShowcase: true, sortBy: "newest" }),
       listListings({ status: "PUBLISHED", isFeatured: true, sortBy: "newest" }),
       listListings({ status: "PUBLISHED", sortBy: "newest" }),
     ]);
+    showcaseListings = showcaseRes.data.slice(0, 6);
     featuredListings = featuredRes.data.slice(0, 6);
     recentListings = recentRes.data.slice(0, 6);
   } catch {
@@ -178,7 +192,7 @@ export default async function HomePage() {
             <img
               src="/brand/logo.png"
               alt="Realty Tunax"
-              className="h-16 w-auto object-contain drop-shadow-lg"
+              className="h-48 w-auto object-contain drop-shadow-lg"
             />
           </div>
 
@@ -238,6 +252,36 @@ export default async function HomePage() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4">
+        
+        {/* ── Vitrin İlanları ──────────────────────────────────────────────── */}
+        {showcaseListings.length > 0 && (
+          <section className="mt-16">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} className="text-purple-500" fill="currentColor" />
+                  <h2 className="text-xl font-bold text-zinc-900">
+                    Vitrin İlanları
+                  </h2>
+                </div>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Özenle seçilmiş, özel portföy ilanları
+                </p>
+              </div>
+              <a
+                href="/listings"
+                className="hidden sm:flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+              >
+                Tümünü gör <ArrowRight size={14} />
+              </a>
+            </div>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {showcaseListings.map((l) => (
+                <ListingCard key={l.id} listing={l} />
+              ))}
+            </div>
+          </section>
+        )}
         {/* ── Featured Listings ──────────────────────────────────────────────── */}
         {featuredListings.length > 0 && (
           <section className="mt-16">
@@ -400,11 +444,11 @@ export default async function HomePage() {
                 sürede dönüş yaparız.
               </p>
               <a
-                href="tel:+902420000000"
+                href="tel:+905530842270"
                 className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-amber-400 hover:text-amber-300"
               >
                 <Phone size={14} />
-                0242 000 00 00
+                +90 553 084 22 70
               </a>
             </div>
             <div className="flex shrink-0 gap-3">

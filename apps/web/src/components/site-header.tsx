@@ -57,7 +57,7 @@ export function SiteHeader() {
             className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-900 transition-colors"
           >
             <Phone size={14} />
-            <span className="text-xs">0242 000 00 00</span>
+            <span className="text-xs">+90 553 084 22 70</span>
           </a>
           {user ? (
             <Link

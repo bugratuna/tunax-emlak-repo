@@ -4,7 +4,7 @@ import { ApiErrorMessage } from "@/components/api-error-message";
 import type { AdminUser } from "@/lib/types";
 import { UserActions } from "./user-actions";
 
-export const metadata = { title: "Kullanıcı Yönetimi — AREP" };
+export const metadata = { title: "Kullanıcı Yönetimi — Realty Tunax" };
 
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Aktif",

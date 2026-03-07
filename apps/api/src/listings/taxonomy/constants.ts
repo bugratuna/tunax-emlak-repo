@@ -18,6 +18,7 @@ export const LISTING_STATUSES = [
   'NEEDS_CHANGES',
   'PUBLISHED',
   'ARCHIVED',
+  'UNPUBLISHED',
 ] as const;
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 

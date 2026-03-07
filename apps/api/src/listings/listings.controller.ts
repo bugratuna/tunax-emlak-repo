@@ -190,6 +190,28 @@ export class ListingsController {
     return this.listingsService.getAdminFeedback(id, user.sub);
   }
 
+  // ── UNPUBLISH (CONSULTANT own + ADMIN any) ───────────────────────────────
+
+  @Patch(':id/unpublish')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CONSULTANT, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Unpublish a PUBLISHED listing (CONSULTANT = own only; ADMIN = any)',
+    description:
+      'Moves the listing from PUBLISHED → UNPUBLISHED. ' +
+      'Resets isFeatured and isShowcase to false. ' +
+      'CONSULTANT callers must own the listing. ' +
+      'The listing can be resubmitted for review from UNPUBLISHED status.',
+  })
+  @ApiOkResponse({ description: 'Listing with updated status UNPUBLISHED' })
+  @ApiNotFoundResponse({ description: 'Listing not found' })
+  @ApiForbiddenResponse({ description: 'Not owner or wrong role' })
+  unpublish(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.listingsService.unpublishListing(id, user.sub, user.role as 'CONSULTANT' | 'ADMIN');
+  }
+
   // ── RESUBMIT ──────────────────────────────────────────────────────────────
 
   @Patch(':id/resubmit')

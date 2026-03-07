@@ -73,6 +73,7 @@ function toListingDto(
 
   return {
     id: entity.id,
+    listingNumber: entity.listingNumber ?? undefined,
     title: entity.title,
     consultantId: entity.consultantId,
     consultantName: consultantName ?? undefined,
@@ -127,6 +128,8 @@ function toListingDto(
     imageCount: entity.imageCount,
     isFeatured: entity.isFeatured,
     featuredSortOrder: entity.featuredSortOrder,
+    isShowcase: entity.isShowcase,
+    showcaseOrder: entity.showcaseOrder,
     media: media.length > 0 ? media : undefined,
   } as Listing;
 }
@@ -294,6 +297,26 @@ export class ListingsService {
       qb.andWhere('l.isFeatured = TRUE');
     }
 
+    if (filters.isShowcase === true) {
+      qb.andWhere('l.isShowcase = TRUE');
+    }
+
+    if (filters.search) {
+      const trimmed = filters.search.trim();
+      // Exact listing-number lookup takes priority (RT-000000 pattern)
+      if (/^RT-\d{1,6}$/i.test(trimmed)) {
+        qb.andWhere('l.listingNumber = :searchExact', {
+          searchExact: trimmed.toUpperCase(),
+        });
+      } else {
+        // Full-text: title OR listing_number prefix OR district OR neighborhood
+        qb.andWhere(
+          '(l.title ILIKE :search OR l.listingNumber ILIKE :search OR LOWER(ll.district) ILIKE :searchLower OR LOWER(ll.neighborhood) ILIKE :searchLower)',
+          { search: `%${trimmed}%`, searchLower: `%${trimmed.toLowerCase()}%` },
+        );
+      }
+    }
+
     if (filters.status) qb.andWhere('l.status = :status', { status: filters.status });
     if (filters.category) qb.andWhere('l.category = :category', { category: filters.category });
     if (filters.propertyType)
@@ -396,6 +419,7 @@ export class ListingsService {
       newest: { col: 'l.createdAt', dir: 'DESC' },
       oldest: { col: 'l.createdAt', dir: 'ASC' },
       featured: { col: 'l.featuredSortOrder', dir: 'ASC' },
+      showcase: { col: 'l.showcaseOrder', dir: 'ASC' },
     };
     const sort = sortMap[filters.sortBy ?? 'newest'];
     qb.orderBy(sort.col, sort.dir, sort.nulls as 'NULLS FIRST' | 'NULLS LAST' | undefined);
@@ -487,6 +511,28 @@ export class ListingsService {
     return toListingDto(saved, saved.location);
   }
 
+  // ── ASSIGN LISTING NUMBER (called on approval) ────────────────────────────
+
+  /**
+   * Atomically assigns an RT-XXXXXX number to a listing using a PostgreSQL
+   * sequence. Idempotent: if the listing already has a number, returns it as-is.
+   * Must be called AFTER status is set to PUBLISHED.
+   */
+  async assignListingNumber(listingId: string): Promise<string | null> {
+    // Idempotent guard
+    const existing = await this.listingRepo.findOneBy({ id: listingId });
+    if (existing?.listingNumber) return existing.listingNumber;
+
+    const result = await this.dataSource.query(
+      `UPDATE listings
+         SET listing_number = 'RT-' || LPAD(nextval('listing_number_seq')::text, 6, '0')
+       WHERE id = $1 AND listing_number IS NULL
+       RETURNING listing_number`,
+      [listingId],
+    );
+    return (result[0]?.listing_number as string | undefined) ?? null;
+  }
+
   // ── PENDING QUEUE ─────────────────────────────────────────────────────────
 
   async getPendingQueue(): Promise<{ items: Listing[]; count: number }> {
@@ -506,9 +552,9 @@ export class ListingsService {
       relations: { location: true },
     });
     if (!entity) throw new NotFoundException(`Listing ${id} not found`);
-    if (entity.status !== 'NEEDS_CHANGES') {
+    if (entity.status !== 'NEEDS_CHANGES' && entity.status !== 'UNPUBLISHED') {
       throw new ConflictException(
-        `Listing can only be resubmitted from NEEDS_CHANGES status (current: ${entity.status})`,
+        `Listing can only be resubmitted from NEEDS_CHANGES or UNPUBLISHED status (current: ${entity.status})`,
       );
     }
     entity.status = 'PENDING_REVIEW';
@@ -892,6 +938,56 @@ export class ListingsService {
     return toListingDto(saved, saved.location);
   }
 
+  // ── SET SHOWCASE (admin) ──────────────────────────────────────────────────
+
+  async setShowcase(
+    id: string,
+    isShowcase: boolean,
+    sortOrder?: number,
+  ): Promise<Listing> {
+    const entity = await this.listingRepo.findOne({
+      where: { id },
+      relations: { location: true },
+    });
+    if (!entity) throw new NotFoundException(`Listing ${id} not found`);
+    if (entity.status !== 'PUBLISHED') {
+      throw new UnprocessableEntityException(
+        `Yalnızca yayındaki ilanlar Vitrin'e eklenebilir (mevcut durum: ${entity.status})`,
+      );
+    }
+    entity.isShowcase = isShowcase;
+    if (sortOrder !== undefined) entity.showcaseOrder = sortOrder;
+    const saved = await this.listingRepo.save(entity);
+    return toListingDto(saved, saved.location);
+  }
+
+  // ── UNPUBLISH (consultant own + admin any) ───────────────────────────────
+
+  async unpublishListing(
+    id: string,
+    actorId: string,
+    actorRole: 'CONSULTANT' | 'ADMIN',
+  ): Promise<Listing> {
+    const entity = await this.listingRepo.findOne({
+      where: { id },
+      relations: { location: true },
+    });
+    if (!entity) throw new NotFoundException(`Listing ${id} not found`);
+    if (actorRole === 'CONSULTANT' && entity.consultantId !== actorId) {
+      throw new ForbiddenException('You do not own this listing');
+    }
+    if (entity.status !== 'PUBLISHED') {
+      throw new UnprocessableEntityException(
+        `Only PUBLISHED listings can be unpublished (current: ${entity.status})`,
+      );
+    }
+    entity.status = 'UNPUBLISHED';
+    entity.isFeatured = false;
+    entity.isShowcase = false;
+    const saved = await this.listingRepo.save(entity);
+    return toListingDto(saved, saved.location);
+  }
+
   // ── CONTACT INFO (public) ─────────────────────────────────────────────────
 
   async getContactInfo(
@@ -904,12 +1000,16 @@ export class ListingsService {
     }
 
     const user = await this.userRepo.findOneBy({ id: listing.consultantId });
-    if (!user) return { consultantName: 'AREP Danışman', phone: null };
+    if (!user) return { consultantName: 'Realty Tunax Danışmanı', phone: null };
+
+    if (user.status === 'SUSPENDED') {
+      throw new NotFoundException('Bu danışman şu anda aktif değil.');
+    }
 
     const fullName =
       user.firstName && user.lastName
         ? `${user.firstName} ${user.lastName}`
-        : (user.name ?? 'AREP Danışman');
+        : (user.name ?? 'Realty Tunax Danışmanı');
 
     return { consultantName: fullName, phone: user.phoneNumber ?? null };
   }

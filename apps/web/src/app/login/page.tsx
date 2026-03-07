@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2 } from "lucide-react";
+import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, ApiRequestError } from "@/lib/api/client";
 import { decodePayload } from "@/lib/auth";
-import { ApiRequestError } from "@/lib/api/client";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -16,6 +15,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Show success banner when redirected from /register
+  const registered =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("registered") === "1";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,12 +34,9 @@ export default function LoginPage() {
 
       login(res.accessToken);
 
-      // Read the next= search param from the current URL without useSearchParams
-      // (avoids the Suspense boundary requirement)
       const params = new URLSearchParams(window.location.search);
       const next = params.get("next");
 
-      // Role-based default redirect when no explicit next param
       const payload = decodePayload(res.accessToken);
       const roleDefault =
         payload?.role === "ADMIN"
@@ -47,15 +48,11 @@ export default function LoginPage() {
       router.push(next ?? roleDefault);
     } catch (err) {
       if (err instanceof ApiRequestError) {
-        setError(
-          err.status === 401
-            ? "E-posta veya şifre hatalı."
-            : Array.isArray(err.body.message)
-              ? err.body.message.join(", ")
-              : err.body.message,
-        );
+        const rawMsg = err.body?.message;
+        const msgStr = Array.isArray(rawMsg) ? rawMsg.join(", ") : (rawMsg ?? "E-posta veya şifre hatalı.");
+        setError(msgStr);
       } else {
-        setError("Sunucuya ulaşılamıyor. API çalışıyor mu?");
+        setError("Sunucuya ulaşılamıyor. Lütfen tekrar deneyin.");
       }
     } finally {
       setLoading(false);
@@ -63,65 +60,87 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center">
-      <div className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-8 shadow-sm">
-        {/* Logo */}
-        <div className="mb-8 flex flex-col items-center gap-2 text-center">
-          <Building2 size={28} className="text-zinc-900" />
-          <h1 className="text-xl font-semibold text-zinc-900">AREP Girişi</h1>
-          <p className="text-sm text-zinc-500">Antalya Emlak Platformu</p>
-        </div>
-
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-700">
-              E-posta
-            </label>
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ornek@arep.dev"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400"
+    <div className="flex min-h-[80vh] items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        {/* Card */}
+        <div className="rounded-2xl border border-zinc-200 bg-white px-8 py-10 shadow-sm">
+          {/* Logo + heading */}
+          <div className="mb-8 flex flex-col items-center gap-3 text-center">
+            <img
+              src="/brand/logo.png"
+              alt="Realty Tunax"
+              className="h-12 w-auto object-contain"
             />
+            <div>
+              <h1 className="text-xl font-bold text-zinc-900">
+                Realty Tunax&apos;a Giriş
+              </h1>
+              <p className="mt-1 text-sm text-zinc-500">
+                Antalya&apos;nın güvenilir gayrimenkul platformu
+              </p>
+            </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-700">
-              Şifre
-            </label>
-            <input
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
+          {/* Registration success banner */}
+          {registered && (
+            <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              Kaydınız alınmıştır. Yönetici onayından sonra giriş yapabilirsiniz.
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
-          >
-            {loading ? "Giriş yapılıyor…" : "Giriş Yap"}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-zinc-700">
+                E-posta
+              </label>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+              />
+            </div>
 
-        {/* Dev credential hint */}
-        <div className="mt-6 rounded-md border border-zinc-100 bg-zinc-50 p-3 text-xs text-zinc-500 space-y-1">
-          <p className="font-medium text-zinc-600">Geliştirme ortamı hesapları:</p>
-          <p>Admin: admin@arep.dev / Admin123!</p>
-          <p>Danışman: consultant@arep.dev / consultant123</p>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-zinc-700">
+                Şifre
+              </label>
+              <input
+                type="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+              />
+            </div>
+
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+            >
+              {loading ? "Giriş yapılıyor…" : "Giriş Yap"}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-zinc-500">
+            Hesabınız yok mu?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-amber-600 hover:text-amber-500"
+            >
+              Danışman olarak kayıt ol
+            </Link>
+          </p>
         </div>
       </div>
     </div>
