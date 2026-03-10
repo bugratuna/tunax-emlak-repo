@@ -1,6 +1,9 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -21,6 +24,8 @@ interface MulterFile {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -68,12 +73,12 @@ export class AuthService {
 
     if (input.profilePhoto) {
       if (!ALLOWED_MIME.includes(input.profilePhoto.mimetype)) {
-        throw new Error(
+        throw new BadRequestException(
           'Profil fotoğrafı yalnızca jpg, png veya webp formatında olabilir.',
         );
       }
       if (input.profilePhoto.size > MAX_SIZE) {
-        throw new Error('Profil fotoğrafı en fazla 5 MB olabilir.');
+        throw new BadRequestException('Profil fotoğrafı en fazla 5 MB olabilir.');
       }
       const ext =
         input.profilePhoto.originalname
@@ -82,11 +87,21 @@ export class AuthService {
           ?.toLowerCase()
           .replace(/[^a-z0-9]/g, '') ?? 'jpg';
       const key = `profiles/${randomUUID()}.${ext}`;
-      profilePhotoUrl = await this.s3Service.putObject(
-        key,
-        input.profilePhoto.buffer,
-        input.profilePhoto.mimetype,
-      );
+      try {
+        profilePhotoUrl = await this.s3Service.putObject(
+          key,
+          input.profilePhoto.buffer,
+          input.profilePhoto.mimetype,
+        );
+      } catch (err) {
+        this.logger.error(
+          `[register] S3 upload failed for key=${key}: ${(err as Error).message}`,
+          (err as Error).stack,
+        );
+        throw new InternalServerErrorException(
+          'Profil fotoğrafı yüklenemedi. Lütfen daha sonra tekrar deneyin.',
+        );
+      }
     }
 
     return this.usersService.createUser({

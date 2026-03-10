@@ -29,6 +29,12 @@ export class S3Service {
     const region = process.env.AWS_REGION ?? 'eu-north-1';
     const bucket = process.env.AWS_BUCKET_NAME ?? '';
 
+    if (!bucket) {
+      this.logger.error(
+        '[S3Service] AWS_BUCKET_NAME is not set — S3 uploads will fail at runtime.',
+      );
+    }
+
     this.client = new S3Client({ region });
     this.bucket = bucket;
     this.publicBaseUrl =
