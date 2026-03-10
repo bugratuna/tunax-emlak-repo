@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     locale: "tr_TR",
   },
   icons: {
-    icon: "/brand/logo-icon.jpeg",
+    icon: "/brand/logo-icon.svg",
   },
 };
 

@@ -4,6 +4,9 @@ import { ListingForm } from "@/components/listing-form";
 
 export const metadata: Metadata = {
   title: "Yeni İlan Oluştur",
+  icons: {
+    icon: "/brand/logo-icon.svg",
+  },
 };
 
 /**

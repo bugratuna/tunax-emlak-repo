@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Hizmetler — AREP Gayrimenkul",
   description:
     "AREP'in satış, kiralama, yatırım danışmanlığı ve değerleme hizmetleri.",
+  icons: {
+    icon: "/brand/logo-icon.svg",
+  },
 };
 
 const SERVICES = [

@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Vizyon & Misyon — AREP Gayrimenkul",
   description:
     "AREP'in Antalya gayrimenkul sektöründeki vizyonu ve misyonu.",
+  icons: {
+    icon: "/brand/logo-icon.svg",
+  },
 };
 
 export default function VisionPage() {

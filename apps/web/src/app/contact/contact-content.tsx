@@ -228,7 +228,7 @@ export function ContactContent() {
                     href="tel:+905367259510"
                     className="text-gray-600 hover:text-primary transition-colors duration-300 text-sm"
                   >
-                    +90 536 725 95 10
+                    +90 553 336 23 74
                   </a>
                 </div>
               </div>

@@ -130,7 +130,7 @@ export function AboutContent() {
           </FadeUp>
           <FadeUp delay={0.2}>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-zinc-300">
-              2025 yılında Antalya Meltem&apos;de kurulan Realty Tunax, her müşterisine
+              2025 yılında Antalya Kepez&apos;de kurulan Realty Tunax, her müşterisine
               sadece bir mülk değil, geleceğe dair doğru bir yatırım sunmayı hedeflemektedir.
             </p>
           </FadeUp>
@@ -176,10 +176,10 @@ export function AboutContent() {
               <p className="text-sm leading-relaxed text-zinc-600">
                 Akdeniz&apos;in incisi Antalya&apos;da, gayrimenkul sektörüne yeni bir soluk
                 getirme hedefiyle yola çıktık. Şehrin en değerli lokasyonlarından biri olan
-                Meltem&apos;de, yenilikçi hizmet anlayışımızla faaliyetlerimize başladık.
+                Kepez&apos;de, yenilikçi hizmet anlayışımızla faaliyetlerimize başladık.
               </p>
               <p className="text-sm leading-relaxed text-zinc-600">
-                Kurucu ortaklarımız İsmail Tuna ve Recep Tuna, ortak bir vizyon ve
+                Kurucu ortaklarımız İsmail Tuna ve Ertuğrul Uygun, ortak bir vizyon ve
                 gayrimenkule duydukları tutkuyla her müşterilerine sadece bir mülk değil,
                 doğru bir gelecek yatırımı sunmak için buradalar.
               </p>
@@ -251,14 +251,14 @@ export function AboutContent() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TeamMini
                 name="İsmail Tuna"
-                role="Gayrimenkul Danışmanı"
+                role="Ofis Sahibi (Broker)"
                 imageSrc="https://image5.sahibinden.com/users/26/40/67/p200_profile_96264067_3278857.jpg"
                 href="/team"
               />
               <TeamMini
-                name="Recep Tuna"
-                role="Ofis Sahibi (Broker)"
-                imageSrc="https://image5.sahibinden.com/users/22/79/62/p200_profile_96227962_8723476.jpg"
+                name="Ertuğrul Uygun"
+                role="Kurucu Ortak"
+                imageSrc="/ertugrul-uygun.png" // Sadece dosya adını ve başındaki eğik çizgiyi yazman yeterli
                 href="/team"
               />
             </div>

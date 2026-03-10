@@ -24,7 +24,6 @@ export const metadata: Metadata = {
   icons: {
     icon: "/brand/logo-icon.svg",
   },
-
 };
 
 export const revalidate = 60;
@@ -256,7 +255,7 @@ export default async function HomePage() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4">
-        
+
         {/* ── Vitrin İlanları ──────────────────────────────────────────────── */}
         {showcaseListings.length > 0 && (
           <section className="mt-16">

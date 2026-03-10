@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "Ekibimiz | Realty Tunax",
   description:
     "Realty Tunax'ın uzman gayrimenkul danışmanları. Antalya'da güvenilir, deneyimli ekibimizle tanışın.",
+  icons: {
+    icon: "/brand/logo-icon.svg",
+  },
 };
 
 export const revalidate = 300;
