@@ -1,22 +1,21 @@
 import type { NextConfig } from "next";
 
 // ── Build-time env validation ──────────────────────────────────────────────
-// These checks run when `next build` or `next dev` starts.
-// Missing required vars cause an immediate error — no silent failures.
-const REQUIRED_SERVER_VARS = ["API_BASE_URL_SERVER", "INTERNAL_API_KEY"];
-const REQUIRED_PUBLIC_VARS = ["NEXT_PUBLIC_API_BASE_URL"];
-
-const missingVars: string[] = [];
-for (const v of REQUIRED_SERVER_VARS) {
-  if (!process.env[v]) missingVars.push(`  ${v}  (server-only, no NEXT_PUBLIC_ prefix)`);
-}
-for (const v of REQUIRED_PUBLIC_VARS) {
-  if (!process.env[v]) missingVars.push(`  ${v}  (browser-safe public var)`);
-}
-if (missingVars.length > 0) {
+// WHAT belongs here: only NEXT_PUBLIC_* variables that Next.js inlines into
+// the browser bundle at compile time. If these are absent the bundle will
+// contain literal "undefined" — catch that early.
+//
+// WHAT does NOT belong here: server-only vars (API_BASE_URL_SERVER,
+// INTERNAL_API_KEY, etc.). Those are never baked into the bundle and are only
+// read at request time. Validating them here forces CI to supply runtime
+// secrets during `next build`, which is both unnecessary and insecure.
+// They are already validated at their call sites in lib/api/client.ts.
+if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
   throw new Error(
-    `[Tunax Web] Missing required environment variables:\n\n${missingVars.join("\n")}\n\n` +
-    `Copy apps/web/.env.example to apps/web/.env.local and fill in the values.\n`,
+    "[Tunax Web] Missing required environment variable: NEXT_PUBLIC_API_BASE_URL\n\n" +
+    "  • Local dev:  add it to apps/web/.env.local\n" +
+    "  • CI:         set NEXT_PUBLIC_API_BASE_URL=http://localhost:3001 in the build step env\n" +
+    "  • Production: set it in your hosting panel (Vercel / Railway / etc.)\n",
   );
 }
 

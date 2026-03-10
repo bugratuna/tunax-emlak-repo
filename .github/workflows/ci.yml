@@ -14,12 +14,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       # ── API ────────────────────────────────────────────────────────────────
+      # `nest build` is pure TypeScript compilation — no env vars needed.
+      # validateEnv() is called only at `nest start`, not at build time.
       - name: Install API dependencies
         working-directory: apps/api
         run: npm ci
@@ -37,6 +39,9 @@ jobs:
         run: npm run build
 
       # ── Web ───────────────────────────────────────────────────────────────
+      # `next build` inlines NEXT_PUBLIC_* vars into the browser bundle.
+      # API_BASE_URL_SERVER and INTERNAL_API_KEY are server-only and validated
+      # per-request in lib/api/client.ts — they are NOT needed at build time.
       - name: Install Web dependencies
         working-directory: apps/web
         run: npm ci
@@ -50,8 +55,15 @@ jobs:
       - name: Build Web
         working-directory: apps/web
         run: npm run build
+        env:
+          # CI placeholder — safe to commit. This value is only used for
+          # bundle compilation; the real value is set in the production
+          # hosting panel (Vercel / Railway / etc.) and never committed.
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
 
       # ── Worker ────────────────────────────────────────────────────────────
+      # `tsc` is pure compilation — no env vars needed.
+      # validateWorkerEnv() is called only at runtime (bootstrap()), not here.
       - name: Install Worker dependencies
         working-directory: apps/worker
         run: npm ci
@@ -67,5 +79,4 @@ jobs:
         working-directory: apps/agent
         run: npm ci
 
-      # apps/agent has no lint, test (stub exits 1), or build script
-      # steps intentionally omitted until real scripts are added
+      # apps/agent has no lint, test, or build script — steps intentionally omitted
