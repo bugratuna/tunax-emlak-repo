@@ -1,21 +1,26 @@
-FROM node:20-alpine
-
+FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 
-# Önce bağımlılık dosyalarını kopyala (Cache avantajı için)
 COPY package*.json ./
-COPY apps/web/package*.json ./apps/web/
-COPY apps/api/package*.json ./apps/api/
-COPY apps/worker/package*.json ./apps/worker/
+COPY apps/api/package*.json apps/api/
+COPY apps/worker/package*.json apps/worker/
+COPY apps/web/package*.json apps/web/
 
-# Bağımlılıkları yükle
-RUN npm install
+RUN npm ci
 
-# Tüm projeyi kopyala
+FROM deps AS builder
+WORKDIR /app
 COPY . .
+RUN npm run build:all
 
-# Eğer build gerekiyorsa (NextJS ve NestJS için build önemli)
-RUN npm run build --if-present
+FROM node:20-bookworm-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-# Senin belirttiğin komutla her şeyi başlat
-CMD ["npm", "run", "start:all"]
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/apps ./apps
+
+EXPOSE 3000 4000
+
+CMD ["npm", "run", "start:all:prod"]
