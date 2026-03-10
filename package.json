@@ -11,7 +11,15 @@
     "start:all": "npx concurrently -n \"api,worker,web\" -c \"blue,green,magenta\" \"npm run start:api\" \"npm run start:worker\" \"npm run start:web\"",
     "start:api": "cd apps/api && npm run start:dev",
     "start:worker": "cd apps/worker && npm run start:dev",
-    "start:web": "cd apps/web && npm run dev"
+    "start:web": "cd apps/web && npm run dev",
+    "build:api": "cd apps/api && npm run build",
+    "build:worker": "cd apps/worker && npm run build",
+    "build:web": "cd apps/web && npm run build",
+    "build:all": "npm run build:api && npm run build:worker && npm run build:web",
+    "start:api:prod": "node apps/api/dist/main.js",
+    "start:worker:prod": "node apps/worker/dist/main.js",
+    "start:web:prod": "cd apps/web && next start -H 0.0.0.0 -p 3000",
+    "start:all:prod": "npx concurrently -n \"api,worker,web\" -c \"blue,green,magenta\" \"npm run start:api:prod\" \"npm run start:worker:prod\" \"npm run start:web:prod\""
   },
   "repository": {
     "type": "git",
