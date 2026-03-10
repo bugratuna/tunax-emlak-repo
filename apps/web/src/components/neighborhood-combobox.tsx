@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useId } from "react";
+import { useRef, useState, useCallback, useEffect, useId } from "react";
 import { ChevronDown, MapPin, X } from "lucide-react";
 import { NEIGHBORHOODS } from "@/lib/geo/antalya";
 
