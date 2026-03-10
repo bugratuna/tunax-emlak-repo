@@ -5,10 +5,13 @@
  *
  * Production safety rules are enforced when NODE_ENV=production:
  *   - JWT_ACCESS_SECRET must be ≥32 chars and must not contain known dev defaults
- *   - DATABASE_URL must not point to localhost/127.0.0.1
+ *   - DATABASE_URL must not point to localhost/127.0.0.1 (external hosts only)
  *   - CORS_ORIGINS must be present
  *   - FEATURE_SEED_USERS must not be 'true'
  *   - FEATURE_SWAGGER_ENABLED must not be 'true'
+ *   - DB_SSL=false is ALLOWED when the DB host is internal (Docker service name,
+ *     loopback, RFC-1918 private IP) — a warning is emitted instead of crashing.
+ *     DB_SSL=false on an external host is still a hard error.
  */
 
 interface EnvRule {
@@ -113,6 +116,27 @@ const RULES: EnvRule[] = [
   },
 ];
 
+/**
+ * Returns true when the DB host is on a private / internal network where
+ * transport-layer encryption is not needed:
+ *   - loopback            — localhost, 127.0.0.1
+ *   - Docker service name — no dots (e.g. "postgres_gis", "db")
+ *   - RFC-1918 ranges     — 10.x, 172.16-31.x, 192.168.x
+ */
+function isInternalDbHost(rawUrl: string): boolean {
+  try {
+    const { hostname } = new URL(rawUrl);
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+    if (!hostname.includes('.')) return true; // Docker Compose service name
+    if (/^10\./.test(hostname)) return true;
+    if (/^172\.(1[6-9]|2\d|3[01])\./.test(hostname)) return true;
+    if (/^192\.168\./.test(hostname)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /** Known dev-default substrings that must never appear in production secrets */
 const DEV_SECRET_SUBSTRINGS = [
   'dev',
@@ -163,11 +187,26 @@ export function validateEnv(): void {
       );
     }
 
-    // DB_SSL must not be explicitly disabled in production
+    // DB_SSL=false: safe on internal/private-network hosts (Docker service names,
+    // loopback, RFC-1918). Hard error when the DB host is publicly reachable.
     if (process.env.DB_SSL === 'false') {
-      errors.push(
-        `  UNSAFE   DB_SSL=false  — SSL must not be disabled in production. Remove DB_SSL or set it to "true".`,
-      );
+      const dbUrl = process.env.DATABASE_URL ?? '';
+      if (isInternalDbHost(dbUrl)) {
+        let hostname = '(unknown)';
+        try { hostname = new URL(dbUrl).hostname; } catch { /* ignore */ }
+        console.warn(
+          `[Tunax] WARNING: DB_SSL=false in production — ` +
+          `host "${hostname}" is an internal/private network address (Docker, VPC). ` +
+          `SSL is not required within a trusted private network. ` +
+          `Ensure this host is never exposed to the public internet.`,
+        );
+      } else {
+        errors.push(
+          `  UNSAFE   DB_SSL=false  — SSL must not be disabled for external database hosts. ` +
+          `Set DB_SSL=true. To suppress this for a Docker/VPC host, ensure DATABASE_URL uses ` +
+          `an internal hostname (no dots) or a private IP (10.x / 172.16-31.x / 192.168.x).`,
+        );
+      }
     }
 
     // CORS_ORIGINS must be explicitly set in production
