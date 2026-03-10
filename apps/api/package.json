@@ -21,7 +21,8 @@
     "migration:run": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:run",
     "migration:revert": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:revert",
     "migration:show": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:show",
-    "migrate:redis": "ts-node -r tsconfig-paths/register src/dev/commands/migrate-listings.command.ts"
+    "migrate:redis": "ts-node -r tsconfig-paths/register src/dev/commands/migrate-listings.command.ts",
+    "admin:create": "ts-node -r tsconfig-paths/register src/dev/commands/create-admin.command.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.992.0",
