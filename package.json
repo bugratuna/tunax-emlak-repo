@@ -18,7 +18,7 @@
     "build:all": "npm run build:api && npm run build:worker && npm run build:web",
     "start:api:prod": "node apps/api/dist/main.js",
     "start:worker:prod": "node apps/worker/dist/main.js",
-    "start:web:prod": "cd apps/web && next start -H 0.0.0.0 -p 3000",
+    "start:web:prod": "cd apps/web && npx next start -H 0.0.0.0 -p 3000",
     "start:all:prod": "npx concurrently -n \"api,worker,web\" -c \"blue,green,magenta\" \"npm run start:api:prod\" \"npm run start:worker:prod\" \"npm run start:web:prod\""
   },
   "repository": {
