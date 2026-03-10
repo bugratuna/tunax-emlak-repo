@@ -81,7 +81,14 @@ class DatabaseHealthService implements OnApplicationBootstrap {
           process.env.NODE_ENV === 'development'
             ? (['query', 'error'] as const)
             : (['error'] as const),
-        extra: { max: 10, idleTimeoutMillis: 30_000 },
+        extra: {
+          max: 10,
+          idleTimeoutMillis: 30_000,
+          // Enforce SSL in production — managed DBs (RDS, Railway, Supabase) require it
+          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+          // Abort queries that run longer than 30 seconds (prevents connection pool exhaustion)
+          statement_timeout: 30_000,
+        },
       }),
     }),
   ],

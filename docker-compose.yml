@@ -2,11 +2,11 @@ services:
   # 1. Veritabanı (PostGIS)
   postgres_gis:
     image: postgis/postgis:16-3.4
-    container_name: arep_postgis
+    container_name: rt_postgis
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-tunax}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tunax123}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-tunax}
     ports:
       - "5432:5432"
@@ -21,7 +21,7 @@ services:
   # 2. Redis
   redis:
     image: redis:7-alpine
-    container_name: arep_redis
+    container_name: rt_redis
     ports:
       - "6379:6379"
     volumes:
@@ -35,13 +35,13 @@ services:
   # 3. Tüm Uygulamalar (NextJS, NestJS, Worker)
   main_app:
     build: .
-    container_name: arep_full_stack
+    container_name: rt_full_stack
     restart: always
     ports:
       - "3000:3000" # NextJS
       - "4000:4000" # NestJS API
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-tunax}:${POSTGRES_PASSWORD:-tunax123}@postgres_gis:5432/${POSTGRES_DB:-tunax}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-tunax}:${POSTGRES_PASSWORD}@postgres_gis:5432/${POSTGRES_DB:-tunax}
       - REDIS_URL=redis://redis:6379
     depends_on:
       postgres_gis:
@@ -49,13 +49,15 @@ services:
       redis:
         condition: service_healthy
 
-  # 4. pgAdmin (Opsiyonel UI)
+  # 4. pgAdmin (LOCAL DEV ONLY — do NOT expose in production)
+  # Credentials are read from PGADMIN_DEFAULT_EMAIL and PGADMIN_DEFAULT_PASSWORD
+  # env vars. Set these in a local .env file (gitignored), never commit them.
   pgadmin:
     image: dpage/pgadmin4
-    container_name: arep_pgadmin_ui
+    container_name: rt_pgadmin_ui
     environment:
-      PGADMIN_DEFAULT_EMAIL: test@test.com
-      PGADMIN_DEFAULT_PASSWORD: bgrtn123
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_DEFAULT_EMAIL is required}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_DEFAULT_PASSWORD is required}
     ports:
       - "8080:80"
     depends_on:

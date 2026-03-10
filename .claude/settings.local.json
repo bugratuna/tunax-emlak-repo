@@ -15,7 +15,26 @@
       "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); deps={**p.get\\(''dependencies'',{}\\),**p.get\\(''devDependencies'',{}\\)}; [print\\(k,v\\) for k,v in deps.items\\(\\) if any\\(x in k for x in [''tiptap'',''dompurify'',''typography'',''sanitize'']\\)]\")",
       "Bash(node -e \"const p=require\\(''./apps/web/package.json''\\); const all={...p.dependencies,...p.devDependencies}; Object.keys\\(all\\).filter\\(k=>[''tiptap'',''dompurify'',''typography'',''sanitize''].some\\(x=>k.includes\\(x\\)\\)\\).forEach\\(k=>console.log\\(k,all[k]\\)\\)\")",
       "Bash(node -e \"const p=require\\(''./package.json''\\); const all={...p.dependencies,...p.devDependencies}; console.log\\(all[''@tailwindcss/typography''] || ''NOT_INSTALLED''\\)\")",
-      "Bash(npx expo install expo-router expo-image expo-image-picker)"
+      "Bash(npx expo install expo-router expo-image expo-image-picker)",
+      "Bash(grep -r \"localhost\\\\|127.0.0.1\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps --include=*.ts --include=*.js --include=*.yml --include=*.yaml)",
+      "Bash(grep -r \"localhost\\\\|127.0.0.1\" /c/Users/screa/WebstormProjects/tunax-emlak-repo --include=*.ts --include=*.js --include=*.yml --include=*.yaml --include=*.json)",
+      "Bash(grep -r \"CORS\\\\|cors\\\\|rateLimit\\\\|helmet\\\\|express\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/src --include=*.ts)",
+      "Bash(grep -r \"FilesInterceptor\\\\|FileInterceptor\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/src --include=*.ts -A 10)",
+      "Bash(grep -r \"arep-dev\\\\|tunax123\\\\|bgrtn123\\\\|Admin123\\\\|Consultant123\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps --include=*.ts --include=*.yml --include=*.env)",
+      "Bash(xargs cat:*)",
+      "Bash(find /c/Users/screa/WebstormProjects/tunax-emlak-repo -type f -name *.ts \\\\\\(-path */src/common/guards/* -o -path */src/common/decorators/* \\\\\\))",
+      "Bash(grep -r \"health\\\\|Health\\\\|maxConnections\\\\|poolSize\\\\|connectionLimit\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/src --include=*.ts)",
+      "Bash(find /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps -name *.processor.ts -o -name worker.module.ts)",
+      "Bash(printf 'node_modules/\\\\n\\\\n# Local env files — never commit real secrets\\\\n.env\\\\n.env.local\\\\n.env.*.local\\\\n.env.development\\\\n.env.production\\\\n.env.test\\\\n')",
+      "Bash(c:/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/.env.example:*)",
+      "Bash(c:/Users/screa/WebstormProjects/tunax-emlak-repo/docker-compose.yml:*)",
+      "Bash(c:/Users/screa/WebstormProjects/tunax-emlak-repo/apps/web/.env.example:*)",
+      "Bash(c:/Users/screa/WebstormProjects/tunax-emlak-repo/.env.example:*)",
+      "Bash(c:/Users/screa/WebstormProjects/tunax-emlak-repo/docs/SECURITY_CHECKLIST.md:*)",
+      "Bash(node:*)",
+      "Bash(grep -v \"^$\")",
+      "Read(//c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/**)",
+      "Read(//c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/=== database.module.ts ssl/**)"
     ]
   }
 }

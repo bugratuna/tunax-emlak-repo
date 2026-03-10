@@ -14,6 +14,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       useFactory: () => ({
         secret: process.env.JWT_ACCESS_SECRET,
         signOptions: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           expiresIn: (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ?? '24h') as any,
         },
       }),

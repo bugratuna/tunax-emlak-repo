@@ -73,8 +73,15 @@ export class UsersService implements OnModuleInit {
     private readonly repo: Repository<UserEntity>,
   ) {}
 
-  // Seed dev users into PostgreSQL on every boot (upsert — safe to re-run)
+  // Seed dev users into PostgreSQL on every boot (upsert — safe to re-run).
+  // Only runs when FEATURE_SEED_USERS=true. Must never run in production
+  // (enforced by validateEnv() which rejects FEATURE_SEED_USERS=true in production).
   async onModuleInit(): Promise<void> {
+    if (process.env.FEATURE_SEED_USERS !== 'true') return;
+
+    console.warn(
+      '[Tunax] FEATURE_SEED_USERS=true — seeding dev accounts. This must NOT run in production.',
+    );
     for (const s of SEED_USERS) {
       const exists = await this.repo.findOneBy({ email: s.email });
       if (!exists) {
