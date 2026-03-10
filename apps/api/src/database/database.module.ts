@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource, TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { resolveSslConfig } from './db-ssl';
 import { ListingEntity } from './entities/listing.entity';
 import { ListingFeatureEntity } from './entities/listing-feature.entity';
 import { ListingLocationEntity } from './entities/listing-location.entity';
@@ -93,13 +94,13 @@ class DatabaseHealthService implements OnApplicationBootstrap {
         extra: {
           max: 10,
           idleTimeoutMillis: 30_000,
-          // Enforce SSL in production — managed DBs (RDS, Railway, Supabase) require it
-          ssl:
-            process.env.NODE_ENV === 'production'
-              ? { rejectUnauthorized: true }
-              : false,
-          // Abort queries that run longer than 30 seconds (prevents connection pool exhaustion)
+          // SSL resolved from DB_SSL / DB_SSL_REJECT_UNAUTHORIZED env vars.
+          // Defaults: on in production, off in dev. See database/db-ssl.ts.
+          ssl: resolveSslConfig(),
+          // Abort queries that run longer than 30 seconds (prevents pool exhaustion)
           statement_timeout: 30_000,
+          // Fail fast if the DB host is unreachable on boot
+          connectionTimeoutMillis: 5_000,
         },
       }),
     }),

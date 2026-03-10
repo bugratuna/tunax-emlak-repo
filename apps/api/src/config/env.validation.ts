@@ -49,6 +49,19 @@ const RULES: EnvRule[] = [
       'PostgreSQL connection URL (e.g. postgresql://user:pass@host:5432/db)',
   },
   {
+    key: 'DB_SSL',
+    required: false,
+    description:
+      '"true" | "false" — force SSL on/off. Default: on when NODE_ENV=production, off otherwise.',
+  },
+  {
+    key: 'DB_SSL_REJECT_UNAUTHORIZED',
+    required: false,
+    description:
+      '"true" | "false" — verify Postgres TLS cert against trusted CAs. Default: true. ' +
+      'Set to "false" only when Postgres uses a self-signed cert on a trusted private network.',
+  },
+  {
     key: 'REDIS_URL',
     required: true,
     description: 'Redis connection URL (e.g. redis://localhost:6379)',
@@ -147,6 +160,13 @@ export function validateEnv(): void {
     if (dbUrl && (dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1'))) {
       errors.push(
         `  UNSAFE   DATABASE_URL  — points to localhost in production. Use your managed database host.`,
+      );
+    }
+
+    // DB_SSL must not be explicitly disabled in production
+    if (process.env.DB_SSL === 'false') {
+      errors.push(
+        `  UNSAFE   DB_SSL=false  — SSL must not be disabled in production. Remove DB_SSL or set it to "true".`,
       );
     }
 
