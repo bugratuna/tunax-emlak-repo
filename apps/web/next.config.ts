@@ -5,11 +5,11 @@ import type { NextConfig } from "next";
 // the browser bundle at compile time. If these are absent the bundle will
 // contain literal "undefined" — catch that early.
 //
-// WHAT does NOT belong here: server-only vars (API_BASE_URL_SERVER,
-// INTERNAL_API_KEY, etc.). Those are never baked into the bundle and are only
-// read at request time. Validating them here forces CI to supply runtime
-// secrets during `next build`, which is both unnecessary and insecure.
-// They are already validated at their call sites in lib/api/client.ts.
+// WHAT does NOT belong here: server-only vars (INTERNAL_API_BASE_URL,
+// API_BASE_URL_SERVER, INTERNAL_API_KEY, etc.). Those are never baked into
+// the bundle and are only read at request time. Validating them here forces
+// CI to supply runtime secrets during `next build`, which is both unnecessary
+// and insecure. They are already validated at their call sites in lib/api/client.ts.
 if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
   throw new Error(
     "[Tunax Web] Missing required environment variable: NEXT_PUBLIC_API_BASE_URL\n\n" +

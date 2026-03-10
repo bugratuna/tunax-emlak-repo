@@ -15,13 +15,20 @@ export class ApiRequestError extends Error {
 }
 
 function baseUrl(): string {
+  // Server-side: prefer the internal network address so SSR/proxy calls never
+  // route through the public domain (avoids 504 timeouts inside Docker).
+  // Check order: INTERNAL_API_BASE_URL → API_BASE_URL_SERVER (legacy) → public fallback.
   const url =
     typeof window === "undefined"
-      ? process.env.API_BASE_URL_SERVER ?? process.env.NEXT_PUBLIC_API_BASE_URL
+      ? process.env.INTERNAL_API_BASE_URL ??
+        process.env.API_BASE_URL_SERVER ??
+        process.env.NEXT_PUBLIC_API_BASE_URL
       : process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!url) {
     throw new Error(
-      "NEXT_PUBLIC_API_BASE_URL is not set. Add it to .env.local.",
+      typeof window === "undefined"
+        ? "INTERNAL_API_BASE_URL is not set. Add it to your server environment (e.g. http://127.0.0.1:4000)."
+        : "NEXT_PUBLIC_API_BASE_URL is not set. Add it to .env.local.",
     );
   }
   return url.replace(/\/$/, "");

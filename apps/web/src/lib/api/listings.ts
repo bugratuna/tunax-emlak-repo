@@ -236,9 +236,12 @@ export async function setShowcaseListing(
 // ---------------------------------------------------------------------------
 
 function apiBase(): string {
+  // Server-side: same precedence as baseUrl() in client.ts — internal network first.
   const url =
     typeof window === "undefined"
-      ? process.env.API_BASE_URL_SERVER ?? process.env.NEXT_PUBLIC_API_BASE_URL
+      ? process.env.INTERNAL_API_BASE_URL ??
+        process.env.API_BASE_URL_SERVER ??
+        process.env.NEXT_PUBLIC_API_BASE_URL
       : process.env.NEXT_PUBLIC_API_BASE_URL;
   return (url ?? "").replace(/\/$/, "");
 }
