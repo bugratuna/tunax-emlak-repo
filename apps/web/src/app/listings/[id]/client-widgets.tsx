@@ -36,7 +36,6 @@ interface GalleryWidgetProps {
 export function PhotoGalleryWidget({ photos, title }: GalleryWidgetProps) {
   // DEV-ONLY: remove after confirming photos load correctly
   if (process.env.NODE_ENV !== "production") {
-    // eslint-disable-next-line no-console
     console.log("[PhotoGallery] photos:", photos);
   }
 

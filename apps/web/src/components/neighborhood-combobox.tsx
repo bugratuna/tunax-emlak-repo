@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect, useId } from "react";
+import { useRef, useState, useCallback, useId } from "react";
 import { ChevronDown, MapPin, X } from "lucide-react";
 import { NEIGHBORHOODS } from "@/lib/geo/antalya";
 
@@ -79,17 +79,20 @@ export function NeighborhoodCombobox({
   const generatedId = useId();
   const inputId = externalId ?? generatedId;
 
+  const [prevValue, setPrevValue] = useState(value);
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  // Keep query in sync when value changes externally (e.g. district reset)
-  useEffect(() => {
+  // Derived-state sync: reset query/activeIdx when controlled value changes externally.
+  // getDerivedStateFromProps pattern — no effect needed.
+  if (prevValue !== value) {
+    setPrevValue(value);
     setQuery(value);
     setActiveIdx(-1);
-  }, [value]);
+  }
 
   const options = buildOptions(district);
   const filtered =

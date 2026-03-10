@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Search, X, LogOut } from "lucide-react";
@@ -118,9 +119,12 @@ export function Nav() {
       >
         {/* ── Logo ──────────────────────────────────────────────────────────── */}
         <Link href="/" className="flex-shrink-0">
-          <img
+          <Image
             src="/brand/logo.png"
             alt="Realty Tunax"
+            width={0}
+            height={0}
+            sizes="100vw"
             style={{
               height: scrolled ? "36px" : "48px",
               width: "auto",

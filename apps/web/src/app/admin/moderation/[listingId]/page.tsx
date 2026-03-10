@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { getServerToken } from "@/lib/auth.server";
 import { getListing } from "@/lib/api/listings";
@@ -61,9 +62,9 @@ export default async function ModerationDetailPage({ params }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="mb-1 text-sm text-zinc-500">
-            <a href="/admin/moderation" className="hover:underline">
+            <Link href="/admin/moderation" className="hover:underline">
               Onay Kuyruğu
-            </a>{" "}
+            </Link>{" "}
             / İnceleme
           </p>
           <h1 className="text-xl font-semibold text-zinc-900">

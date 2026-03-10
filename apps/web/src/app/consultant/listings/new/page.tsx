@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ListingForm } from "@/components/listing-form";
 
 export default function NewListingPage() {
@@ -5,9 +6,9 @@ export default function NewListingPage() {
     <div className="max-w-3xl">
       <div className="mb-6">
         <p className="mb-1 text-sm text-zinc-500">
-          <a href="/consultant/listings" className="hover:underline">
+          <Link href="/consultant/listings" className="hover:underline">
             İlanlarım
-          </a>{" "}
+          </Link>{" "}
           / Yeni İlan
         </p>
         <h1 className="text-xl font-semibold text-zinc-900">

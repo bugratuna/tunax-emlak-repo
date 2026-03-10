@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -95,10 +96,13 @@ export default function RegisterPage() {
         <div className="rounded-2xl border border-zinc-200 bg-white px-8 py-10 shadow-sm">
           {/* Header */}
           <div className="mb-8 flex flex-col items-center gap-3 text-center">
-            <img
+            <Image
               src="/brand/logo.png"
               alt="Realty Tunax"
-              className="h-12 w-auto object-contain"
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ height: "3rem", width: "auto", objectFit: "contain" }}
             />
             <div>
               <h1 className="text-xl font-bold text-zinc-900">Danışman Kaydı</h1>
@@ -117,6 +121,8 @@ export default function RegisterPage() {
                 className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-dashed border-zinc-300 bg-zinc-50 hover:border-amber-400 hover:bg-amber-50 transition-colors"
               >
                 {photoPreview ? (
+                  /* blob URL from URL.createObjectURL — next/image does not support blob URLs */
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={photoPreview}
                     alt="Profil önizleme"

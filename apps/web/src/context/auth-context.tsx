@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 import {
   clearToken,
   decodePayload,
@@ -29,41 +29,47 @@ const AuthContext = createContext<AuthContextValue>({
   logout: () => {},
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<JwtUser | null>(null);
+interface AuthState {
+  token: string | null;
+  user: JwtUser | null;
+}
 
-  // Rehydrate from localStorage on first mount
-  useEffect(() => {
-    const stored = readStoredToken();
-    if (stored && isTokenValid(stored)) {
-      const payload = decodePayload(stored);
-      if (payload) {
-        setToken(stored);
-        setUser(payload);
-        setClientToken(stored); // wire the module-level store for apiFetch
-        return;
-      }
+/**
+ * Lazy initializer — runs once on the client, never on the server (SSR guard).
+ * Reads localStorage, validates the token, and wires the module-level store.
+ * Eliminates the need for a separate useEffect that calls multiple setState.
+ */
+function readInitialAuth(): AuthState {
+  if (typeof window === "undefined") return { token: null, user: null };
+
+  const stored = readStoredToken();
+  if (stored && isTokenValid(stored)) {
+    const payload = decodePayload(stored);
+    if (payload) {
+      setClientToken(stored);
+      return { token: stored, user: payload };
     }
-    // Stale or invalid token — clear both stores
-    clearToken();
-    setClientToken(null);
-  }, []);
+  }
+  clearToken();
+  setClientToken(null);
+  return { token: null, user: null };
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [{ token, user }, setAuthState] = useState<AuthState>(readInitialAuth);
 
   const login = useCallback((newToken: string) => {
     const payload = decodePayload(newToken);
     if (!payload) return;
     saveToken(newToken);
     setClientToken(newToken);
-    setToken(newToken);
-    setUser(payload);
+    setAuthState({ token: newToken, user: payload });
   }, []);
 
   const logout = useCallback(() => {
     clearToken();
     setClientToken(null);
-    setToken(null);
-    setUser(null);
+    setAuthState({ token: null, user: null });
     // Hard redirect so middleware cookie check is re-evaluated
     window.location.href = "/login";
   }, []);

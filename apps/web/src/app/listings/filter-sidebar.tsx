@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -61,12 +60,17 @@ function toggleArrayParam(base: URLSearchParams, key: string, value: string): UR
 function DebouncedInput({ paramKey, min, className }: { paramKey: string; min?: number; className?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [local, setLocal] = useState(searchParams.get(paramKey) ?? "");
+  const urlValue = searchParams.get(paramKey) ?? "";
+  const [prevUrlValue, setPrevUrlValue] = useState(urlValue);
+  const [local, setLocal] = useState(urlValue);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  useEffect(() => {
-    setLocal(searchParams.get(paramKey) ?? "");
-  }, [searchParams, paramKey]);
+  // Derived-state sync: when the URL value changes externally, reset local input.
+  // getDerivedStateFromProps pattern for function components — no effect needed.
+  if (prevUrlValue !== urlValue) {
+    setPrevUrlValue(urlValue);
+    setLocal(urlValue);
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value;

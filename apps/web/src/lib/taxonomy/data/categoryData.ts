@@ -426,5 +426,10 @@ export const categories = {
 export type CategorySelections = {
   cat1: string;
   cat2: string;
-  cat3: { name: string, emlakProp: any, otherProps: any, detailInfos: any };
+  cat3: {
+    name: string;
+    emlakProp: string[] | null;
+    otherProps: string[] | null;
+    detailInfos: Array<{ title: string; options: string[] }> | null;
+  };
 };

@@ -143,7 +143,6 @@ export default function MapPanel({ listings, currentParams }: MapPanelProps) {
       mapRef.current = null;
       markerLayerRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Effect 2: rebuild markers whenever listings change or map becomes ready ──
@@ -192,6 +191,8 @@ export default function MapPanel({ listings, currentParams }: MapPanelProps) {
       .catch((err) => {
         console.error("[MapPanel] Marker update failed:", err);
       });
+    // pinListings is intentionally omitted: pinKey is a stable string proxy
+    // for the same data. Adding pinListings would re-run on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady, pinKey]);
 

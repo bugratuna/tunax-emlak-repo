@@ -189,10 +189,14 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-4xl text-center">
           {/* Logo */}
           <div className="mb-8 flex justify-center">
-            <img
+            <Image
               src="/brand/logo.png"
               alt="Realty Tunax"
-              className="h-48 w-auto object-contain drop-shadow-lg"
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ height: "12rem", width: "auto", objectFit: "contain" }}
+              className="drop-shadow-lg"
             />
           </div>
 
@@ -268,12 +272,12 @@ export default async function HomePage() {
                   Özenle seçilmiş, özel portföy ilanları
                 </p>
               </div>
-              <a
+              <Link
                 href="/listings"
                 className="hidden sm:flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-zinc-900"
               >
                 Tümünü gör <ArrowRight size={14} />
-              </a>
+              </Link>
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {showcaseListings.map((l) => (

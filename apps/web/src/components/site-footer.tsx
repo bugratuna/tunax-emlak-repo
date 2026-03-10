@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 
@@ -19,10 +20,14 @@ export function SiteFooter() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
               {/* brightness-0 invert renders the logo in white on dark background */}
-              <img
+              <Image
                 src="/brand/logo.png"
                 alt="Realty Tunax"
-                className="h-8 w-auto object-contain brightness-0 invert"
+                width={0}
+                height={0}
+                sizes="100vw"
+                style={{ height: "2rem", width: "auto", objectFit: "contain" }}
+                className="brightness-0 invert"
               />
               <span className="text-sm font-bold text-white">Realty Tunax</span>
             </Link>

@@ -398,7 +398,7 @@ export default function ListingPhotoManager({ listingId, initialPhotos }: Props)
 
       {photos.length > 1 && (
         <p className="text-xs text-zinc-400">
-          Sıralamak için sürükleyin · "★ Kapak" ile kapak fotoğrafını değiştirin
+          Sıralamak için sürükleyin · &quot;★ Kapak&quot; ile kapak fotoğrafını değiştirin
         </p>
       )}
     </div>

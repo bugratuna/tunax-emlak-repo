@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -66,10 +67,13 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-zinc-200 bg-white px-8 py-10 shadow-sm">
           {/* Logo + heading */}
           <div className="mb-8 flex flex-col items-center gap-3 text-center">
-            <img
+            <Image
               src="/brand/logo.png"
               alt="Realty Tunax"
-              className="h-12 w-auto object-contain"
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ height: "3rem", width: "auto", objectFit: "contain" }}
             />
             <div>
               <h1 className="text-xl font-bold text-zinc-900">

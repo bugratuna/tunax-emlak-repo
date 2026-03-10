@@ -52,7 +52,6 @@ export function RichTextRenderer({ html, className = "" }: Props) {
         prose-ul:list-disc prose-ol:list-decimal
         prose-li:my-0.5 prose-p:my-1
         ${className}`}
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: sanitized! }}
     />
   );
