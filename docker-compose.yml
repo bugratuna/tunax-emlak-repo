@@ -1,5 +1,5 @@
 services:
-  # 1. Servis: PostGIS (Coğrafi Veritabanı)
+  # 1. Veritabanı (PostGIS)
   postgres_gis:
     image: postgis/postgis:16-3.4
     container_name: arep_postgis
@@ -18,41 +18,41 @@ services:
       timeout: 5s
       retries: 5
 
-  # 2. Servis: Standart PostgreSQL — NOT USED BY AREP (primary DB is PostGIS on 5432)
-  # db:
-  #   image: postgres:17
-  #   container_name: arep_postgres_db
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_USER: bgrtn93
-  #     POSTGRES_PASSWORD: bgrtn123
-  #     POSTGRES_DB: mydatabase
-  #   ports:
-  #     - "5433:5432"
-  #   volumes:
-  #     - postgres_std_data:/var/lib/postgresql/data
-
-  # 3. Servis: Redis
+  # 2. Redis
   redis:
     image: redis:7-alpine
     container_name: arep_redis
-    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # 4. Servis: pgAdmin
+  # 3. Tüm Uygulamalar (NextJS, NestJS, Worker)
+  main_app:
+    build: .
+    container_name: arep_full_stack
+    restart: always
+    ports:
+      - "3000:3000" # NextJS
+      - "4000:4000" # NestJS API
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-tunax}:${POSTGRES_PASSWORD:-tunax123}@postgres_gis:5432/${POSTGRES_DB:-tunax}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres_gis:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # 4. pgAdmin (Opsiyonel UI)
   pgadmin:
     image: dpage/pgadmin4
     container_name: arep_pgadmin_ui
-    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: test@test.com
       PGADMIN_DEFAULT_PASSWORD: bgrtn123
@@ -62,6 +62,5 @@ services:
       - postgres_gis
 
 volumes:
-  postgis_data:      # PostGIS için ayrı alan
-  postgres_std_data: # Standart Postgres için ayrı alan
+  postgis_data:
   redis_data:
