@@ -1,7 +1,71 @@
-install dependencies
+name: CI
 
-lint
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-test
+jobs:
+  ci:
+    runs-on: ubuntu-latest
 
-build web, api, agent
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ── API ────────────────────────────────────────────────────────────────
+      - name: Install API dependencies
+        working-directory: apps/api
+        run: npm ci
+
+      - name: Lint API
+        working-directory: apps/api
+        run: npm run lint
+
+      - name: Test API
+        working-directory: apps/api
+        run: npm test
+
+      - name: Build API
+        working-directory: apps/api
+        run: npm run build
+
+      # ── Web ───────────────────────────────────────────────────────────────
+      - name: Install Web dependencies
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Lint Web
+        working-directory: apps/web
+        run: npm run lint
+
+      # apps/web has no test script — step intentionally omitted
+
+      - name: Build Web
+        working-directory: apps/web
+        run: npm run build
+
+      # ── Worker ────────────────────────────────────────────────────────────
+      - name: Install Worker dependencies
+        working-directory: apps/worker
+        run: npm ci
+
+      # apps/worker has no lint or test script — steps intentionally omitted
+
+      - name: Build Worker
+        working-directory: apps/worker
+        run: npm run build
+
+      # ── Agent ─────────────────────────────────────────────────────────────
+      - name: Install Agent dependencies
+        working-directory: apps/agent
+        run: npm ci
+
+      # apps/agent has no lint, test (stub exits 1), or build script
+      # steps intentionally omitted until real scripts are added
