@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ListingEntity } from './listing.entity';
 
 @Entity('listing_media')
@@ -18,7 +25,12 @@ export class ListingMediaEntity {
   @Column({ name: 'public_url', type: 'varchar', length: 1000, nullable: true })
   publicUrl: string | null;
 
-  @Column({ name: 'content_type', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'content_type',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   contentType: string | null;
 
   @Column({ name: 'size_bytes', type: 'bigint', nullable: true })

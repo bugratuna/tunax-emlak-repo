@@ -54,7 +54,8 @@ export class ListListingsDto {
     required: false,
     enum: LISTING_STATUSES,
     example: 'PUBLISHED',
-    description: 'Lifecycle status filter. No default — returns all statuses when omitted.',
+    description:
+      'Lifecycle status filter. No default — returns all statuses when omitted.',
   })
   @IsIn(LISTING_STATUSES)
   @IsOptional()
@@ -62,14 +63,24 @@ export class ListListingsDto {
 
   // ── Price ─────────────────────────────────────────────────────────────────
 
-  @ApiProperty({ required: false, example: 500000, description: 'Min price TRY (inclusive). Listings without a price are excluded.' })
+  @ApiProperty({
+    required: false,
+    example: 500000,
+    description:
+      'Min price TRY (inclusive). Listings without a price are excluded.',
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   @IsOptional()
   minPrice?: number;
 
-  @ApiProperty({ required: false, example: 5000000, description: 'Max price TRY (inclusive). Listings without a price are excluded.' })
+  @ApiProperty({
+    required: false,
+    example: 5000000,
+    description:
+      'Max price TRY (inclusive). Listings without a price are excluded.',
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
@@ -78,14 +89,22 @@ export class ListListingsDto {
 
   // ── Area ──────────────────────────────────────────────────────────────────
 
-  @ApiProperty({ required: false, example: 80, description: 'Min gross area m²' })
+  @ApiProperty({
+    required: false,
+    example: 80,
+    description: 'Min gross area m²',
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   @IsOptional()
   minM2Gross?: number;
 
-  @ApiProperty({ required: false, example: 250, description: 'Max gross area m²' })
+  @ApiProperty({
+    required: false,
+    example: 250,
+    description: 'Max gross area m²',
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
@@ -99,7 +118,11 @@ export class ListListingsDto {
   @IsOptional()
   minM2Net?: number;
 
-  @ApiProperty({ required: false, example: 220, description: 'Max net area m²' })
+  @ApiProperty({
+    required: false,
+    example: 220,
+    description: 'Max net area m²',
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
@@ -108,7 +131,11 @@ export class ListListingsDto {
 
   // ── Property specs ────────────────────────────────────────────────────────
 
-  @ApiProperty({ required: false, example: 3, description: 'Exact room count (integer). Blocked for land subtypes → 400.' })
+  @ApiProperty({
+    required: false,
+    example: 3,
+    description: 'Exact room count (integer). Blocked for land subtypes → 400.',
+  })
   @Type(() => Number)
   @IsInt()
   @Min(0)
@@ -126,46 +153,74 @@ export class ListListingsDto {
   @IsOptional()
   roomCounts?: string;
 
-  @ApiProperty({ required: false, example: 1, description: 'Exact bathroom count' })
+  @ApiProperty({
+    required: false,
+    example: 1,
+    description: 'Exact bathroom count',
+  })
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @IsOptional()
   bathroomCount?: number;
 
-  @ApiProperty({ required: false, example: 0, description: 'Min building age (years)' })
+  @ApiProperty({
+    required: false,
+    example: 0,
+    description: 'Min building age (years)',
+  })
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @IsOptional()
   minBuildingAge?: number;
 
-  @ApiProperty({ required: false, example: 10, description: 'Max building age (years)' })
+  @ApiProperty({
+    required: false,
+    example: 10,
+    description: 'Max building age (years)',
+  })
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @IsOptional()
   maxBuildingAge?: number;
 
-  @ApiProperty({ required: false, example: 4, description: 'Exact floor number (can be negative for basement)' })
+  @ApiProperty({
+    required: false,
+    example: 4,
+    description: 'Exact floor number (can be negative for basement)',
+  })
   @Type(() => Number)
   @IsInt()
   @IsOptional()
   floorNumber?: number;
 
-  @ApiProperty({ required: false, example: 8, description: 'Exact total floors in building' })
+  @ApiProperty({
+    required: false,
+    example: 8,
+    description: 'Exact total floors in building',
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @IsOptional()
   totalFloors?: number;
 
-  @ApiProperty({ required: false, enum: HEATING_TYPES, example: 'Doğalgaz (Kombi)' })
+  @ApiProperty({
+    required: false,
+    enum: HEATING_TYPES,
+    example: 'Doğalgaz (Kombi)',
+  })
   @IsIn(HEATING_TYPES)
   @IsOptional()
   heatingType?: string;
 
-  @ApiProperty({ required: false, enum: KITCHEN_STATES, example: 'Açık Mutfak' })
+  @ApiProperty({
+    required: false,
+    enum: KITCHEN_STATES,
+    example: 'Açık Mutfak',
+  })
   @IsIn(KITCHEN_STATES)
   @IsOptional()
   kitchenState?: string;
@@ -216,14 +271,22 @@ export class ListListingsDto {
 
   // ── Dues ──────────────────────────────────────────────────────────────────
 
-  @ApiProperty({ required: false, example: 0, description: 'Min monthly dues TRY' })
+  @ApiProperty({
+    required: false,
+    example: 0,
+    description: 'Min monthly dues TRY',
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   @IsOptional()
   minDues?: number;
 
-  @ApiProperty({ required: false, example: 1000, description: 'Max monthly dues TRY' })
+  @ApiProperty({
+    required: false,
+    example: 1000,
+    description: 'Max monthly dues TRY',
+  })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
@@ -269,25 +332,41 @@ export class ListListingsDto {
   @IsOptional()
   facades?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.interiorFeatures, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.interiorFeatures,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   interiorFeatures?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.exteriorFeatures, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.exteriorFeatures,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   exteriorFeatures?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.vicinity, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.vicinity,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   vicinity?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.transportation, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.transportation,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -299,13 +378,21 @@ export class ListListingsDto {
   @IsOptional()
   view?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.housingType, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.housingType,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   housingType?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.accessibility, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.accessibility,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -320,7 +407,13 @@ export class ListListingsDto {
   @IsOptional()
   page?: number;
 
-  @ApiProperty({ required: false, example: 20, minimum: 1, maximum: 100, default: 20 })
+  @ApiProperty({
+    required: false,
+    example: 20,
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -330,13 +423,21 @@ export class ListListingsDto {
 
   // ── Featured filter ───────────────────────────────────────────────────────
 
-  @ApiProperty({ required: false, example: true, description: 'Return only isFeatured=true listings.' })
+  @ApiProperty({
+    required: false,
+    example: true,
+    description: 'Return only isFeatured=true listings.',
+  })
   @Transform(boolTransform)
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;
 
-  @ApiProperty({ required: false, example: true, description: 'Return only isShowcase=true (Vitrin) listings.' })
+  @ApiProperty({
+    required: false,
+    example: true,
+    description: 'Return only isShowcase=true (Vitrin) listings.',
+  })
   @Transform(boolTransform)
   @IsBoolean()
   @IsOptional()
@@ -356,7 +457,8 @@ export class ListListingsDto {
   @ApiProperty({
     required: false,
     example: 'deniz manzaralı',
-    description: 'Case-insensitive substring match against listing title. Admin endpoint only.',
+    description:
+      'Case-insensitive substring match against listing title. Admin endpoint only.',
   })
   @IsString()
   @IsOptional()

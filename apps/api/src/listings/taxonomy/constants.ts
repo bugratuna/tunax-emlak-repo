@@ -35,10 +35,32 @@ export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
 // ── Subtypes per property type (taxonomy level 2) ────────────────────────────
 export const SUBTYPES_BY_PROPERTY_TYPE: Record<string, readonly string[]> = {
-  Konut: ['Daire', 'Villa', 'Rezidans', 'Müstakil Ev', 'Yalı', 'Çiftlik Evi', 'Bungalov'],
-  İşyeri: ['Dükkan', 'Ofis', 'Mağaza', 'Depo', 'Fabrika', 'Atölye', 'Akaryakıt İstasyonu'],
+  Konut: [
+    'Daire',
+    'Villa',
+    'Rezidans',
+    'Müstakil Ev',
+    'Yalı',
+    'Çiftlik Evi',
+    'Bungalov',
+  ],
+  İşyeri: [
+    'Dükkan',
+    'Ofis',
+    'Mağaza',
+    'Depo',
+    'Fabrika',
+    'Atölye',
+    'Akaryakıt İstasyonu',
+  ],
   Arsa: ['Arsa', 'Tarla', 'Bağ / Bahçe', 'Zeytinlik'],
-  'Turistik Tesis': ['Otel', 'Apart Otel', 'Pansiyon', 'Tatil Köyü', 'Kamp Alanı'],
+  'Turistik Tesis': [
+    'Otel',
+    'Apart Otel',
+    'Pansiyon',
+    'Tatil Köyü',
+    'Kamp Alanı',
+  ],
   Devremülk: ['Devremülk'],
   Arazi: ['Ham Arazi', 'İmarlı Arazi'],
 };
@@ -197,11 +219,19 @@ export const FEATURE_GROUPS = {
 } as const;
 
 export type FeatureGroup = keyof typeof FEATURE_GROUPS;
-export const FEATURE_GROUP_NAMES = Object.keys(FEATURE_GROUPS) as FeatureGroup[];
+export const FEATURE_GROUP_NAMES = Object.keys(
+  FEATURE_GROUPS,
+) as FeatureGroup[];
 
 // O(1) lookup sets — built once at module load time
-export const FEATURE_VALUES_SET: Record<FeatureGroup, Set<string>> = Object.fromEntries(
-  FEATURE_GROUP_NAMES.map((g) => [g, new Set<string>(FEATURE_GROUPS[g] as readonly string[])]),
+export const FEATURE_VALUES_SET: Record<
+  FeatureGroup,
+  Set<string>
+> = Object.fromEntries(
+  FEATURE_GROUP_NAMES.map((g) => [
+    g,
+    new Set<string>(FEATURE_GROUPS[g] as readonly string[]),
+  ]),
 ) as Record<FeatureGroup, Set<string>>;
 
 // ── Conditional filter rules ──────────────────────────────────────────────────
@@ -264,7 +294,15 @@ export const BLOCKED_FILTERS_BY_SUBTYPE: Record<string, readonly string[]> = {
     'minDues',
     'maxDues',
   ],
-  Atölye: ['roomCount', 'bathroomCount', 'isFurnished', 'hasBalcony', 'housingType', 'minDues', 'maxDues'],
+  Atölye: [
+    'roomCount',
+    'bathroomCount',
+    'isFurnished',
+    'hasBalcony',
+    'housingType',
+    'minDues',
+    'maxDues',
+  ],
 
   // ── Residential ────────────────────────────────────────────────────────────
   // Villa is a detached property — no floor_number in the traditional sense,

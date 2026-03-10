@@ -32,16 +32,31 @@ export class ListingEntity {
   @Column({ name: 'consultant_id', type: 'uuid' })
   consultantId: string;
 
-  @Column({ name: 'status', type: 'varchar', length: 30, default: 'PENDING_REVIEW' })
+  @Column({
+    name: 'status',
+    type: 'varchar',
+    length: 30,
+    default: 'PENDING_REVIEW',
+  })
   status: ListingStatus;
 
   @Column({ name: 'category', type: 'varchar', length: 20, nullable: true })
   category: ListingCategory | null;
 
-  @Column({ name: 'property_type', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'property_type',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   propertyType: string | null;
 
-  @Column({ name: 'listing_type', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'listing_type',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   listingType: string | null;
 
   @Column({ name: 'subtype', type: 'varchar', length: 100, nullable: true })
@@ -50,7 +65,13 @@ export class ListingEntity {
   @Column({ name: 'description', type: 'text', nullable: true })
   description: string | null;
 
-  @Column({ name: 'price_amount', type: 'numeric', precision: 14, scale: 2, nullable: true })
+  @Column({
+    name: 'price_amount',
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    nullable: true,
+  })
   priceAmount: number | null;
 
   @Column({ name: 'price_currency', type: 'char', length: 3, default: 'TRY' })
@@ -59,10 +80,22 @@ export class ListingEntity {
   @Column({ name: 'price_is_negotiable', type: 'boolean', default: false })
   priceIsNegotiable: boolean;
 
-  @Column({ name: 'm2_gross', type: 'numeric', precision: 8, scale: 2, nullable: true })
+  @Column({
+    name: 'm2_gross',
+    type: 'numeric',
+    precision: 8,
+    scale: 2,
+    nullable: true,
+  })
   m2Gross: number | null;
 
-  @Column({ name: 'm2_net', type: 'numeric', precision: 8, scale: 2, nullable: true })
+  @Column({
+    name: 'm2_net',
+    type: 'numeric',
+    precision: 8,
+    scale: 2,
+    nullable: true,
+  })
   m2Net: number | null;
 
   @Column({ name: 'room_count', type: 'smallint', nullable: true })
@@ -80,10 +113,20 @@ export class ListingEntity {
   @Column({ name: 'building_age', type: 'smallint', nullable: true })
   buildingAge: number | null;
 
-  @Column({ name: 'heating_type', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'heating_type',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   heatingType: string | null;
 
-  @Column({ name: 'kitchen_state', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'kitchen_state',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   kitchenState: string | null;
 
   @Column({ name: 'car_park', type: 'boolean', nullable: true })
@@ -107,7 +150,13 @@ export class ListingEntity {
   @Column({ name: 'is_swap_available', type: 'boolean', nullable: true })
   isSwapAvailable: boolean | null;
 
-  @Column({ name: 'dues_amount', type: 'numeric', precision: 10, scale: 2, nullable: true })
+  @Column({
+    name: 'dues_amount',
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
   duesAmount: number | null;
 
   @Column({ name: 'image_count', type: 'smallint', default: 0 })
@@ -125,7 +174,13 @@ export class ListingEntity {
   @Column({ name: 'showcase_order', type: 'smallint', default: 0 })
   showcaseOrder: number;
 
-  @Column({ name: 'listing_number', type: 'varchar', length: 12, nullable: true, unique: true })
+  @Column({
+    name: 'listing_number',
+    type: 'varchar',
+    length: 12,
+    nullable: true,
+    unique: true,
+  })
   listingNumber: string | null;
 
   @Column({ name: 'submitted_at', type: 'timestamptz', nullable: true })
@@ -147,9 +202,15 @@ export class ListingEntity {
   })
   location: ListingLocationEntity | null;
 
-  @OneToMany(() => ListingFeatureEntity, (f) => f.listing, { cascade: true, eager: false })
+  @OneToMany(() => ListingFeatureEntity, (f) => f.listing, {
+    cascade: true,
+    eager: false,
+  })
   features: ListingFeatureEntity[];
 
-  @OneToMany(() => ListingMediaEntity, (m) => m.listing, { cascade: true, eager: false })
+  @OneToMany(() => ListingMediaEntity, (m) => m.listing, {
+    cascade: true,
+    eager: false,
+  })
   media: ListingMediaEntity[];
 }

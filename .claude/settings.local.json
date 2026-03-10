@@ -34,7 +34,8 @@
       "Bash(node:*)",
       "Bash(grep -v \"^$\")",
       "Read(//c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/**)",
-      "Read(//c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/=== database.module.ts ssl/**)"
+      "Read(//c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/=== database.module.ts ssl/**)",
+      "Bash(npm run:*)"
     ]
   }
 }

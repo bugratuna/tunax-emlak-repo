@@ -1,4 +1,8 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -36,13 +40,18 @@ export class S3Service {
    * Returns a time-limited PUT URL the client can use to upload directly.
    * The key must be constructed by the caller (e.g. `listings/{id}/{uuid}.jpg`).
    */
-  async generatePresignedPutUrl(key: string, contentType: string): Promise<string> {
+  async generatePresignedPutUrl(
+    key: string,
+    contentType: string,
+  ): Promise<string> {
     const command = new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       ContentType: contentType,
     });
-    return getSignedUrl(this.client, command, { expiresIn: PRESIGN_EXPIRES_IN });
+    return getSignedUrl(this.client, command, {
+      expiresIn: PRESIGN_EXPIRES_IN,
+    });
   }
 
   /**
@@ -57,8 +66,14 @@ export class S3Service {
    * Uploads a Buffer directly from the API server (server-side multipart flow).
    * Returns the public URL of the stored object.
    */
-  async putObject(key: string, buffer: Buffer, contentType: string): Promise<string> {
-    this.logger.log(`Uploading object to S3: ${key} (${contentType}, ${buffer.length} bytes)`);
+  async putObject(
+    key: string,
+    buffer: Buffer,
+    contentType: string,
+  ): Promise<string> {
+    this.logger.log(
+      `Uploading object to S3: ${key} (${contentType}, ${buffer.length} bytes)`,
+    );
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.bucket,
@@ -73,7 +88,9 @@ export class S3Service {
   /** Hard-deletes an object. Throws on S3 error; caller decides how to handle. */
   async deleteObject(key: string): Promise<void> {
     this.logger.log(`Deleting S3 object: ${key}`);
-    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
   }
 
   get presignExpiresIn(): number {

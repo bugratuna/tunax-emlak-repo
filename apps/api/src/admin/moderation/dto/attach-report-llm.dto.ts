@@ -8,12 +8,21 @@ export class AttachReportLlmDto {
   @ApiProperty({
     type: 'object',
     additionalProperties: true,
-    description: 'Operator-pasted LLM output validated against the stored llmJsonSchema',
+    description:
+      'Operator-pasted LLM output validated against the stored llmJsonSchema',
     example: {
       status: 'SUCCESS',
       contentModeration: { status: 'PASS', passed: true, issues: [] },
-      factVerification: { status: 'CONSISTENT', consistencyScore: 0.92, inconsistencies: [] },
-      riskAssessment: { riskLevel: 'LOW', requiresManualReview: false, fraudIndicators: [] },
+      factVerification: {
+        status: 'CONSISTENT',
+        consistencyScore: 0.92,
+        inconsistencies: [],
+      },
+      riskAssessment: {
+        riskLevel: 'LOW',
+        requiresManualReview: false,
+        fraudIndicators: [],
+      },
     },
   })
   @IsObject()

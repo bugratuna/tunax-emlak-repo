@@ -10,7 +10,13 @@ export class GenerateReportDto {
       completenessScore: 85,
       descriptionQualityScore: 70,
       missingFields: ['coordinates'],
-      warnings: [{ code: 'LOW_DESCRIPTION', severity: 'LOW', message: 'Short description' }],
+      warnings: [
+        {
+          code: 'LOW_DESCRIPTION',
+          severity: 'LOW',
+          message: 'Short description',
+        },
+      ],
       detectedTags: ['APARTMENT', 'ANTALYA'],
     },
   })

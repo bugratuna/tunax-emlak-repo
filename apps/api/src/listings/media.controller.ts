@@ -31,7 +31,8 @@ export class MediaController {
   @Roles(Role.CONSULTANT)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Get a presigned S3 PUT URL for direct media upload (CONSULTANT only)',
+    summary:
+      'Get a presigned S3 PUT URL for direct media upload (CONSULTANT only)',
     description:
       'Step 1 of the 3-step media upload flow:\n' +
       '1. **POST /api/media/presign** — send `{ listingId, fileName, contentType, order? }`. ' +
@@ -41,11 +42,16 @@ export class MediaController {
       '   the media row in the database.',
   })
   @ApiOkResponse({
-    description: '{ uploadUrl: string; publicUrl: string; s3Key: string; expiresIn: 900 }',
+    description:
+      '{ uploadUrl: string; publicUrl: string; s3Key: string; expiresIn: 900 }',
   })
   @ApiNotFoundResponse({ description: 'Listing not found' })
-  @ApiBadRequestResponse({ description: 'Invalid fileName or unsupported contentType' })
-  @ApiForbiddenResponse({ description: 'Listing belongs to a different consultant' })
+  @ApiBadRequestResponse({
+    description: 'Invalid fileName or unsupported contentType',
+  })
+  @ApiForbiddenResponse({
+    description: 'Listing belongs to a different consultant',
+  })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
   presign(@Body() dto: PresignUploadDto, @CurrentUser() user: JwtPayload) {
     return this.listingsService.presignUpload(dto, user.sub);

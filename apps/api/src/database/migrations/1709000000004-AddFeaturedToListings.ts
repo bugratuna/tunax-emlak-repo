@@ -18,7 +18,11 @@ export class AddFeaturedToListings1709000000004 implements MigrationInterface {
 
   async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP INDEX IF EXISTS idx_listings_featured`);
-    await queryRunner.query(`ALTER TABLE listings DROP COLUMN IF EXISTS is_featured`);
-    await queryRunner.query(`ALTER TABLE listings DROP COLUMN IF EXISTS featured_sort_order`);
+    await queryRunner.query(
+      `ALTER TABLE listings DROP COLUMN IF EXISTS is_featured`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE listings DROP COLUMN IF EXISTS featured_sort_order`,
+    );
   }
 }

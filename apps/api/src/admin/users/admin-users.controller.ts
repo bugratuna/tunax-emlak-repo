@@ -46,7 +46,9 @@ export class AdminUsersController {
 
   @Post()
   @HttpCode(201)
-  @ApiOperation({ summary: 'Create a user (ADMIN only) — defaults to PENDING_APPROVAL' })
+  @ApiOperation({
+    summary: 'Create a user (ADMIN only) — defaults to PENDING_APPROVAL',
+  })
   @ApiCreatedResponse({ description: 'SafeUser created' })
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
@@ -63,7 +65,9 @@ export class AdminUsersController {
   }
 
   @Patch(':id/approve')
-  @ApiOperation({ summary: 'Approve a user — sets status to ACTIVE (ADMIN only)' })
+  @ApiOperation({
+    summary: 'Approve a user — sets status to ACTIVE (ADMIN only)',
+  })
   @ApiOkResponse({ description: 'SafeUser with status ACTIVE' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse()
@@ -73,7 +77,9 @@ export class AdminUsersController {
   }
 
   @Patch(':id/suspend')
-  @ApiOperation({ summary: 'Suspend a user — sets status to SUSPENDED (ADMIN only)' })
+  @ApiOperation({
+    summary: 'Suspend a user — sets status to SUSPENDED (ADMIN only)',
+  })
   @ApiOkResponse({ description: 'SafeUser with status SUSPENDED' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse()
@@ -83,7 +89,9 @@ export class AdminUsersController {
   }
 
   @Patch(':id/activate')
-  @ApiOperation({ summary: 'Activate a suspended user — sets status to ACTIVE (ADMIN only)' })
+  @ApiOperation({
+    summary: 'Activate a suspended user — sets status to ACTIVE (ADMIN only)',
+  })
   @ApiOkResponse({ description: 'SafeUser with status ACTIVE' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse()

@@ -165,7 +165,9 @@ const LLM_RESULT_SCHEMA = {
 // with a precise field path on any schema violation.
 function validateLlmResult(result: unknown): asserts result is LlmResult {
   if (!result || typeof result !== 'object' || Array.isArray(result)) {
-    throw new UnprocessableEntityException('llmResult must be a non-null object');
+    throw new UnprocessableEntityException(
+      'llmResult must be a non-null object',
+    );
   }
 
   const r = result as Record<string, unknown>;
@@ -196,7 +198,10 @@ function validateLlmResult(result: unknown): asserts result is LlmResult {
   }
 
   if (r.contentModeration !== undefined) {
-    if (typeof r.contentModeration !== 'object' || Array.isArray(r.contentModeration)) {
+    if (
+      typeof r.contentModeration !== 'object' ||
+      Array.isArray(r.contentModeration)
+    ) {
       throw new UnprocessableEntityException(
         'llmResult.contentModeration must be an object',
       );
@@ -240,7 +245,10 @@ function validateLlmResult(result: unknown): asserts result is LlmResult {
   }
 
   if (r.factVerification !== undefined) {
-    if (typeof r.factVerification !== 'object' || Array.isArray(r.factVerification)) {
+    if (
+      typeof r.factVerification !== 'object' ||
+      Array.isArray(r.factVerification)
+    ) {
       throw new UnprocessableEntityException(
         'llmResult.factVerification must be an object',
       );
@@ -259,7 +267,10 @@ function validateLlmResult(result: unknown): asserts result is LlmResult {
     }
     const FV_SEVERITIES = ['LOW', 'MEDIUM', 'HIGH'];
     for (let idx = 0; idx < (fv.inconsistencies as unknown[]).length; idx++) {
-      const item = (fv.inconsistencies as unknown[])[idx] as Record<string, unknown>;
+      const item = (fv.inconsistencies as unknown[])[idx] as Record<
+        string,
+        unknown
+      >;
       if (typeof item.type !== 'string') {
         throw new UnprocessableEntityException(
           `llmResult.factVerification.inconsistencies[${idx}].type must be a string`,
@@ -284,7 +295,10 @@ function validateLlmResult(result: unknown): asserts result is LlmResult {
   }
 
   if (r.riskAssessment !== undefined) {
-    if (typeof r.riskAssessment !== 'object' || Array.isArray(r.riskAssessment)) {
+    if (
+      typeof r.riskAssessment !== 'object' ||
+      Array.isArray(r.riskAssessment)
+    ) {
       throw new UnprocessableEntityException(
         'llmResult.riskAssessment must be an object',
       );
@@ -308,7 +322,10 @@ function validateLlmResult(result: unknown): asserts result is LlmResult {
     }
     const FI_SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
     for (let idx = 0; idx < (ra.fraudIndicators as unknown[]).length; idx++) {
-      const item = (ra.fraudIndicators as unknown[])[idx] as Record<string, unknown>;
+      const item = (ra.fraudIndicators as unknown[])[idx] as Record<
+        string,
+        unknown
+      >;
       if (typeof item.indicator !== 'string') {
         throw new UnprocessableEntityException(
           `llmResult.riskAssessment.fraudIndicators[${idx}].indicator must be a string`,
@@ -385,8 +402,13 @@ export class ModerationService {
       decision: 'approved',
       decisionReason: report.reason ?? '',
       warnings: scoring?.deterministicScores.warnings.map((w) => w.code) ?? [],
-      riskLevel: (scoring?.llmResult?.riskAssessment?.riskLevel?.toLowerCase() ?? 'low') as AuditLogEntry['riskLevel'],
-      decidedBy: { actorType: adminId ? 'admin' : 'system', actorId: report.adminId! },
+      riskLevel:
+        (scoring?.llmResult?.riskAssessment?.riskLevel?.toLowerCase() ??
+          'low') as AuditLogEntry['riskLevel'],
+      decidedBy: {
+        actorType: adminId ? 'admin' : 'system',
+        actorId: report.adminId!,
+      },
       policyVersion: '1.0',
       previousDecisionId: null,
       overrideFlag: false,
@@ -395,7 +417,10 @@ export class ModerationService {
     this.store.appendAuditLog(auditEntry);
     this.logger.log(JSON.stringify(auditEntry));
 
-    const updated = await this.listingsService.updateStatus(listingId, 'PUBLISHED');
+    const updated = await this.listingsService.updateStatus(
+      listingId,
+      'PUBLISHED',
+    );
 
     // Assign RT-XXXXXX listing number atomically (idempotent)
     await this.listingsService.assignListingNumber(listingId);
@@ -444,8 +469,13 @@ export class ModerationService {
       decision: 'needs_changes',
       decisionReason: report.reason ?? '',
       warnings: scoring?.deterministicScores.warnings.map((w) => w.code) ?? [],
-      riskLevel: (scoring?.llmResult?.riskAssessment?.riskLevel?.toLowerCase() ?? 'low') as AuditLogEntry['riskLevel'],
-      decidedBy: { actorType: adminId ? 'admin' : 'system', actorId: report.adminId! },
+      riskLevel:
+        (scoring?.llmResult?.riskAssessment?.riskLevel?.toLowerCase() ??
+          'low') as AuditLogEntry['riskLevel'],
+      decidedBy: {
+        actorType: adminId ? 'admin' : 'system',
+        actorId: report.adminId!,
+      },
       policyVersion: '1.0',
       previousDecisionId: null,
       overrideFlag: false,
@@ -454,7 +484,10 @@ export class ModerationService {
     this.store.appendAuditLog(auditEntry);
     this.logger.log(JSON.stringify(auditEntry));
 
-    const updated = await this.listingsService.updateStatus(listingId, 'NEEDS_CHANGES');
+    const updated = await this.listingsService.updateStatus(
+      listingId,
+      'NEEDS_CHANGES',
+    );
     return { listing: updated, report };
   }
 
@@ -488,8 +521,13 @@ export class ModerationService {
       decision: 'rejected',
       decisionReason: report.reason ?? '',
       warnings: scoring?.deterministicScores.warnings.map((w) => w.code) ?? [],
-      riskLevel: (scoring?.llmResult?.riskAssessment?.riskLevel?.toLowerCase() ?? 'low') as AuditLogEntry['riskLevel'],
-      decidedBy: { actorType: adminId ? 'admin' : 'system', actorId: report.adminId! },
+      riskLevel:
+        (scoring?.llmResult?.riskAssessment?.riskLevel?.toLowerCase() ??
+          'low') as AuditLogEntry['riskLevel'],
+      decidedBy: {
+        actorType: adminId ? 'admin' : 'system',
+        actorId: report.adminId!,
+      },
       policyVersion: '1.0',
       previousDecisionId: null,
       overrideFlag: false,
@@ -498,7 +536,10 @@ export class ModerationService {
     this.store.appendAuditLog(auditEntry);
     this.logger.log(JSON.stringify(auditEntry));
 
-    const updated = await this.listingsService.updateStatus(listingId, 'ARCHIVED');
+    const updated = await this.listingsService.updateStatus(
+      listingId,
+      'ARCHIVED',
+    );
     return { listing: updated, report };
   }
 
@@ -527,7 +568,10 @@ export class ModerationService {
     return this.store.createScoringReport(listingId, deterministicScores);
   }
 
-  async attachLlm(listingId: string, llmResult: LlmResult): Promise<ScoringReport> {
+  async attachLlm(
+    listingId: string,
+    llmResult: LlmResult,
+  ): Promise<ScoringReport> {
     await this.listingsService.findById(listingId); // throws 404 if not found
     if (!this.store.getScoringReport(listingId)) {
       throw new NotFoundException(
@@ -600,12 +644,19 @@ export class ModerationService {
       `6. riskFlags — Şüpheli kalıpları, tutarsızlıkları veya dolandırıcılık göstergelerini işaretleyin.\n\n` +
       `HATIRLATMA: Yalnızca geçerli JSON döndürün.`;
 
-    return this.store.initModerationEnrichment(listingId, llmPrompt, LLM_RESULT_SCHEMA);
+    return this.store.initModerationEnrichment(
+      listingId,
+      llmPrompt,
+      LLM_RESULT_SCHEMA,
+    );
   }
 
   // Called by the human operator after running llmPrompt through an external LLM.
   // Validates the result against LLM_RESULT_SCHEMA; throws 422 on any mismatch.
-  async attachReportLlm(listingId: string, llmResult: unknown): Promise<ModerationReport> {
+  async attachReportLlm(
+    listingId: string,
+    llmResult: unknown,
+  ): Promise<ModerationReport> {
     await this.listingsService.findById(listingId); // throws 404 if not found
     const report = this.store.getReport(listingId);
     if (!report) {

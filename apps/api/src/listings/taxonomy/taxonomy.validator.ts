@@ -47,7 +47,11 @@ export function validateConditionalFilters(dto: Record<string, unknown>): void {
     if (blocked && blocked.length > 0) {
       // Collect all filter keys that are present (non-undefined) in the DTO
       const sentKeys = Object.keys(dto).filter(
-        (k) => dto[k] !== undefined && dto[k] !== null && k !== 'propertyType' && k !== 'subtype',
+        (k) =>
+          dto[k] !== undefined &&
+          dto[k] !== null &&
+          k !== 'propertyType' &&
+          k !== 'subtype',
       );
       const disallowed = sentKeys.filter((k) => blocked.includes(k));
       if (disallowed.length > 0) {

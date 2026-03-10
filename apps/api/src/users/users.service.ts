@@ -1,4 +1,10 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
@@ -56,14 +62,24 @@ function toUser(e: UserEntity): User {
 }
 
 function toSafeUser(e: UserEntity): SafeUser {
-  const { passwordHash: _pw, ...rest } = toUser(e);
+  const { passwordHash: _, ...rest } = toUser(e);
   return rest;
 }
 
 // ── Seed users (always ACTIVE on bootstrap) ───────────────────────────────────
 const SEED_USERS = [
-  { email: 'admin@arep.local',      password: 'Admin123!',      role: Role.ADMIN,      name: 'Admin'      },
-  { email: 'consultant@arep.local', password: 'Consultant123!', role: Role.CONSULTANT, name: 'Consultant' },
+  {
+    email: 'admin@arep.local',
+    password: 'Admin123!',
+    role: Role.ADMIN,
+    name: 'Admin',
+  },
+  {
+    email: 'consultant@arep.local',
+    password: 'Consultant123!',
+    role: Role.CONSULTANT,
+    name: 'Consultant',
+  },
 ] as const;
 
 @Injectable()
@@ -87,7 +103,13 @@ export class UsersService implements OnModuleInit {
       if (!exists) {
         const passwordHash = await bcrypt.hash(s.password, 10);
         await this.repo.save(
-          this.repo.create({ email: s.email, passwordHash, role: s.role, name: s.name, status: 'ACTIVE' }),
+          this.repo.create({
+            email: s.email,
+            passwordHash,
+            role: s.role,
+            name: s.name,
+            status: 'ACTIVE',
+          }),
         );
       }
     }
@@ -131,7 +153,8 @@ export class UsersService implements OnModuleInit {
     status?: UserStatus;
   }): Promise<SafeUser> {
     const existing = await this.repo.findOneBy({ email: input.email });
-    if (existing) throw new ConflictException(`User ${input.email} already exists`);
+    if (existing)
+      throw new ConflictException(`User ${input.email} already exists`);
 
     const passwordHash = await bcrypt.hash(input.password, 10);
     const saved = await this.repo.save(
@@ -194,16 +217,25 @@ export class UsersService implements OnModuleInit {
 
   async updateProfile(
     id: string,
-    input: { firstName?: string; lastName?: string; phoneNumber?: string; name?: string; bio?: string; profilePhotoUrl?: string },
+    input: {
+      firstName?: string;
+      lastName?: string;
+      phoneNumber?: string;
+      name?: string;
+      bio?: string;
+      profilePhotoUrl?: string;
+    },
   ): Promise<SafeUser> {
     const e = await this.repo.findOneBy({ id });
     if (!e) throw new NotFoundException(`User ${id} not found`);
     if (input.name !== undefined) e.name = input.name;
     if (input.firstName !== undefined) e.firstName = input.firstName ?? null;
     if (input.lastName !== undefined) e.lastName = input.lastName ?? null;
-    if (input.phoneNumber !== undefined) e.phoneNumber = input.phoneNumber ?? null;
+    if (input.phoneNumber !== undefined)
+      e.phoneNumber = input.phoneNumber ?? null;
     if (input.bio !== undefined) e.bio = input.bio ?? null;
-    if (input.profilePhotoUrl !== undefined) e.profilePhotoUrl = input.profilePhotoUrl ?? null;
+    if (input.profilePhotoUrl !== undefined)
+      e.profilePhotoUrl = input.profilePhotoUrl ?? null;
     return toSafeUser(await this.repo.save(e));
   }
 

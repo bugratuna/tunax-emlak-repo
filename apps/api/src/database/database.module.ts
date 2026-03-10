@@ -1,4 +1,9 @@
-import { Injectable, Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  Module,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { InjectDataSource, TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ListingEntity } from './entities/listing.entity';
@@ -43,17 +48,21 @@ class DatabaseHealthService implements OnApplicationBootstrap {
           AND table_name IN ('listings', 'listing_locations', 'users')
         ORDER BY table_name
       `);
-      const found = new Set(rows.map((r: { table_name: string }) => r.table_name));
+      const found = new Set(
+        rows.map((r: { table_name: string }) => r.table_name),
+      );
       const required = ['listings', 'listing_locations', 'users'];
       const missing = required.filter((t) => !found.has(t));
 
       if (missing.length > 0) {
         this.logger.warn(
           `[AREP] DB not fully migrated — missing: ${missing.join(', ')}. ` +
-          `Run: cd apps/api && npm run migration:run`,
+            `Run: cd apps/api && npm run migration:run`,
         );
       } else {
-        this.logger.log('[AREP] DB tables OK ✓ (listings, listing_locations, users present)');
+        this.logger.log(
+          '[AREP] DB tables OK ✓ (listings, listing_locations, users present)',
+        );
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -85,7 +94,10 @@ class DatabaseHealthService implements OnApplicationBootstrap {
           max: 10,
           idleTimeoutMillis: 30_000,
           // Enforce SSL in production — managed DBs (RDS, Railway, Supabase) require it
-          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+          ssl:
+            process.env.NODE_ENV === 'production'
+              ? { rejectUnauthorized: true }
+              : false,
           // Abort queries that run longer than 30 seconds (prevents connection pool exhaustion)
           statement_timeout: 30_000,
         },

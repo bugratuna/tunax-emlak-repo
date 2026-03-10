@@ -22,7 +22,8 @@ export class PresignUploadDto {
   })
   @IsString()
   @Matches(/^[\w\-. ]+$/, {
-    message: 'fileName may only contain letters, digits, dash, underscore, dot, or space',
+    message:
+      'fileName may only contain letters, digits, dash, underscore, dot, or space',
   })
   fileName: string;
 

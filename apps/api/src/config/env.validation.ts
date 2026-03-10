@@ -27,22 +27,26 @@ const RULES: EnvRule[] = [
   {
     key: 'CORS_ORIGINS',
     required: false,
-    description: 'Comma-separated list of allowed CORS origins (e.g. https://yourdomain.com)',
+    description:
+      'Comma-separated list of allowed CORS origins (e.g. https://yourdomain.com)',
   },
   {
     key: 'FEATURE_SWAGGER_ENABLED',
     required: false,
-    description: 'Set to "true" to expose /api/docs. Must be absent or "false" in production.',
+    description:
+      'Set to "true" to expose /api/docs. Must be absent or "false" in production.',
   },
   {
     key: 'FEATURE_SEED_USERS',
     required: false,
-    description: 'Set to "true" to seed dev accounts on boot. Must be absent or "false" in production.',
+    description:
+      'Set to "true" to seed dev accounts on boot. Must be absent or "false" in production.',
   },
   {
     key: 'DATABASE_URL',
     required: true,
-    description: 'PostgreSQL connection URL (e.g. postgresql://user:pass@host:5432/db)',
+    description:
+      'PostgreSQL connection URL (e.g. postgresql://user:pass@host:5432/db)',
   },
   {
     key: 'REDIS_URL',
@@ -52,17 +56,20 @@ const RULES: EnvRule[] = [
   {
     key: 'INTERNAL_API_KEYS',
     required: true,
-    description: 'Comma-separated list of valid internal API keys for worker→API calls',
+    description:
+      'Comma-separated list of valid internal API keys for worker→API calls',
   },
   {
     key: 'JWT_ACCESS_SECRET',
     required: true,
-    description: 'Secret used to sign JWT access tokens — must be ≥32 random characters',
+    description:
+      'Secret used to sign JWT access tokens — must be ≥32 random characters',
   },
   {
     key: 'JWT_ACCESS_TOKEN_EXPIRES_IN',
     required: false,
-    description: 'JWT access token expiry duration (default: 24h; recommend 1h in production)',
+    description:
+      'JWT access token expiry duration (default: 24h; recommend 1h in production)',
   },
   // ── AWS S3 (listing media upload) ──────────────────────────────────────────
   {
@@ -88,12 +95,20 @@ const RULES: EnvRule[] = [
   {
     key: 'S3_PUBLIC_BASE_URL',
     required: false,
-    description: 'Base URL for public S3 reads; defaults to https://{bucket}.s3.{region}.amazonaws.com',
+    description:
+      'Base URL for public S3 reads; defaults to https://{bucket}.s3.{region}.amazonaws.com',
   },
 ];
 
 /** Known dev-default substrings that must never appear in production secrets */
-const DEV_SECRET_SUBSTRINGS = ['dev', 'change-me', 'secret', 'example', 'placeholder', 'arep-dev'];
+const DEV_SECRET_SUBSTRINGS = [
+  'dev',
+  'change-me',
+  'secret',
+  'example',
+  'placeholder',
+  'arep-dev',
+];
 
 export function validateEnv(): void {
   const isProd = process.env.NODE_ENV === 'production';
@@ -160,8 +175,8 @@ export function validateEnv(): void {
   if (errors.length > 0) {
     console.error(
       `\n[Tunax] Environment validation failed (${errors.length} error${errors.length > 1 ? 's' : ''}):\n\n` +
-      errors.join('\n') +
-      `\n\nSee apps/api/.env.example for the full variable reference.\n`,
+        errors.join('\n') +
+        `\n\nSee apps/api/.env.example for the full variable reference.\n`,
     );
     process.exit(1);
   }

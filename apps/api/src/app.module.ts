@@ -16,9 +16,9 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
-    DatabaseModule,       // TypeORM — PostgreSQL + PostGIS (must be first)
-    StoreModule,          // @Global — InMemoryStore (moderation/scoring/leads/marketing)
-    CrmSyncModule,        // @Global — CrmSyncService available everywhere
+    DatabaseModule, // TypeORM — PostgreSQL + PostGIS (must be first)
+    StoreModule, // @Global — InMemoryStore (moderation/scoring/leads/marketing)
+    CrmSyncModule, // @Global — CrmSyncService available everywhere
     UsersModule,
     AuthModule,
     ListingsModule,

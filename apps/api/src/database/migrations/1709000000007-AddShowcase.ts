@@ -13,7 +13,11 @@ export class AddShowcase1709000000007 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "listings" DROP COLUMN IF EXISTS "showcase_order"`);
-    await queryRunner.query(`ALTER TABLE "listings" DROP COLUMN IF EXISTS "is_showcase"`);
+    await queryRunner.query(
+      `ALTER TABLE "listings" DROP COLUMN IF EXISTS "showcase_order"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "listings" DROP COLUMN IF EXISTS "is_showcase"`,
+    );
   }
 }

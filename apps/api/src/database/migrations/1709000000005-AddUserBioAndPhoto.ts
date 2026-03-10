@@ -13,6 +13,8 @@ export class AddUserBioAndPhoto1709000000005 implements MigrationInterface {
 
   async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE users DROP COLUMN IF EXISTS bio`);
-    await queryRunner.query(`ALTER TABLE users DROP COLUMN IF EXISTS profile_photo_url`);
+    await queryRunner.query(
+      `ALTER TABLE users DROP COLUMN IF EXISTS profile_photo_url`,
+    );
   }
 }

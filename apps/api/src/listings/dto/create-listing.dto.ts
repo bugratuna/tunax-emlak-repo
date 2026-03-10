@@ -21,7 +21,11 @@ import {
 } from '../taxonomy/constants';
 
 class PriceDto {
-  @ApiProperty({ example: 2500000, description: 'Asking price (TRY)', minimum: 0 })
+  @ApiProperty({
+    example: 2500000,
+    description: 'Asking price (TRY)',
+    minimum: 0,
+  })
   @IsNumber()
   @Min(0)
   amount: number;
@@ -71,7 +75,12 @@ class LocationDto {
 }
 
 class SpecificationsDto {
-  @ApiProperty({ required: false, example: 3, description: 'Room count (integer)', minimum: 0 })
+  @ApiProperty({
+    required: false,
+    example: 3,
+    description: 'Room count (integer)',
+    minimum: 0,
+  })
   @IsInt()
   @Min(0)
   @IsOptional()
@@ -83,7 +92,11 @@ class SpecificationsDto {
   @IsOptional()
   bathroomCount?: number;
 
-  @ApiProperty({ required: false, example: 4, description: 'Floor the unit is on' })
+  @ApiProperty({
+    required: false,
+    example: 4,
+    description: 'Floor the unit is on',
+  })
   @IsInt()
   @IsOptional()
   floorNumber?: number;
@@ -94,25 +107,44 @@ class SpecificationsDto {
   @IsOptional()
   totalFloors?: number;
 
-  @ApiProperty({ required: false, example: 120, description: 'Gross area in m²', minimum: 0 })
+  @ApiProperty({
+    required: false,
+    example: 120,
+    description: 'Gross area in m²',
+    minimum: 0,
+  })
   @IsNumber()
   @Min(0)
   @IsOptional()
   grossArea?: number;
 
-  @ApiProperty({ required: false, example: 105, description: 'Net area in m²', minimum: 0 })
+  @ApiProperty({
+    required: false,
+    example: 105,
+    description: 'Net area in m²',
+    minimum: 0,
+  })
   @IsNumber()
   @Min(0)
   @IsOptional()
   netArea?: number;
 
-  @ApiProperty({ required: false, example: 5, description: 'Building age in years', minimum: 0 })
+  @ApiProperty({
+    required: false,
+    example: 5,
+    description: 'Building age in years',
+    minimum: 0,
+  })
   @IsInt()
   @Min(0)
   @IsOptional()
   buildingAge?: number;
 
-  @ApiProperty({ required: false, example: true, description: 'Has parking / car park' })
+  @ApiProperty({
+    required: false,
+    example: true,
+    description: 'Has parking / car park',
+  })
   @IsBoolean()
   @IsOptional()
   hasParking?: boolean;
@@ -131,7 +163,11 @@ class SpecificationsDto {
   @IsOptional()
   heatingType?: string;
 
-  @ApiProperty({ required: false, enum: KITCHEN_STATES, example: 'Açık Mutfak' })
+  @ApiProperty({
+    required: false,
+    enum: KITCHEN_STATES,
+    example: 'Açık Mutfak',
+  })
   @IsIn(KITCHEN_STATES)
   @IsOptional()
   kitchenState?: string;
@@ -146,22 +182,39 @@ class SpecificationsDto {
   @IsOptional()
   hasElevator?: boolean;
 
-  @ApiProperty({ required: false, example: true, description: 'Inside a gated complex' })
+  @ApiProperty({
+    required: false,
+    example: true,
+    description: 'Inside a gated complex',
+  })
   @IsBoolean()
   @IsOptional()
   inComplex?: boolean;
 
-  @ApiProperty({ required: false, example: true, description: 'Eligible for mortgage loan' })
+  @ApiProperty({
+    required: false,
+    example: true,
+    description: 'Eligible for mortgage loan',
+  })
   @IsBoolean()
   @IsOptional()
   isLoanEligible?: boolean;
 
-  @ApiProperty({ required: false, example: false, description: 'Open to swap / tradeoff' })
+  @ApiProperty({
+    required: false,
+    example: false,
+    description: 'Open to swap / tradeoff',
+  })
   @IsBoolean()
   @IsOptional()
   isSwapAvailable?: boolean;
 
-  @ApiProperty({ required: false, example: 500, description: 'Monthly dues (TRY)', minimum: 0 })
+  @ApiProperty({
+    required: false,
+    example: 500,
+    description: 'Monthly dues (TRY)',
+    minimum: 0,
+  })
   @IsNumber()
   @Min(0)
   @IsOptional()
@@ -175,25 +228,41 @@ class DetailInfosDto {
   @IsOptional()
   facades?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.interiorFeatures, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.interiorFeatures,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   interiorFeatures?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.exteriorFeatures, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.exteriorFeatures,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   exteriorFeatures?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.vicinity, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.vicinity,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   vicinity?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.transportation, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.transportation,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -205,13 +274,21 @@ class DetailInfosDto {
   @IsOptional()
   view?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.housingType, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.housingType,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   housingType?: string[];
 
-  @ApiProperty({ required: false, enum: FEATURE_GROUPS.accessibility, isArray: true })
+  @ApiProperty({
+    required: false,
+    enum: FEATURE_GROUPS.accessibility,
+    isArray: true,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -219,7 +296,10 @@ class DetailInfosDto {
 }
 
 export class CreateListingDto {
-  @ApiProperty({ example: 'Konyaaltı 3+1 Deniz Manzaralı Daire', description: 'Listing title' })
+  @ApiProperty({
+    example: 'Konyaaltı 3+1 Deniz Manzaralı Daire',
+    description: 'Listing title',
+  })
   @IsString()
   @IsNotEmpty()
   title: string;
@@ -229,7 +309,10 @@ export class CreateListingDto {
   @IsOptional()
   consultantId?: string;
 
-  @ApiProperty({ required: false, example: 'Merkezi ısıtmalı, 4. katta, asansörlü binada.' })
+  @ApiProperty({
+    required: false,
+    example: 'Merkezi ısıtmalı, 4. katta, asansörlü binada.',
+  })
   @IsString()
   @IsOptional()
   description?: string;
@@ -287,7 +370,12 @@ export class CreateListingDto {
   @IsOptional()
   detailInfos?: DetailInfosDto;
 
-  @ApiProperty({ required: false, example: 12, description: 'Number of uploaded images', minimum: 0 })
+  @ApiProperty({
+    required: false,
+    example: 12,
+    description: 'Number of uploaded images',
+    minimum: 0,
+  })
   @IsInt()
   @Min(0)
   @IsOptional()

@@ -485,7 +485,10 @@ export class InMemoryStore {
 
   // --- MarketingAssetPackRequest ---
 
-  createPackRequest(listingId: string, listingTitle: string): MarketingAssetPackRequest {
+  createPackRequest(
+    listingId: string,
+    listingTitle: string,
+  ): MarketingAssetPackRequest {
     const prompt =
       `You are a Turkish real estate copywriter for the Antalya market.\n` +
       `Generate a MarketingAssetPack JSON for listing: "${listingTitle}" (id: ${listingId}).\n\n` +
@@ -517,8 +520,7 @@ export class InMemoryStore {
     pack: MarketingAssetPack,
   ): MarketingAssetPackRequest {
     const req = this.packRequests.get(listingId);
-    if (!req)
-      throw new Error(`PackRequest for listing ${listingId} not found`);
+    if (!req) throw new Error(`PackRequest for listing ${listingId} not found`);
     req.result = pack;
     req.status = 'COMPLETED';
     req.completedAt = new Date().toISOString();

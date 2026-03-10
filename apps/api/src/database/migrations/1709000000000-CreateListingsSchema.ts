@@ -106,16 +106,36 @@ export class CreateListingsSchema1709000000000 implements MigrationInterface {
     // ── typeorm_migrations tracking table created automatically by TypeORM ───
 
     // ── Indexes: listings (scalar) ────────────────────────────────────────────
-    await queryRunner.query(`CREATE INDEX idx_listings_status         ON listings (status)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_category       ON listings (category)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_property_type  ON listings (property_type)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_subtype        ON listings (subtype)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_price_amount   ON listings (price_amount)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_room_count     ON listings (room_count)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_m2_gross       ON listings (m2_gross)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_consultant_id  ON listings (consultant_id)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_status_cat     ON listings (status, category)`);
-    await queryRunner.query(`CREATE INDEX idx_listings_created_at     ON listings (created_at DESC)`);
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_status         ON listings (status)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_category       ON listings (category)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_property_type  ON listings (property_type)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_subtype        ON listings (subtype)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_price_amount   ON listings (price_amount)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_room_count     ON listings (room_count)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_m2_gross       ON listings (m2_gross)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_consultant_id  ON listings (consultant_id)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_status_cat     ON listings (status, category)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX idx_listings_created_at     ON listings (created_at DESC)`,
+    );
 
     // ── Indexes: listing_locations ───────────────────────────────────────────
     // GIST index — backs && (bbox overlap) and ST_DWithin queries
@@ -155,7 +175,9 @@ export class CreateListingsSchema1709000000000 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TRIGGER IF EXISTS listings_updated_at ON listings`);
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS listings_updated_at ON listings`,
+    );
     await queryRunner.query(`DROP FUNCTION IF EXISTS trg_set_updated_at`);
     await queryRunner.query(`DROP TABLE IF EXISTS listing_features`);
     await queryRunner.query(`DROP TABLE IF EXISTS listing_media`);

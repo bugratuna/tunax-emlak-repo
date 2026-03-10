@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcryptjs';
@@ -44,7 +48,7 @@ export class AuthService {
     return user;
   }
 
-  async login(user: User): Promise<{ accessToken: string }> {
+  login(user: User): { accessToken: string } {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return { accessToken: this.jwtService.sign(payload) };
   }
@@ -64,14 +68,25 @@ export class AuthService {
 
     if (input.profilePhoto) {
       if (!ALLOWED_MIME.includes(input.profilePhoto.mimetype)) {
-        throw new Error('Profil fotoğrafı yalnızca jpg, png veya webp formatında olabilir.');
+        throw new Error(
+          'Profil fotoğrafı yalnızca jpg, png veya webp formatında olabilir.',
+        );
       }
       if (input.profilePhoto.size > MAX_SIZE) {
         throw new Error('Profil fotoğrafı en fazla 5 MB olabilir.');
       }
-      const ext = input.profilePhoto.originalname.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') ?? 'jpg';
+      const ext =
+        input.profilePhoto.originalname
+          .split('.')
+          .pop()
+          ?.toLowerCase()
+          .replace(/[^a-z0-9]/g, '') ?? 'jpg';
       const key = `profiles/${randomUUID()}.${ext}`;
-      profilePhotoUrl = await this.s3Service.putObject(key, input.profilePhoto.buffer, input.profilePhoto.mimetype);
+      profilePhotoUrl = await this.s3Service.putObject(
+        key,
+        input.profilePhoto.buffer,
+        input.profilePhoto.mimetype,
+      );
     }
 
     return this.usersService.createUser({

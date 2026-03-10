@@ -20,7 +20,10 @@ async function bootstrap() {
   // Local dev default: http://localhost:3000
   // Production: set CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
   const rawOrigins = process.env.CORS_ORIGINS ?? 'http://localhost:3000';
-  const allowedOrigins = rawOrigins.split(',').map((o) => o.trim()).filter(Boolean);
+  const allowedOrigins = rawOrigins
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   app.enableCors({
     origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -50,4 +53,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3001);
 }
-bootstrap();
+void bootstrap();

@@ -2,7 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
 export class RejectDto {
-  @ApiProperty({ required: false, description: 'Ignored — admin ID is derived from the JWT sub claim' })
+  @ApiProperty({
+    required: false,
+    description: 'Ignored — admin ID is derived from the JWT sub claim',
+  })
   @IsString()
   @IsOptional()
   adminId?: string;

@@ -22,7 +22,9 @@ export class CreateUsersSchema1709000000001 implements MigrationInterface {
     `);
 
     // Case-insensitive email lookup index
-    await queryRunner.query(`CREATE INDEX idx_users_email ON users (lower(email))`);
+    await queryRunner.query(
+      `CREATE INDEX idx_users_email ON users (lower(email))`,
+    );
 
     // Re-use the trg_set_updated_at() function created by migration 1709000000000
     await queryRunner.query(`

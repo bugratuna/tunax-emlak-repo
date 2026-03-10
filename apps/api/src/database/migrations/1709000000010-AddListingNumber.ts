@@ -28,9 +28,13 @@ export class AddListingNumber1709000000010 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX IF EXISTS idx_listings_listing_number_search`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS idx_listings_listing_number_search`,
+    );
     await queryRunner.query(`DROP INDEX IF EXISTS idx_listings_listing_number`);
-    await queryRunner.query(`ALTER TABLE listings DROP COLUMN IF EXISTS listing_number`);
+    await queryRunner.query(
+      `ALTER TABLE listings DROP COLUMN IF EXISTS listing_number`,
+    );
     await queryRunner.query(`DROP SEQUENCE IF EXISTS listing_number_seq`);
   }
 }

@@ -30,7 +30,9 @@ async function runMigration() {
   const listingsService = app.get(ListingsService);
 
   const listings = store.listAllListings();
-  console.log(`[migrate-listings] Found ${listings.length} listings in InMemoryStore`);
+  console.log(
+    `[migrate-listings] Found ${listings.length} listings in InMemoryStore`,
+  );
 
   if (listings.length === 0) {
     console.log('[migrate-listings] Nothing to migrate. Exiting.');
@@ -53,8 +55,8 @@ async function runMigration() {
       await listingsService.upsertFromStore(listing);
       console.log(`  [ok]   ${listing.id} — "${listing.title}"`);
       migrated++;
-    } catch (err: any) {
-      const msg = `${listing.id}: ${err?.message ?? String(err)}`;
+    } catch (err: unknown) {
+      const msg = `${listing.id}: ${err instanceof Error ? err.message : String(err)}`;
       console.error(`  [err]  ${msg}`);
       errors.push(msg);
     }

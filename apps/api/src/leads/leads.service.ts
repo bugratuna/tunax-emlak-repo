@@ -6,22 +6,34 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { CrmSyncService } from '../crm-sync/crm-sync.service';
-import {
-  InMemoryStore,
-  Lead,
-  LeadScoreReport,
-  LeadTier,
-} from '../store/store';
+import { InMemoryStore, Lead, LeadScoreReport, LeadTier } from '../store/store';
 import { CreateLeadDto } from './dto/create-lead.dto';
 
 const URGENCY_KEYWORDS = [
-  'acil', 'hemen', 'bu hafta', 'bu ay', 'çabuk', 'ivedi',
-  'urgent', 'asap', 'immediately', 'today',
+  'acil',
+  'hemen',
+  'bu hafta',
+  'bu ay',
+  'çabuk',
+  'ivedi',
+  'urgent',
+  'asap',
+  'immediately',
+  'today',
 ];
 
 const BUDGET_KEYWORDS = [
-  'bütçe', 'fiyat', 'ücret', 'tl', '₺', 'kira', 'peşinat',
-  'budget', 'price', 'cost', 'afford',
+  'bütçe',
+  'fiyat',
+  'ücret',
+  'tl',
+  '₺',
+  'kira',
+  'peşinat',
+  'budget',
+  'price',
+  'cost',
+  'afford',
 ];
 
 function scoreSignals(lead: Lead): { score: number; reasonCodes: string[] } {
@@ -101,7 +113,8 @@ export class LeadsService {
     const existing = this.store.findLeadByIdempotencyKey(dto.idempotencyKey);
     if (existing) {
       const existingScore = this.store.getLeadScoreReport(existing.leadId);
-      if (!existingScore) throw new ConflictException('Duplicate idempotency key');
+      if (!existingScore)
+        throw new ConflictException('Duplicate idempotency key');
       return { lead: existing, score: existingScore };
     }
 

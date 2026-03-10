@@ -27,10 +27,14 @@ export class MarketingController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get marketing pack request (ADMIN)' })
-  @ApiOkResponse({ description: 'Marketing asset pack request with HITL prompt' })
+  @ApiOkResponse({
+    description: 'Marketing asset pack request with HITL prompt',
+  })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
   @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
-  @ApiNotFoundResponse({ description: 'No pack request found for this listing' })
+  @ApiNotFoundResponse({
+    description: 'No pack request found for this listing',
+  })
   getPackRequest(@Param('listingId') listingId: string) {
     return this.marketingService.getPackRequest(listingId);
   }
@@ -38,10 +42,16 @@ export class MarketingController {
   @Patch(':listingId/pack/result')
   @UseGuards(InternalApiKeyGuard)
   @ApiSecurity('internal-key')
-  @ApiOperation({ summary: 'Attach marketing pack result (INTERNAL — worker only)' })
+  @ApiOperation({
+    summary: 'Attach marketing pack result (INTERNAL — worker only)',
+  })
   @ApiOkResponse({ description: 'Pack result attached, status → COMPLETED' })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid x-internal-api-key header' })
-  @ApiNotFoundResponse({ description: 'No pack request found for this listing' })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid x-internal-api-key header',
+  })
+  @ApiNotFoundResponse({
+    description: 'No pack request found for this listing',
+  })
   attachResult(
     @Param('listingId') listingId: string,
     @Body() dto: AttachPackDto,

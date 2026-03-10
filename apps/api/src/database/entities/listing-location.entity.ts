@@ -1,4 +1,10 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ListingEntity } from './listing.entity';
 
 // NOTE: the `geom` column (geometry(Point, 4326)) is NOT mapped here.
@@ -18,7 +24,12 @@ export class ListingLocationEntity {
   @Column({ name: 'district', type: 'varchar', length: 100, nullable: true })
   district: string | null;
 
-  @Column({ name: 'neighborhood', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'neighborhood',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   neighborhood: string | null;
 
   @Column({ name: 'lat', type: 'double precision', nullable: true })

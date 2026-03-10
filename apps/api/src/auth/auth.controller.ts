@@ -32,7 +32,12 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Login successful',
     schema: {
-      properties: { accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' } },
+      properties: {
+        accessToken: {
+          type: 'string',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
+      },
       required: ['accessToken'],
     },
   })
@@ -47,31 +52,46 @@ export class AuthController {
   @UseInterceptors(FileInterceptor('profilePhoto'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
-    summary: 'Public consultant registration — creates user with PENDING_APPROVAL status',
+    summary:
+      'Public consultant registration — creates user with PENDING_APPROVAL status',
   })
   @ApiBody({
     schema: {
       type: 'object',
       required: ['firstName', 'lastName', 'email', 'phoneNumber', 'password'],
       properties: {
-        firstName:    { type: 'string', example: 'Ali' },
-        lastName:     { type: 'string', example: 'Yılmaz' },
-        email:        { type: 'string', format: 'email', example: 'ali@ornek.com' },
-        phoneNumber:  { type: 'string', example: '05321234567' },
-        password:     { type: 'string', minLength: 8, example: 'Gizli123!' },
-        profilePhoto: { type: 'string', format: 'binary', description: 'jpg/png/webp, maks. 5 MB' },
+        firstName: { type: 'string', example: 'Ali' },
+        lastName: { type: 'string', example: 'Yılmaz' },
+        email: { type: 'string', format: 'email', example: 'ali@ornek.com' },
+        phoneNumber: { type: 'string', example: '05321234567' },
+        password: { type: 'string', minLength: 8, example: 'Gizli123!' },
+        profilePhoto: {
+          type: 'string',
+          format: 'binary',
+          description: 'jpg/png/webp, maks. 5 MB',
+        },
       },
     },
   })
-  @ApiCreatedResponse({ description: 'Kullanıcı oluşturuldu — yönetici onayı bekleniyor.' })
+  @ApiCreatedResponse({
+    description: 'Kullanıcı oluşturuldu — yönetici onayı bekleniyor.',
+  })
   @ApiConflictResponse({ description: 'E-posta zaten kayıtlı.' })
   async register(
     @Body() body: Record<string, string>,
-    @UploadedFile() profilePhoto?: { buffer: Buffer; mimetype: string; size: number; originalname: string },
+    @UploadedFile()
+    profilePhoto?: {
+      buffer: Buffer;
+      mimetype: string;
+      size: number;
+      originalname: string;
+    },
   ) {
     const { firstName, lastName, email, phoneNumber, password } = body;
     if (!firstName || !lastName || !email || !phoneNumber || !password) {
-      throw new BadRequestException('firstName, lastName, email, phoneNumber ve password zorunludur.');
+      throw new BadRequestException(
+        'firstName, lastName, email, phoneNumber ve password zorunludur.',
+      );
     }
     if (password.length < 8) {
       throw new BadRequestException('Şifre en az 8 karakter olmalıdır.');
@@ -82,7 +102,7 @@ export class AuthController {
       email,
       phoneNumber,
       password,
-      profilePhoto: profilePhoto as any,
+      profilePhoto,
     });
   }
 }

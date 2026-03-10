@@ -15,8 +15,14 @@ export class AddUserProfileAndStatus1709000000003 implements MigrationInterface 
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE users DROP COLUMN IF EXISTS first_name`);
-    await queryRunner.query(`ALTER TABLE users DROP COLUMN IF EXISTS last_name`);
-    await queryRunner.query(`ALTER TABLE users DROP COLUMN IF EXISTS phone_number`);
+    await queryRunner.query(
+      `ALTER TABLE users DROP COLUMN IF EXISTS first_name`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE users DROP COLUMN IF EXISTS last_name`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE users DROP COLUMN IF EXISTS phone_number`,
+    );
   }
 }

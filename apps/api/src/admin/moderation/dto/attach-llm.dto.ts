@@ -9,7 +9,11 @@ export class AttachLlmDto {
     example: {
       status: 'SUCCESS',
       contentModeration: { status: 'PASS', passed: true, issues: [] },
-      riskAssessment: { riskLevel: 'LOW', requiresManualReview: false, fraudIndicators: [] },
+      riskAssessment: {
+        riskLevel: 'LOW',
+        requiresManualReview: false,
+        fraudIndicators: [],
+      },
     },
   })
   @IsObject()

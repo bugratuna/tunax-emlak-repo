@@ -13,8 +13,14 @@ export class AddMediaColumns1709000000002 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE listing_media DROP COLUMN IF EXISTS width`);
-    await queryRunner.query(`ALTER TABLE listing_media DROP COLUMN IF EXISTS height`);
-    await queryRunner.query(`ALTER TABLE listing_media DROP COLUMN IF EXISTS public_url`);
+    await queryRunner.query(
+      `ALTER TABLE listing_media DROP COLUMN IF EXISTS width`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE listing_media DROP COLUMN IF EXISTS height`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE listing_media DROP COLUMN IF EXISTS public_url`,
+    );
   }
 }

@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsPositive, IsString, IsUrl, Min } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  IsUrl,
+  Min,
+} from 'class-validator';
 
 export class CommitMediaDto {
   @ApiProperty({
@@ -10,8 +17,10 @@ export class CommitMediaDto {
   s3Key: string;
 
   @ApiProperty({
-    description: 'Public URL returned by POST /api/media/presign (stored as-is)',
-    example: 'https://tunax-repo.s3.eu-north-1.amazonaws.com/listings/abc-uuid/def-uuid.jpg',
+    description:
+      'Public URL returned by POST /api/media/presign (stored as-is)',
+    example:
+      'https://tunax-repo.s3.eu-north-1.amazonaws.com/listings/abc-uuid/def-uuid.jpg',
   })
   @IsUrl({ require_tld: false })
   publicUrl: string;

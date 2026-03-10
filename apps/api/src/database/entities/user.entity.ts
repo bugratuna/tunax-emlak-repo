@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Role } from '../../common/enums/role.enum';
 
 export type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'PENDING_APPROVAL';
@@ -14,7 +20,12 @@ export class UserEntity {
   @Column({ name: 'password_hash', type: 'varchar', length: 255 })
   passwordHash: string;
 
-  @Column({ name: 'role', type: 'varchar', length: 20, default: Role.CONSULTANT })
+  @Column({
+    name: 'role',
+    type: 'varchar',
+    length: 20,
+    default: Role.CONSULTANT,
+  })
   role: Role;
 
   @Column({ name: 'name', type: 'varchar', length: 255, nullable: true })
@@ -32,7 +43,12 @@ export class UserEntity {
   @Column({ name: 'bio', type: 'text', nullable: true })
   bio: string | null;
 
-  @Column({ name: 'profile_photo_url', type: 'varchar', length: 1000, nullable: true })
+  @Column({
+    name: 'profile_photo_url',
+    type: 'varchar',
+    length: 1000,
+    nullable: true,
+  })
   profilePhotoUrl: string | null;
 
   /** Job title — used for team page grouping (e.g. 'Ofis Ortağı', 'Kurucu Ortak'). */

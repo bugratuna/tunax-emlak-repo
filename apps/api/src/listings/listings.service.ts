@@ -11,7 +11,10 @@ import {
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { DataSource, In, Repository } from 'typeorm';
-import { ListingEntity, ListingStatus } from '../database/entities/listing.entity';
+import {
+  ListingEntity,
+  ListingStatus,
+} from '../database/entities/listing.entity';
 import { ListingFeatureEntity } from '../database/entities/listing-feature.entity';
 import { ListingLocationEntity } from '../database/entities/listing-location.entity';
 import { ListingMediaEntity } from '../database/entities/listing-media.entity';
@@ -28,7 +31,10 @@ import { UpdateListingDto } from './dto/update-listing.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { UpdatePhotoOrderDto } from './dto/update-photo-order.dto';
 import { FEATURE_GROUP_NAMES } from './taxonomy/constants';
-import { validateConditionalFilters, validateFeatureValues } from './taxonomy/taxonomy.validator';
+import {
+  validateConditionalFilters,
+  validateFeatureValues,
+} from './taxonomy/taxonomy.validator';
 
 // ── Multer file shape (avoids @types/multer peer dep) ─────────────────────────
 
@@ -78,7 +84,8 @@ function toListingDto(
     consultantId: entity.consultantId,
     consultantName: consultantName ?? undefined,
     status: entity.status,
-    submittedAt: entity.submittedAt?.toISOString() ?? entity.createdAt.toISOString(),
+    submittedAt:
+      entity.submittedAt?.toISOString() ?? entity.createdAt.toISOString(),
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
     description: entity.description ?? undefined,
@@ -122,7 +129,8 @@ function toListingDto(
       inComplex: entity.inComplex ?? undefined,
       isLoanEligible: entity.isLoanEligible ?? undefined,
       isSwapAvailable: entity.isSwapAvailable ?? undefined,
-      duesAmount: entity.duesAmount != null ? Number(entity.duesAmount) : undefined,
+      duesAmount:
+        entity.duesAmount != null ? Number(entity.duesAmount) : undefined,
     },
     detailInfos: Object.keys(detailInfos).length > 0 ? detailInfos : undefined,
     imageCount: entity.imageCount,
@@ -228,15 +236,23 @@ export class ListingsService {
     if (dto.detailInfos) {
       const rows: Partial<ListingFeatureEntity>[] = [];
       for (const group of FEATURE_GROUP_NAMES) {
-        const vals = (dto.detailInfos as Record<string, string[] | undefined>)[group];
+        const vals = (dto.detailInfos as Record<string, string[] | undefined>)[
+          group
+        ];
         if (vals) {
           for (const val of vals) {
-            rows.push({ listingId: saved.id, featureGroup: group, featureValue: val });
+            rows.push({
+              listingId: saved.id,
+              featureGroup: group,
+              featureValue: val,
+            });
           }
         }
       }
       if (rows.length > 0) {
-        featureEntities = await this.featureRepo.save(rows as ListingFeatureEntity[]);
+        featureEntities = await this.featureRepo.save(
+          rows as ListingFeatureEntity[],
+        );
       }
     }
 
@@ -279,7 +295,9 @@ export class ListingsService {
       }
       const [minLng, minLat, maxLng, maxLat] = parts;
       if (minLng >= maxLng || minLat >= maxLat) {
-        throw new BadRequestException('bbox: minLng must be < maxLng and minLat must be < maxLat');
+        throw new BadRequestException(
+          'bbox: minLng must be < maxLng and minLat must be < maxLat',
+        );
       }
       if (minLng < -180 || maxLng > 180 || minLat < -90 || maxLat > 90) {
         throw new BadRequestException('bbox: coordinates out of WGS84 range');
@@ -291,7 +309,9 @@ export class ListingsService {
     const limit = filters.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const qb = this.listingRepo.createQueryBuilder('l').leftJoinAndSelect('l.location', 'll');
+    const qb = this.listingRepo
+      .createQueryBuilder('l')
+      .leftJoinAndSelect('l.location', 'll');
 
     if (filters.isFeatured === true) {
       qb.andWhere('l.isFeatured = TRUE');
@@ -317,20 +337,29 @@ export class ListingsService {
       }
     }
 
-    if (filters.status) qb.andWhere('l.status = :status', { status: filters.status });
-    if (filters.category) qb.andWhere('l.category = :category', { category: filters.category });
+    if (filters.status)
+      qb.andWhere('l.status = :status', { status: filters.status });
+    if (filters.category)
+      qb.andWhere('l.category = :category', { category: filters.category });
     if (filters.propertyType)
-      qb.andWhere('l.propertyType = :propertyType', { propertyType: filters.propertyType });
-    if (filters.subtype) qb.andWhere('l.subtype = :subtype', { subtype: filters.subtype });
+      qb.andWhere('l.propertyType = :propertyType', {
+        propertyType: filters.propertyType,
+      });
+    if (filters.subtype)
+      qb.andWhere('l.subtype = :subtype', { subtype: filters.subtype });
 
     if (filters.minPrice !== undefined)
       qb.andWhere('l.priceAmount >= :minPrice', { minPrice: filters.minPrice });
     if (filters.maxPrice !== undefined)
       qb.andWhere('l.priceAmount <= :maxPrice', { maxPrice: filters.maxPrice });
     if (filters.minM2Gross !== undefined)
-      qb.andWhere('l.m2Gross >= :minM2Gross', { minM2Gross: filters.minM2Gross });
+      qb.andWhere('l.m2Gross >= :minM2Gross', {
+        minM2Gross: filters.minM2Gross,
+      });
     if (filters.maxM2Gross !== undefined)
-      qb.andWhere('l.m2Gross <= :maxM2Gross', { maxM2Gross: filters.maxM2Gross });
+      qb.andWhere('l.m2Gross <= :maxM2Gross', {
+        maxM2Gross: filters.maxM2Gross,
+      });
     if (filters.minM2Net !== undefined)
       qb.andWhere('l.m2Net >= :minM2Net', { minM2Net: filters.minM2Net });
     if (filters.maxM2Net !== undefined)
@@ -341,37 +370,65 @@ export class ListingsService {
     if (filters.roomCounts) {
       const counts = filters.roomCounts
         .split(',')
-        .map((s) => (s.trim().match(/^Stüdyo/i) ? 0 : parseInt((s.trim().match(/^(\d+)/) ?? [])[1] ?? '-1', 10)))
+        .map((s) =>
+          s.trim().match(/^Stüdyo/i)
+            ? 0
+            : parseInt((s.trim().match(/^(\d+)/) ?? [])[1] ?? '-1', 10),
+        )
         .filter((n) => Number.isInteger(n) && n >= 0);
       if (counts.length > 0)
-        qb.andWhere('l.roomCount IN (:...roomCountsIn)', { roomCountsIn: counts });
+        qb.andWhere('l.roomCount IN (:...roomCountsIn)', {
+          roomCountsIn: counts,
+        });
     }
     if (filters.bathroomCount !== undefined)
-      qb.andWhere('l.bathroomCount = :bathroomCount', { bathroomCount: filters.bathroomCount });
+      qb.andWhere('l.bathroomCount = :bathroomCount', {
+        bathroomCount: filters.bathroomCount,
+      });
     if (filters.minBuildingAge !== undefined)
-      qb.andWhere('l.buildingAge >= :minBuildingAge', { minBuildingAge: filters.minBuildingAge });
+      qb.andWhere('l.buildingAge >= :minBuildingAge', {
+        minBuildingAge: filters.minBuildingAge,
+      });
     if (filters.maxBuildingAge !== undefined)
-      qb.andWhere('l.buildingAge <= :maxBuildingAge', { maxBuildingAge: filters.maxBuildingAge });
+      qb.andWhere('l.buildingAge <= :maxBuildingAge', {
+        maxBuildingAge: filters.maxBuildingAge,
+      });
     if (filters.floorNumber !== undefined)
-      qb.andWhere('l.floorNumber = :floorNumber', { floorNumber: filters.floorNumber });
+      qb.andWhere('l.floorNumber = :floorNumber', {
+        floorNumber: filters.floorNumber,
+      });
     if (filters.totalFloors !== undefined)
-      qb.andWhere('l.totalFloors = :totalFloors', { totalFloors: filters.totalFloors });
+      qb.andWhere('l.totalFloors = :totalFloors', {
+        totalFloors: filters.totalFloors,
+      });
     if (filters.heatingType !== undefined)
-      qb.andWhere('l.heatingType = :heatingType', { heatingType: filters.heatingType });
+      qb.andWhere('l.heatingType = :heatingType', {
+        heatingType: filters.heatingType,
+      });
     if (filters.kitchenState !== undefined)
-      qb.andWhere('l.kitchenState = :kitchenState', { kitchenState: filters.kitchenState });
+      qb.andWhere('l.kitchenState = :kitchenState', {
+        kitchenState: filters.kitchenState,
+      });
     if (filters.carPark !== undefined)
       qb.andWhere('l.carPark = :carPark', { carPark: filters.carPark });
     if (filters.isFurnished !== undefined)
-      qb.andWhere('l.isFurnished = :isFurnished', { isFurnished: filters.isFurnished });
+      qb.andWhere('l.isFurnished = :isFurnished', {
+        isFurnished: filters.isFurnished,
+      });
     if (filters.hasBalcony !== undefined)
-      qb.andWhere('l.hasBalcony = :hasBalcony', { hasBalcony: filters.hasBalcony });
+      qb.andWhere('l.hasBalcony = :hasBalcony', {
+        hasBalcony: filters.hasBalcony,
+      });
     if (filters.hasElevator !== undefined)
-      qb.andWhere('l.hasElevator = :hasElevator', { hasElevator: filters.hasElevator });
+      qb.andWhere('l.hasElevator = :hasElevator', {
+        hasElevator: filters.hasElevator,
+      });
     if (filters.inComplex !== undefined)
       qb.andWhere('l.inComplex = :inComplex', { inComplex: filters.inComplex });
     if (filters.isLoanEligible !== undefined)
-      qb.andWhere('l.isLoanEligible = :isLoanEligible', { isLoanEligible: filters.isLoanEligible });
+      qb.andWhere('l.isLoanEligible = :isLoanEligible', {
+        isLoanEligible: filters.isLoanEligible,
+      });
     if (filters.isSwapAvailable !== undefined)
       qb.andWhere('l.isSwapAvailable = :isSwapAvailable', {
         isSwapAvailable: filters.isSwapAvailable,
@@ -384,7 +441,9 @@ export class ListingsService {
     if (filters.city)
       qb.andWhere('LOWER(ll.city) = LOWER(:city)', { city: filters.city });
     if (filters.district)
-      qb.andWhere('LOWER(ll.district) = LOWER(:district)', { district: filters.district });
+      qb.andWhere('LOWER(ll.district) = LOWER(:district)', {
+        district: filters.district,
+      });
     if (filters.neighborhood)
       qb.andWhere('LOWER(ll.neighborhood) = LOWER(:neighborhood)', {
         neighborhood: filters.neighborhood,
@@ -394,12 +453,19 @@ export class ListingsService {
       const [minLng, minLat, maxLng, maxLat] = bboxParams;
       qb.andWhere(
         `ll.geom && ST_MakeEnvelope(:bboxMinLng, :bboxMinLat, :bboxMaxLng, :bboxMaxLat, 4326)`,
-        { bboxMinLng: minLng, bboxMinLat: minLat, bboxMaxLng: maxLng, bboxMaxLat: maxLat },
+        {
+          bboxMinLng: minLng,
+          bboxMinLat: minLat,
+          bboxMaxLng: maxLng,
+          bboxMaxLat: maxLat,
+        },
       );
     }
 
     for (const group of FEATURE_GROUP_NAMES) {
-      const values = (filters as Record<string, unknown>)[group] as string[] | undefined;
+      const values = (filters as Record<string, unknown>)[group] as
+        | string[]
+        | undefined;
       if (values && values.length > 0) {
         qb.andWhere(
           `EXISTS (
@@ -413,7 +479,10 @@ export class ListingsService {
       }
     }
 
-    const sortMap: Record<string, { col: string; dir: 'ASC' | 'DESC'; nulls?: string }> = {
+    const sortMap: Record<
+      string,
+      { col: string; dir: 'ASC' | 'DESC'; nulls?: string }
+    > = {
       price_asc: { col: 'l.priceAmount', dir: 'ASC', nulls: 'NULLS LAST' },
       price_desc: { col: 'l.priceAmount', dir: 'DESC', nulls: 'NULLS LAST' },
       newest: { col: 'l.createdAt', dir: 'DESC' },
@@ -422,9 +491,16 @@ export class ListingsService {
       showcase: { col: 'l.showcaseOrder', dir: 'ASC' },
     };
     const sort = sortMap[filters.sortBy ?? 'newest'];
-    qb.orderBy(sort.col, sort.dir, sort.nulls as 'NULLS FIRST' | 'NULLS LAST' | undefined);
+    qb.orderBy(
+      sort.col,
+      sort.dir,
+      sort.nulls as 'NULLS FIRST' | 'NULLS LAST' | undefined,
+    );
 
-    const [entities, total] = await qb.skip(offset).take(limit).getManyAndCount();
+    const [entities, total] = await qb
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
 
     // Load one cover photo per listing in a single query (avoids N+1)
     const listingIds = entities.map((e) => e.id);
@@ -445,10 +521,14 @@ export class ListingsService {
     }
 
     // Batch-fetch consultant names to avoid N+1 lookups
-    const consultantIds = [...new Set(entities.map((e) => e.consultantId).filter(Boolean))];
+    const consultantIds = [
+      ...new Set(entities.map((e) => e.consultantId).filter(Boolean)),
+    ];
     const nameMap = new Map<string, string>();
     if (consultantIds.length > 0) {
-      const users = await this.userRepo.find({ where: { id: In(consultantIds) } });
+      const users = await this.userRepo.find({
+        where: { id: In(consultantIds) },
+      });
       for (const u of users) nameMap.set(u.id, u.name ?? u.email);
     }
 
@@ -480,7 +560,10 @@ export class ListingsService {
 
     const [features, mediaEntities] = await Promise.all([
       this.featureRepo.find({ where: { listingId: id } }),
-      this.mediaRepo.find({ where: { listingId: id }, order: { sortOrder: 'ASC', uploadedAt: 'ASC' } }),
+      this.mediaRepo.find({
+        where: { listingId: id },
+        order: { sortOrder: 'ASC', uploadedAt: 'ASC' },
+      }),
     ]);
 
     const media = mediaEntities.map((m) => this.toMediaItem(m));
@@ -490,7 +573,13 @@ export class ListingsService {
       const user = await this.userRepo.findOneBy({ id: entity.consultantId });
       consultantName = user ? (user.name ?? user.email) : null;
     }
-    return toListingDto(entity, entity.location, features, media, consultantName);
+    return toListingDto(
+      entity,
+      entity.location,
+      features,
+      media,
+      consultantName,
+    );
   }
 
   async existsById(id: string): Promise<boolean> {
@@ -523,14 +612,16 @@ export class ListingsService {
     const existing = await this.listingRepo.findOneBy({ id: listingId });
     if (existing?.listingNumber) return existing.listingNumber;
 
-    const result = await this.dataSource.query(
+    const result = await this.dataSource.query<
+      Array<{ listing_number: string | null }>
+    >(
       `UPDATE listings
          SET listing_number = 'RT-' || LPAD(nextval('listing_number_seq')::text, 6, '0')
        WHERE id = $1 AND listing_number IS NULL
        RETURNING listing_number`,
       [listingId],
     );
-    return (result[0]?.listing_number as string | undefined) ?? null;
+    return result[0]?.listing_number ?? null;
   }
 
   // ── PENDING QUEUE ─────────────────────────────────────────────────────────
@@ -607,19 +698,33 @@ export class ListingsService {
    * Generates an S3 presigned PUT URL for direct client upload.
    * @param consultantId JWT sub — must match listing.consultantId
    */
-  async presignUpload(dto: PresignUploadDto, consultantId: string): Promise<PresignResult> {
+  async presignUpload(
+    dto: PresignUploadDto,
+    consultantId: string,
+  ): Promise<PresignResult> {
     const listing = await this.listingRepo.findOneBy({ id: dto.listingId });
-    if (!listing) throw new NotFoundException(`Listing ${dto.listingId} not found`);
+    if (!listing)
+      throw new NotFoundException(`Listing ${dto.listingId} not found`);
     if (listing.consultantId !== consultantId) {
       throw new ForbiddenException('You do not own this listing');
     }
 
-    const ext = (dto.fileName.split('.').pop() ?? 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const ext = (dto.fileName.split('.').pop() ?? 'bin')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
     const key = `listings/${dto.listingId}/${randomUUID()}.${ext}`;
-    const uploadUrl = await this.s3Service.generatePresignedPutUrl(key, dto.contentType);
+    const uploadUrl = await this.s3Service.generatePresignedPutUrl(
+      key,
+      dto.contentType,
+    );
     const publicUrl = this.s3Service.buildPublicUrl(key);
 
-    return { uploadUrl, publicUrl, s3Key: key, expiresIn: this.s3Service.presignExpiresIn };
+    return {
+      uploadUrl,
+      publicUrl,
+      s3Key: key,
+      expiresIn: this.s3Service.presignExpiresIn,
+    };
   }
 
   // ── MEDIA — COMMIT ────────────────────────────────────────────────────────
@@ -684,8 +789,13 @@ export class ListingsService {
       throw new ForbiddenException('You do not own this listing');
     }
 
-    const media = await this.mediaRepo.findOne({ where: { id: mediaId, listingId } });
-    if (!media) throw new NotFoundException(`Media ${mediaId} not found for listing ${listingId}`);
+    const media = await this.mediaRepo.findOne({
+      where: { id: mediaId, listingId },
+    });
+    if (!media)
+      throw new NotFoundException(
+        `Media ${mediaId} not found for listing ${listingId}`,
+      );
 
     await this.s3Service.deleteObject(media.s3Key);
     await this.mediaRepo.delete(mediaId);
@@ -724,9 +834,15 @@ export class ListingsService {
     const savedMedia: ListingMediaEntity[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const ext = (file.originalname.split('.').pop() ?? 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const ext = (file.originalname.split('.').pop() ?? 'bin')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
       const key = `listings/${listingId}/${randomUUID()}.${ext}`;
-      const publicUrl = await this.s3Service.putObject(key, file.buffer, file.mimetype);
+      const publicUrl = await this.s3Service.putObject(
+        key,
+        file.buffer,
+        file.mimetype,
+      );
 
       const media = this.mediaRepo.create({
         listingId,
@@ -741,7 +857,11 @@ export class ListingsService {
       savedMedia.push(await this.mediaRepo.save(media));
     }
 
-    await this.listingRepo.increment({ id: listingId }, 'imageCount', files.length);
+    await this.listingRepo.increment(
+      { id: listingId },
+      'imageCount',
+      files.length,
+    );
 
     const all = await this.mediaRepo.find({
       where: { listingId },
@@ -766,7 +886,10 @@ export class ListingsService {
     // Update sortOrder for each ID according to its position in the array
     await Promise.all(
       dto.order.map((photoId, idx) =>
-        this.mediaRepo.update({ id: photoId, listingId }, { sortOrder: idx, isCover: idx === 0 }),
+        this.mediaRepo.update(
+          { id: photoId, listingId },
+          { sortOrder: idx, isCover: idx === 0 },
+        ),
       ),
     );
 
@@ -798,7 +921,8 @@ export class ListingsService {
       listing.location.lng = dto.lng;
       if (dto.city !== undefined) listing.location.city = dto.city;
       if (dto.district !== undefined) listing.location.district = dto.district;
-      if (dto.neighborhood !== undefined) listing.location.neighborhood = dto.neighborhood;
+      if (dto.neighborhood !== undefined)
+        listing.location.neighborhood = dto.neighborhood;
       await this.locationRepo.save(listing.location);
     } else {
       const loc = this.locationRepo.create({
@@ -838,9 +962,12 @@ export class ListingsService {
 
     // Apply only the supplied fields
     if (dto.title !== undefined) entity.title = dto.title;
-    if (dto.description !== undefined) entity.description = dto.description ?? null;
-    if (dto.category !== undefined) entity.category = (dto.category as ListingEntity['category']) ?? null;
-    if (dto.propertyType !== undefined) entity.propertyType = dto.propertyType ?? null;
+    if (dto.description !== undefined)
+      entity.description = dto.description ?? null;
+    if (dto.category !== undefined)
+      entity.category = (dto.category as ListingEntity['category']) ?? null;
+    if (dto.propertyType !== undefined)
+      entity.propertyType = dto.propertyType ?? null;
     if (dto.subtype !== undefined) entity.subtype = dto.subtype ?? null;
     if (dto.price !== undefined) {
       entity.priceAmount = dto.price?.amount ?? null;
@@ -852,19 +979,29 @@ export class ListingsService {
       if (s?.grossArea !== undefined) entity.m2Gross = s.grossArea ?? null;
       if (s?.netArea !== undefined) entity.m2Net = s.netArea ?? null;
       if (s?.roomCount !== undefined) entity.roomCount = s.roomCount ?? null;
-      if (s?.bathroomCount !== undefined) entity.bathroomCount = s.bathroomCount ?? null;
-      if (s?.floorNumber !== undefined) entity.floorNumber = s.floorNumber ?? null;
-      if (s?.totalFloors !== undefined) entity.totalFloors = s.totalFloors ?? null;
-      if (s?.buildingAge !== undefined) entity.buildingAge = s.buildingAge ?? null;
-      if (s?.heatingType !== undefined) entity.heatingType = s.heatingType ?? null;
-      if (s?.kitchenState !== undefined) entity.kitchenState = s.kitchenState ?? null;
+      if (s?.bathroomCount !== undefined)
+        entity.bathroomCount = s.bathroomCount ?? null;
+      if (s?.floorNumber !== undefined)
+        entity.floorNumber = s.floorNumber ?? null;
+      if (s?.totalFloors !== undefined)
+        entity.totalFloors = s.totalFloors ?? null;
+      if (s?.buildingAge !== undefined)
+        entity.buildingAge = s.buildingAge ?? null;
+      if (s?.heatingType !== undefined)
+        entity.heatingType = s.heatingType ?? null;
+      if (s?.kitchenState !== undefined)
+        entity.kitchenState = s.kitchenState ?? null;
       if (s?.hasParking !== undefined) entity.carPark = s.hasParking ?? null;
-      if (s?.isFurnished !== undefined) entity.isFurnished = s.isFurnished ?? null;
+      if (s?.isFurnished !== undefined)
+        entity.isFurnished = s.isFurnished ?? null;
       if (s?.hasBalcony !== undefined) entity.hasBalcony = s.hasBalcony ?? null;
-      if (s?.hasElevator !== undefined) entity.hasElevator = s.hasElevator ?? null;
+      if (s?.hasElevator !== undefined)
+        entity.hasElevator = s.hasElevator ?? null;
       if (s?.inComplex !== undefined) entity.inComplex = s.inComplex ?? null;
-      if (s?.isLoanEligible !== undefined) entity.isLoanEligible = s.isLoanEligible ?? null;
-      if (s?.isSwapAvailable !== undefined) entity.isSwapAvailable = s.isSwapAvailable ?? null;
+      if (s?.isLoanEligible !== undefined)
+        entity.isLoanEligible = s.isLoanEligible ?? null;
+      if (s?.isSwapAvailable !== undefined)
+        entity.isSwapAvailable = s.isSwapAvailable ?? null;
       if (s?.duesAmount !== undefined) entity.duesAmount = s.duesAmount ?? null;
     }
 
@@ -874,8 +1011,10 @@ export class ListingsService {
     if (dto.location !== undefined && dto.location !== null) {
       if (entity.location) {
         entity.location.city = dto.location.city ?? entity.location.city;
-        entity.location.district = dto.location.district ?? entity.location.district;
-        entity.location.neighborhood = dto.location.neighborhood ?? entity.location.neighborhood;
+        entity.location.district =
+          dto.location.district ?? entity.location.district;
+        entity.location.neighborhood =
+          dto.location.neighborhood ?? entity.location.neighborhood;
         if (dto.location.coordinates) {
           entity.location.lat = dto.location.coordinates.latitude;
           entity.location.lng = dto.location.coordinates.longitude;
@@ -900,10 +1039,16 @@ export class ListingsService {
       await this.featureRepo.delete({ listingId: id });
       const rows: Partial<ListingFeatureEntity>[] = [];
       for (const group of FEATURE_GROUP_NAMES) {
-        const vals = (dto.detailInfos as Record<string, string[] | undefined>)[group];
+        const vals = (dto.detailInfos as Record<string, string[] | undefined>)[
+          group
+        ];
         if (vals) {
           for (const val of vals) {
-            rows.push({ listingId: id, featureGroup: group, featureValue: val });
+            rows.push({
+              listingId: id,
+              featureGroup: group,
+              featureValue: val,
+            });
           }
         }
       }
@@ -1027,10 +1172,12 @@ export class ListingsService {
           title: listing.title,
           consultantId: listing.consultantId,
           status: listing.status as ListingStatus,
-          submittedAt: listing.submittedAt ? new Date(listing.submittedAt) : null,
+          submittedAt: listing.submittedAt
+            ? new Date(listing.submittedAt)
+            : null,
           category: (listing.category as ListingEntity['category']) ?? null,
           propertyType: listing.propertyType ?? null,
-          subtype: (listing as any).subtype ?? null,
+          subtype: listing.subtype ?? null,
           description: listing.description ?? null,
           priceAmount: listing.price?.amount ?? null,
           priceCurrency: listing.price?.currency ?? 'TRY',
@@ -1049,11 +1196,28 @@ export class ListingsService {
         })
         .orUpdate(
           [
-            'title', 'consultant_id', 'status', 'category', 'property_type',
-            'description', 'price_amount', 'price_currency', 'price_is_negotiable',
-            'm2_gross', 'm2_net', 'room_count', 'bathroom_count', 'floor_number',
-            'total_floors', 'building_age', 'heating_type', 'car_park', 'has_balcony',
-            'image_count', 'submitted_at', 'updated_at',
+            'title',
+            'consultant_id',
+            'status',
+            'category',
+            'property_type',
+            'description',
+            'price_amount',
+            'price_currency',
+            'price_is_negotiable',
+            'm2_gross',
+            'm2_net',
+            'room_count',
+            'bathroom_count',
+            'floor_number',
+            'total_floors',
+            'building_age',
+            'heating_type',
+            'car_park',
+            'has_balcony',
+            'image_count',
+            'submitted_at',
+            'updated_at',
           ],
           ['id'],
         )
@@ -1072,7 +1236,10 @@ export class ListingsService {
             lat: listing.location.coordinates?.latitude ?? null,
             lng: listing.location.coordinates?.longitude ?? null,
           })
-          .orUpdate(['city', 'district', 'neighborhood', 'lat', 'lng'], ['listing_id'])
+          .orUpdate(
+            ['city', 'district', 'neighborhood', 'lat', 'lng'],
+            ['listing_id'],
+          )
           .execute();
       }
     });

@@ -86,10 +86,14 @@ export class ModerationController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get scoring report (ADMIN)' })
-  @ApiOkResponse({ description: 'Scoring report with deterministic + LLM scores' })
+  @ApiOkResponse({
+    description: 'Scoring report with deterministic + LLM scores',
+  })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
   @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
-  @ApiNotFoundResponse({ description: 'No scoring report found for this listing' })
+  @ApiNotFoundResponse({
+    description: 'No scoring report found for this listing',
+  })
   getScoringReport(@Param('listingId') listingId: string) {
     return this.moderationService.getScoringReport(listingId);
   }
@@ -102,13 +106,18 @@ export class ModerationController {
   @ApiSecurity('internal-key')
   @ApiOperation({ summary: 'Generate score (INTERNAL — worker only)' })
   @ApiCreatedResponse({ description: 'Scoring report created' })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid x-internal-api-key header' })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid x-internal-api-key header',
+  })
   @ApiNotFoundResponse({ description: 'Listing not found' })
   generateScore(
     @Param('listingId') listingId: string,
     @Body() dto: GenerateReportDto,
   ) {
-    return this.moderationService.generateScore(listingId, dto.deterministicScores);
+    return this.moderationService.generateScore(
+      listingId,
+      dto.deterministicScores,
+    );
   }
 
   @Patch(':listingId/score/llm')
@@ -116,12 +125,11 @@ export class ModerationController {
   @ApiSecurity('internal-key')
   @ApiOperation({ summary: 'Attach LLM result to scoring report (INTERNAL)' })
   @ApiOkResponse({ description: 'LLM result attached to scoring report' })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid x-internal-api-key header' })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid x-internal-api-key header',
+  })
   @ApiNotFoundResponse({ description: 'Scoring report not found' })
-  attachLlm(
-    @Param('listingId') listingId: string,
-    @Body() dto: AttachLlmDto,
-  ) {
+  attachLlm(@Param('listingId') listingId: string, @Body() dto: AttachLlmDto) {
     return this.moderationService.attachLlm(listingId, dto.llmResult);
   }
 
@@ -131,10 +139,18 @@ export class ModerationController {
   @HttpCode(201)
   @UseGuards(InternalApiKeyGuard)
   @ApiSecurity('internal-key')
-  @ApiOperation({ summary: 'Init HITL enrichment scaffold (INTERNAL — worker only)' })
-  @ApiCreatedResponse({ description: 'Enrichment scaffold with llmPrompt + llmJsonSchema created' })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid x-internal-api-key header' })
-  @ApiNotFoundResponse({ description: 'Listing not found (or scoring report not yet created)' })
+  @ApiOperation({
+    summary: 'Init HITL enrichment scaffold (INTERNAL — worker only)',
+  })
+  @ApiCreatedResponse({
+    description: 'Enrichment scaffold with llmPrompt + llmJsonSchema created',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid x-internal-api-key header',
+  })
+  @ApiNotFoundResponse({
+    description: 'Listing not found (or scoring report not yet created)',
+  })
   initEnrichment(@Param('listingId') listingId: string) {
     return this.moderationService.initEnrichment(listingId);
   }
@@ -142,10 +158,18 @@ export class ModerationController {
   @Patch(':listingId/report/llm')
   @UseGuards(InternalApiKeyGuard)
   @ApiSecurity('internal-key')
-  @ApiOperation({ summary: 'Attach operator LLM result to moderation report (INTERNAL)' })
-  @ApiOkResponse({ description: 'LLM result attached and validated against llmJsonSchema' })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid x-internal-api-key header' })
-  @ApiUnprocessableEntityResponse({ description: 'llmResult does not match the stored llmJsonSchema' })
+  @ApiOperation({
+    summary: 'Attach operator LLM result to moderation report (INTERNAL)',
+  })
+  @ApiOkResponse({
+    description: 'LLM result attached and validated against llmJsonSchema',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid x-internal-api-key header',
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'llmResult does not match the stored llmJsonSchema',
+  })
   attachReportLlm(
     @Param('listingId') listingId: string,
     @Body() dto: AttachReportLlmDto,
@@ -164,7 +188,9 @@ export class ModerationController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
   @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
   @ApiNotFoundResponse({ description: 'Listing not found' })
-  @ApiConflictResponse({ description: 'Listing is not in PENDING_REVIEW status' })
+  @ApiConflictResponse({
+    description: 'Listing is not in PENDING_REVIEW status',
+  })
   approve(
     @Param('listingId') listingId: string,
     @Body() dto: ApproveDto,
@@ -182,13 +208,19 @@ export class ModerationController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
   @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
   @ApiNotFoundResponse({ description: 'Listing not found' })
-  @ApiConflictResponse({ description: 'Listing is not in PENDING_REVIEW status' })
+  @ApiConflictResponse({
+    description: 'Listing is not in PENDING_REVIEW status',
+  })
   requestChanges(
     @Param('listingId') listingId: string,
     @Body() dto: RequestChangesDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.moderationService.requestChanges(listingId, dto.feedback, user.sub);
+    return this.moderationService.requestChanges(
+      listingId,
+      dto.feedback,
+      user.sub,
+    );
   }
 
   @Patch(':listingId/reject')
@@ -200,7 +232,9 @@ export class ModerationController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
   @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
   @ApiNotFoundResponse({ description: 'Listing not found' })
-  @ApiConflictResponse({ description: 'Listing is not in PENDING_REVIEW status' })
+  @ApiConflictResponse({
+    description: 'Listing is not in PENDING_REVIEW status',
+  })
   reject(
     @Param('listingId') listingId: string,
     @Body() dto: RejectDto,

@@ -18,7 +18,10 @@ export class RegisterDto {
   @IsString()
   phoneNumber: string;
 
-  @ApiProperty({ example: 'Gizli123!', description: 'Şifre (en az 8 karakter)' })
+  @ApiProperty({
+    example: 'Gizli123!',
+    description: 'Şifre (en az 8 karakter)',
+  })
   @IsString()
   @MinLength(8)
   password: string;

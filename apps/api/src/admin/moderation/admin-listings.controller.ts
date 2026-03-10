@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator';
 import {
@@ -36,9 +45,27 @@ export class AdminListingsController {
       'Returns paginated listings with no default status filter. ' +
       'Supports ?status=, ?search= (title ILIKE), ?page=, ?limit=, and all standard filters.',
   })
-  @ApiOkResponse({ description: 'Paginated listing results: { data, total, page, limit }' })
-  @ApiQuery({ name: 'status', required: false, enum: ['DRAFT','PENDING_REVIEW','NEEDS_CHANGES','PUBLISHED','ARCHIVED','UNPUBLISHED'] })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Title search (case-insensitive substring)' })
+  @ApiOkResponse({
+    description: 'Paginated listing results: { data, total, page, limit }',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: [
+      'DRAFT',
+      'PENDING_REVIEW',
+      'NEEDS_CHANGES',
+      'PUBLISHED',
+      'ARCHIVED',
+      'UNPUBLISHED',
+    ],
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Title search (case-insensitive substring)',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiUnauthorizedResponse()
@@ -54,34 +81,33 @@ export class AdminListingsController {
       'Sets isFeatured and optionally featuredSortOrder. ' +
       'Only PUBLISHED listings can be featured — returns 422 otherwise.',
   })
-  @ApiOkResponse({ description: 'Listing with updated isFeatured + featuredSortOrder' })
+  @ApiOkResponse({
+    description: 'Listing with updated isFeatured + featuredSortOrder',
+  })
   @ApiNotFoundResponse({ description: 'Listing not found' })
   @ApiUnprocessableEntityResponse({ description: 'Listing is not PUBLISHED' })
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
-  setFeatured(
-    @Param('id') id: string,
-    @Body() dto: SetFeaturedDto,
-  ) {
+  setFeatured(@Param('id') id: string, @Body() dto: SetFeaturedDto) {
     return this.listingsService.setFeatured(id, dto.isFeatured, dto.sortOrder);
   }
 
   @Patch(':id/showcase')
   @ApiOperation({
-    summary: 'Toggle Vitrin (showcase) status for a PUBLISHED listing (ADMIN only)',
+    summary:
+      'Toggle Vitrin (showcase) status for a PUBLISHED listing (ADMIN only)',
     description:
       'Sets isShowcase and optionally showcaseOrder. ' +
       'Only PUBLISHED listings can be added to Vitrin — returns 422 otherwise.',
   })
-  @ApiOkResponse({ description: 'Listing with updated isShowcase + showcaseOrder' })
+  @ApiOkResponse({
+    description: 'Listing with updated isShowcase + showcaseOrder',
+  })
   @ApiNotFoundResponse({ description: 'İlan bulunamadı' })
   @ApiUnprocessableEntityResponse({ description: 'İlan yayında değil' })
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
-  setShowcase(
-    @Param('id') id: string,
-    @Body() dto: SetShowcaseDto,
-  ) {
+  setShowcase(@Param('id') id: string, @Body() dto: SetShowcaseDto) {
     return this.listingsService.setShowcase(id, dto.isShowcase, dto.sortOrder);
   }
 
