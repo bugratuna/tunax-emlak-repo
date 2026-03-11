@@ -47,7 +47,8 @@ export class AdminUsersController {
   @Post()
   @HttpCode(201)
   @ApiOperation({
-    summary: 'Create a user (ADMIN only) — defaults to PENDING_APPROVAL',
+    summary:
+      'Create a user (ADMIN only) — admin-created accounts default to ACTIVE',
   })
   @ApiCreatedResponse({ description: 'SafeUser created' })
   @ApiUnauthorizedResponse()
@@ -61,6 +62,8 @@ export class AdminUsersController {
       firstName: dto.firstName,
       lastName: dto.lastName,
       phoneNumber: dto.phoneNumber,
+      // Admin-created users are immediately active so they appear on the team page
+      status: 'ACTIVE',
     });
   }
 

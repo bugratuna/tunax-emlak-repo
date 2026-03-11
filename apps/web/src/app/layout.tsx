@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { Nav } from "@/components/nav";
 import { SiteFooter } from "@/components/site-footer";
 import { RouteTransitionOverlay } from "@/components/route-transition-overlay";
+import { CookieConsentBanner } from "@/components/cookie-consent";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,14 +20,26 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Realty Tunax — Antalya Gayrimenkul Platformu",
+    default: "Realty Tunax | Antalya & Kepez Gayrimenkul",
     template: "%s | Realty Tunax",
   },
   description:
-    "Antalya'nın güvenilir gayrimenkul danışmanlık platformu. Satılık ve kiralık konut, ticari gayrimenkul ilanları.",
+    "Antalya ve Kepez'in güvenilir gayrimenkul danışmanlık platformu. Satılık daire, kiralık konut ve ticari gayrimenkul ilanları. Kepez, Konyaaltı, Muratpaşa, Alanya.",
+  keywords: [
+    "Antalya emlak",
+    "Kepez emlak",
+    "Antalya satılık daire",
+    "Antalya kiralık daire",
+    "Kepez satılık daire",
+    "Antalya gayrimenkul danışmanı",
+  ],
   openGraph: {
     siteName: "Realty Tunax",
     locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
   },
   icons: {
     icon: "/brand/logo-icon.svg",
@@ -49,6 +62,7 @@ export default function RootLayout({
           <Nav />
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>
           <SiteFooter />
+          <CookieConsentBanner />
         </AuthProvider>
       </body>
     </html>

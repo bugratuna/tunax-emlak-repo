@@ -12,21 +12,90 @@ import {
   TrendingUp,
   Shield,
   Users,
+  CheckCircle2,
+  Search,
+  FileText,
+  Key,
 } from "lucide-react";
 import { HeroSearchInput } from "@/components/hero-search-input";
 import { listListings } from "@/lib/api/listings";
 import type { Listing } from "@/lib/types";
 
+// ── SEO Metadata ──────────────────────────────────────────────────────────────
+
 export const metadata: Metadata = {
-  title: "Realty Tunax — Antalya Gayrimenkul Platformu",
+  title:
+    "Antalya Satılık Daire & Gayrimenkul | Kepez Emlak | Realty Tunax",
   description:
-    "Antalya'da satılık ve kiralık konut, ticari gayrimenkul. Uzman danışman ekibimizle güvenilir, şeffaf ve hızlı hizmet.",
-  icons: {
-    icon: "/brand/logo-icon.svg",
+    "Antalya'da satılık daire, kiralık daire ve ticari gayrimenkul. Kepez, Konyaaltı, Muratpaşa ve Alanya'da uzman gayrimenkul danışmanı desteğiyle güvenilir, şeffaf emlak hizmeti.",
+  keywords: [
+    "Antalya satılık daire",
+    "Antalya kiralık daire",
+    "Kepez satılık daire",
+    "Kepez emlak",
+    "Kepez kiralık daire",
+    "Antalya gayrimenkul",
+    "Antalya emlak",
+    "Kepez gayrimenkul danışmanı",
+    "Antalya yatırım fırsatları",
+    "Antalya konut projeleri",
+    "Konyaaltı satılık daire",
+    "Muratpaşa emlak",
+    "Antalya gayrimenkul danışmanı",
+  ],
+  icons: { icon: "/brand/logo-icon.svg" },
+  openGraph: {
+    title: "Antalya Satılık Daire & Gayrimenkul | Realty Tunax",
+    description:
+      "Kepez, Konyaaltı, Muratpaşa ve tüm Antalya ilçelerinde satılık ve kiralık gayrimenkul. Uzman danışman desteğiyle güvenilir emlak hizmeti.",
+    type: "website",
+    locale: "tr_TR",
+    siteName: "Realty Tunax",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Antalya Satılık Daire & Gayrimenkul | Realty Tunax",
+    description:
+      "Kepez, Konyaaltı, Muratpaşa ve tüm Antalya ilçelerinde satılık ve kiralık gayrimenkul. Uzman danışman desteğiyle güvenilir emlak hizmeti.",
   },
 };
 
 export const revalidate = 60;
+
+// ── Structured data ───────────────────────────────────────────────────────────
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  name: "Realty Tunax",
+  description:
+    "Antalya ve Kepez'de satılık ve kiralık gayrimenkul danışmanlığı. Konut, ticari, yatırım.",
+  url: "https://realtytunax.com",
+  telephone: "+905530842270",
+  email: "ismail.tuna@realtytunax.com",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Kütükçü, Şelale Cd. No:123 D:117",
+    addressLocality: "Kepez",
+    addressRegion: "Antalya",
+    postalCode: "07080",
+    addressCountry: "TR",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: "36.9081",
+    longitude: "30.6956",
+  },
+  areaServed: [
+    { "@type": "City", name: "Antalya" },
+    { "@type": "AdministrativeArea", name: "Kepez" },
+    { "@type": "AdministrativeArea", name: "Konyaaltı" },
+    { "@type": "AdministrativeArea", name: "Muratpaşa" },
+    { "@type": "AdministrativeArea", name: "Alanya" },
+    { "@type": "AdministrativeArea", name: "Kemer" },
+  ],
+  knowsLanguage: ["tr", "en", "ru", "ar"],
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -49,7 +118,7 @@ function ListingCard({ listing }: { listing: Listing }) {
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-shadow"
+      className="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-shadow rt-listing-card"
     >
       <div className="relative h-48 w-full overflow-hidden bg-zinc-100">
         {cover ? (
@@ -115,12 +184,42 @@ function ListingCard({ listing }: { listing: Listing }) {
 // ── Static data ───────────────────────────────────────────────────────────────
 
 const DISTRICTS = [
-  { name: "Konyaaltı", emoji: "🏖️", desc: "Sahil & Lüks Rezidanslar" },
-  { name: "Muratpaşa", emoji: "🏙️", desc: "Şehir Merkezi & Ticari" },
-  { name: "Kepez", emoji: "🏘️", desc: "Uygun Fiyatlı Konutlar" },
-  { name: "Lara", emoji: "🌊", desc: "Denize Yakın Siteler" },
-  { name: "Alanya", emoji: "🏰", desc: "Tatil & Yatırım" },
-  { name: "Kemer", emoji: "⛵", desc: "Marina & Doğa" },
+  {
+    name: "Kepez",
+    emoji: "🏘️",
+    desc: "Yatırım Değeri Yüksek Konutlar",
+    tag: "Satılık & Kiralık",
+  },
+  {
+    name: "Konyaaltı",
+    emoji: "🏖️",
+    desc: "Sahil & Lüks Rezidanslar",
+    tag: "Satılık",
+  },
+  {
+    name: "Muratpaşa",
+    emoji: "🏙️",
+    desc: "Şehir Merkezi & Ticari",
+    tag: "Satılık & Kiralık",
+  },
+  {
+    name: "Lara",
+    emoji: "🌊",
+    desc: "Denize Yakın Siteler",
+    tag: "Satılık",
+  },
+  {
+    name: "Alanya",
+    emoji: "🏰",
+    desc: "Tatil & Yatırım Fırsatları",
+    tag: "Yatırım",
+  },
+  {
+    name: "Kemer",
+    emoji: "⛵",
+    desc: "Marina & Doğa İçinde Yaşam",
+    tag: "Satılık",
+  },
 ];
 
 const STATS = [
@@ -134,22 +233,43 @@ const SERVICES = [
   {
     icon: Building2,
     title: "Konut Satış & Kiralama",
-    desc: "Daire, villa, müstakil ev — her bütçeye uygun seçenekler.",
+    desc: "Daire, villa, müstakil ev — her bütçeye uygun Antalya konut seçenekleri.",
   },
   {
     icon: TrendingUp,
     title: "Yatırım Danışmanlığı",
-    desc: "Antalya'da en verimli yatırım bölgelerini birlikte keşfedelim.",
+    desc: "Kepez ve Antalya genelinde en verimli yatırım bölgelerini birlikte keşfedelim.",
   },
   {
     icon: Shield,
     title: "Güvenli İşlem",
-    desc: "Hukuki süreçler ve tapu işlemleri eksiksiz yönetilir.",
+    desc: "Hukuki süreçler ve tapu işlemleri uzman kadromuzca eksiksiz yönetilir.",
   },
   {
     icon: Users,
     title: "Yabancıya Satış",
-    desc: "İngilizce, Rusça ve Arapça desteğiyle uluslararası alıcılara hizmet.",
+    desc: "İngilizce, Rusça ve Arapça desteğiyle uluslararası alıcılara tam hizmet.",
+  },
+];
+
+const PROCESS_STEPS = [
+  {
+    step: "01",
+    icon: Search,
+    title: "Keşfedin",
+    desc: "Bölge, fiyat ve özelliklerinize göre ilan arayın. Uzmanlarımız ihtiyacınıza özel seçenekler sunar.",
+  },
+  {
+    step: "02",
+    icon: FileText,
+    title: "Görüşün",
+    desc: "Danışmanınızla yerinde inceleme, fiyat değerlendirmesi ve hukuki süreç bilgilendirmesi yapın.",
+  },
+  {
+    step: "03",
+    icon: Key,
+    title: "Tamamlayın",
+    desc: "Tapu işlemlerinden anahtara kadar tüm süreç profesyonel olarak yönetilir.",
   },
 ];
 
@@ -175,47 +295,83 @@ export default async function HomePage() {
 
   return (
     <div className="-mx-4 -mt-8">
-      {/* ── Hero ──────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-blue-900 to-indigo-900 px-4 py-28 text-white">
+      {/* ── JSON-LD structured data ─────────────────────────────────────────── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* ── Cinematic video hero ─────────────────────────────────────────────── */}
+      <section
+        aria-label="Antalya gayrimenkul — ana bölüm"
+        className="relative overflow-hidden min-h-[92vh] flex items-center justify-center bg-linear-to-br from-slate-900 via-stone-900 to-zinc-900 text-white"
+      >
+        {/* Background video — hidden when prefers-reduced-motion */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          className="absolute top-0 left-0 w-full h-full object-cover z-0 rt-hero-video"
+        >
+          <source
+            src="/Antalya_Cityscape_Video_Generation.mp4"
+            type="video/mp4"
+          />
+        </video>
+
+        {/* Cinematic overlay — ensures text legibility */}
+        <div className="absolute inset-0 z-10 bg-linear-to-b from-black/60 via-black/40 to-black/72" />
+
+        {/* Bottom fade — transitions into page background */}
         <div
-          className="absolute inset-0 opacity-[0.06]"
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 right-0 h-28 z-10"
           style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+            background:
+              "linear-gradient(to top, #f9f8f6 0%, transparent 100%)",
           }}
         />
 
-        <div className="relative mx-auto max-w-4xl text-center">
-          {/* Logo */}
-          <div className="mb-8 flex justify-center">
+        {/* Hero content */}
+        <div className="relative z-20 mx-auto max-w-4xl px-4 py-32 text-center">
+          {/* Brand logo */}
+          <div className="mb-10 flex justify-center">
             <Image
               src="/brand/logo.png"
-              alt="Realty Tunax"
+              alt="Realty Tunax — Antalya Gayrimenkul"
               width={0}
               height={0}
               sizes="100vw"
-              style={{ height: "12rem", width: "auto", objectFit: "contain" }}
-              className="drop-shadow-lg"
+              priority
+              style={{ height: "10rem", width: "auto", objectFit: "contain" }}
+              className="drop-shadow-2xl"
             />
           </div>
 
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium backdrop-blur">
-            <Star size={12} className="text-amber-400" fill="currentColor" />
-            Antalya&apos;nın Güvenilir Emlak Platformu
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium backdrop-blur-sm">
+            <MapPin size={12} className="text-amber-400" />
+            Kepez, Antalya &bull; Güvenilir Gayrimenkul Danışmanlığı
           </div>
 
-          <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             Antalya&apos;da{" "}
-            <span className="text-amber-400">Hayalinizdeki</span>
+            <span className="text-amber-400">Satılık</span> ve{" "}
+            <span className="text-amber-400">Kiralık</span>
             <br />
-            Mülkü Bulun
+            Gayrimenkul
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base text-zinc-300 sm:text-lg">
-            Konyaaltı&apos;ndan Alanya&apos;ya, sahil vilalarından şehir
-            merkezine — Antalya genelinde binlerce ilan tek platformda.
+
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-zinc-300 sm:text-lg">
+            Kepez&apos;den Konyaaltı&apos;na, Muratpaşa&apos;dan
+            Alanya&apos;ya — Antalya genelinde satılık daire, kiralık konut ve
+            yatırım fırsatları. Uzman danışman ekibimizle her adımda
+            yanınızdayız.
           </p>
 
-          {/* Search bar */}
+          {/* Search */}
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <HeroSearchInput />
             <Link
@@ -227,17 +383,44 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Quick district links */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            {DISTRICTS.map((d) => (
-              <Link
-                key={d.name}
-                href={`/listings?district=${encodeURIComponent(d.name)}`}
-                className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs hover:bg-white/20 transition-colors backdrop-blur"
-              >
-                {d.emoji} {d.name}
-              </Link>
-            ))}
+          {/* Intent-based quick links — SEO-meaningful anchors */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <Link
+              href="/listings?category=SALE&district=Kepez"
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              Kepez Satılık Daire
+            </Link>
+            <Link
+              href="/listings?category=RENT&district=Kepez"
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              Kepez Kiralık Daire
+            </Link>
+            <Link
+              href="/listings?category=SALE&district=Konyaalt%C4%B1"
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              Konyaaltı Satılık
+            </Link>
+            <Link
+              href="/listings?category=SALE&district=Muratpa%C5%9Fa"
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              Muratpaşa Satılık
+            </Link>
+            <Link
+              href="/listings?category=SALE&district=Alanya"
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              Alanya Yatırım
+            </Link>
+            <Link
+              href="/listings"
+              className="rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-xs text-amber-300 hover:bg-amber-400/20 transition-colors backdrop-blur-sm"
+            >
+              Tümünü Keşfet →
+            </Link>
           </div>
         </div>
       </section>
@@ -256,13 +439,17 @@ export default async function HomePage() {
 
       <div className="mx-auto max-w-7xl px-4">
 
-        {/* ── Vitrin İlanları ──────────────────────────────────────────────── */}
+        {/* ── Vitrin İlanları ──────────────────────────────────────────────────── */}
         {showcaseListings.length > 0 && (
           <section className="mt-16">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <Sparkles size={16} className="text-purple-500" fill="currentColor" />
+                  <Sparkles
+                    size={16}
+                    className="text-purple-500"
+                    fill="currentColor"
+                  />
                   <h2 className="text-xl font-bold text-zinc-900">
                     Vitrin İlanları
                   </h2>
@@ -285,13 +472,18 @@ export default async function HomePage() {
             </div>
           </section>
         )}
-        {/* ── Featured Listings ──────────────────────────────────────────────── */}
+
+        {/* ── Featured Listings ────────────────────────────────────────────────── */}
         {featuredListings.length > 0 && (
           <section className="mt-16">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <Star size={16} className="text-amber-500" fill="currentColor" />
+                  <Star
+                    size={16}
+                    className="text-amber-500"
+                    fill="currentColor"
+                  />
                   <h2 className="text-xl font-bold text-zinc-900">
                     Öne Çıkan İlanlar
                   </h2>
@@ -315,14 +507,100 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── Neighborhoods ──────────────────────────────────────────────────── */}
+        {/* ── Kepez Spotlight ──────────────────────────────────────────────────── */}
+        <section className="mt-20" aria-labelledby="kepez-heading">
+          <div className="rounded-2xl border border-amber-100 bg-linear-to-br from-amber-50 to-stone-50 px-8 py-12">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:gap-12">
+              <div className="flex-1">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                  <MapPin size={12} />
+                  Uzmanlaştığımız Bölge
+                </div>
+                <h2
+                  id="kepez-heading"
+                  className="text-2xl font-bold text-zinc-900 sm:text-3xl"
+                >
+                  Kepez&apos;de Satılık Daire ve Yatırım Fırsatları
+                </h2>
+                <p className="mt-4 text-sm leading-relaxed text-zinc-600">
+                  Antalya&apos;nın en hızlı büyüyen ilçesi Kepez, uygun
+                  fiyatlı konut seçenekleri ve yüksek kira getirisiyle
+                  yatırımcılar için cazip olmaya devam ediyor. Ofisimiz Şelale
+                  Caddesi&apos;nde yer alıyor; bölgeyi en iyi biz tanıyoruz.
+                </p>
+                <ul className="mt-5 space-y-2">
+                  {[
+                    "Antalya ortalamasının altında metrekare fiyatları",
+                    "Gelişen altyapı ve güçlü toplu taşıma ağı",
+                    "Yüksek kira getirisi ve hızlı kiracı bulma potansiyeli",
+                    "Okul, hastane ve alışveriş merkezlerine yakınlık",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-sm text-zinc-600"
+                    >
+                      <CheckCircle2
+                        size={16}
+                        className="mt-0.5 shrink-0 text-amber-500"
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link
+                    href="/listings?category=SALE&district=Kepez"
+                    className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-400 transition-colors"
+                  >
+                    Kepez Satılık İlanlar
+                    <ArrowRight size={14} />
+                  </Link>
+                  <Link
+                    href="/listings?category=RENT&district=Kepez"
+                    className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:border-amber-300 hover:bg-amber-50 transition-colors"
+                  >
+                    Kepez Kiralık İlanlar
+                  </Link>
+                </div>
+              </div>
+              <div className="shrink-0 lg:w-72">
+                <div className="rounded-xl border border-amber-100 bg-white p-6 shadow-sm">
+                  <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Kepez Bölge Verileri
+                  </h3>
+                  {[
+                    { label: "Ort. Satış Fiyatı (2+1)", value: "₺ 2.8M – 4.5M" },
+                    { label: "Ort. Kira (2+1)", value: "₺ 15.000 – 22.000" },
+                    { label: "Portföyümüzdeki İlan", value: "150+" },
+                    { label: "Tamamlanan İşlem", value: "80+" },
+                  ].map((row) => (
+                    <div
+                      key={row.label}
+                      className="flex items-center justify-between border-b border-zinc-100 py-2.5 last:border-0"
+                    >
+                      <span className="text-xs text-zinc-500">{row.label}</span>
+                      <span className="text-sm font-semibold text-zinc-900">
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                  <p className="mt-3 text-[10px] text-zinc-400">
+                    * Tahmini değerler, güncel piyasa verilerine dayanmaktadır.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Antalya İlçeleri ─────────────────────────────────────────────────── */}
         <section className="mt-20">
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold text-zinc-900">
-              Antalya&apos;nın Gözde Bölgeleri
+              Antalya&apos;nın Gözde Emlak Bölgeleri
             </h2>
             <p className="mt-2 text-sm text-zinc-500">
-              Bölge seçerek ilanları filtreleyin
+              İlçe seçerek satılık ve kiralık ilanları filtreleyin
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -337,17 +615,90 @@ export default async function HomePage() {
                   {d.name}
                 </h3>
                 <p className="mt-1 text-xs text-zinc-400">{d.desc}</p>
+                <span className="mt-2 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
+                  {d.tag}
+                </span>
               </Link>
             ))}
           </div>
         </section>
 
-        {/* ── Services ───────────────────────────────────────────────────────── */}
+        {/* ── Neden Antalya'da Yatırım? ────────────────────────────────────────── */}
+        <section className="mt-20" aria-labelledby="investment-heading">
+          <div className="mb-8 text-center">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+              <TrendingUp size={12} />
+              Yatırım Fırsatları
+            </div>
+            <h2
+              id="investment-heading"
+              className="text-2xl font-bold text-zinc-900 sm:text-3xl"
+            >
+              Neden Antalya&apos;da Gayrimenkul Yatırımı?
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-zinc-500">
+              Türkiye&apos;nin gözde tatil ve yaşam merkezi Antalya, istikrarlı
+              değer artışı ve yüksek kira getirisiyle yatırımcıların ilk tercihi
+              olmaya devam ediyor.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: TrendingUp,
+                color: "bg-emerald-50 text-emerald-600",
+                title: "Değer Artışı",
+                desc: "Antalya genelinde son 5 yılda konut değerleri yüzde 300'ün üzerinde artış gösterdi.",
+              },
+              {
+                icon: Users,
+                color: "bg-blue-50 text-blue-600",
+                title: "Güçlü Yabancı Talep",
+                desc: "Rusya, Ukrayna, Almanya ve İngiltere'den güçlü alıcı talebi değerleri destekliyor.",
+              },
+              {
+                icon: Building2,
+                color: "bg-amber-50 text-amber-600",
+                title: "Turizm Ekonomisi",
+                desc: "Yıllık 15 milyon turistin ziyaret ettiği şehir, kısa dönem kiracılık için ideal.",
+              },
+              {
+                icon: Shield,
+                color: "bg-purple-50 text-purple-600",
+                title: "Güvenli Mülkiyet",
+                desc: "Türk tapu sistemi ve yasal altyapı yabancı yatırımcılar için güvence sağlar.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-xl border border-zinc-200 bg-white p-5 hover:shadow-sm transition-shadow"
+              >
+                <div
+                  className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl ${item.color}`}
+                >
+                  <item.icon size={20} />
+                </div>
+                <h3 className="font-semibold text-zinc-900">{item.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-7 text-center">
+            <Link
+              href="/listings?category=SALE"
+              className="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700"
+            >
+              Yatırımlık İlanları Keşfet <ArrowRight size={14} />
+            </Link>
+          </div>
+        </section>
+
+        {/* ── Services ─────────────────────────────────────────────────────────── */}
         <section className="mt-20">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold text-zinc-900">
-              Hizmetlerimiz
-            </h2>
+            <h2 className="text-2xl font-bold text-zinc-900">Hizmetlerimiz</h2>
             <p className="mt-2 text-sm text-zinc-500">
               Satıştan kiralamaya, yatırım danışmanlığından hukuki desteğe
             </p>
@@ -370,14 +721,47 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── Recent Listings ────────────────────────────────────────────────── */}
+        {/* ── Satın Alma Süreci ────────────────────────────────────────────────── */}
+        <section className="mt-20">
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-bold text-zinc-900">
+              Gayrimenkul Alım &amp; Satım Süreci
+            </h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              İlan bulmaktan tapuya — her adımda yanınızdayız
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {PROCESS_STEPS.map((item) => (
+              <div
+                key={item.step}
+                className="relative rounded-xl border border-zinc-200 bg-white p-6 hover:shadow-sm transition-shadow"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="text-2xl font-bold text-amber-300">
+                    {item.step}
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                    <item.icon size={18} />
+                  </div>
+                </div>
+                <h3 className="font-semibold text-zinc-900">{item.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Recent Listings ──────────────────────────────────────────────────── */}
         {recentListings.length > 0 && (
           <section className="mt-20">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-zinc-900">Son İlanlar</h2>
                 <p className="mt-1 text-sm text-zinc-500">
-                  En yeni emlak ilanları
+                  Antalya genelinde en yeni emlak ilanları
                 </p>
               </div>
               <Link
@@ -395,32 +779,32 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── Why Realty Tunax ───────────────────────────────────────────────── */}
+        {/* ── Neden Realty Tunax? ──────────────────────────────────────────────── */}
         <section className="mt-20">
           <div className="rounded-2xl bg-zinc-50 px-8 py-12">
             <h2 className="text-center text-2xl font-bold text-zinc-900">
               Neden Realty Tunax?
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-center text-sm text-zinc-500">
-              Yıllar içinde edindiğimiz deneyim ve güvenle Antalya&apos;nın en
-              kapsamlı gayrimenkul platformunu oluşturduk.
+              10 yılı aşkın deneyim ve Antalya&apos;ya olan derin bağlılığımızla
+              güvenilir, şeffaf ve sonuç odaklı gayrimenkul hizmeti sunuyoruz.
             </p>
             <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
               {[
                 {
                   icon: "🏙️",
-                  title: "Antalya Uzmanı",
-                  desc: "Tüm ilçeler, mahalleler ve emlak trendleri hakkında derin bilgi birikimi.",
+                  title: "Antalya & Kepez Uzmanı",
+                  desc: "Kepez başta olmak üzere tüm Antalya ilçelerinde mahalle bazlı emlak bilgisi ve derin piyasa deneyimi.",
                 },
                 {
                   icon: "🤝",
                   title: "Güvenilir Danışmanlar",
-                  desc: "Her danışman onay sürecinden geçer. Müşteri memnuniyeti önceliğimizdir.",
+                  desc: "Her danışman onay sürecinden geçer. Müşteri memnuniyeti ve uzun vadeli ilişki önceliğimizdir.",
                 },
                 {
                   icon: "📋",
                   title: "Şeffaf Süreç",
-                  desc: "Her adımda bilgilendirilirsiniz. Sürpriz ücret veya gizli şart yoktur.",
+                  desc: "Her adımda bilgilendirilirsiniz. Sürpriz ücret veya gizli koşul yoktur.",
                 },
               ].map((item) => (
                 <div key={item.title} className="text-center">
@@ -435,16 +819,16 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── Contact CTA ───────────────────────────────────────────────────── */}
+        {/* ── Contact CTA ──────────────────────────────────────────────────────── */}
         <section className="mt-16 mb-16">
           <div className="flex flex-col items-center justify-between gap-6 rounded-2xl bg-zinc-900 px-8 py-10 sm:flex-row">
             <div>
               <h2 className="text-xl font-bold text-white">
-                Uzmanlarımızla Görüşün
+                Antalya&apos;da Gayrimenkul mi Arıyorsunuz?
               </h2>
               <p className="mt-1 text-sm text-zinc-400">
-                Sorularınız için bizi arayın veya form doldurun — en kısa
-                sürede dönüş yaparız.
+                Kepez ve tüm Antalya ilçelerinde alım, satım ve kiralama için
+                uzman danışmanlarımızla görüşün.
               </p>
               <a
                 href="tel:+905530842270"

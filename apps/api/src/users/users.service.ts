@@ -22,6 +22,7 @@ export interface PublicConsultant {
   lastName: string | null;
   name: string;
   email: string;
+  role: string;
   phoneNumber: string | null;
   bio: string | null;
   title: string | null;
@@ -36,6 +37,7 @@ function toPublicConsultant(e: UserEntity): PublicConsultant {
     lastName: e.lastName ?? null,
     name: e.name ?? e.email,
     email: e.email,
+    role: e.role,
     phoneNumber: e.phoneNumber ?? null,
     bio: e.bio ?? null,
     profilePhotoUrl: e.profilePhotoUrl ?? null,
@@ -87,7 +89,7 @@ export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   // Seed dev users into PostgreSQL on every boot (upsert — safe to re-run).
   // Only runs when FEATURE_SEED_USERS=true. Must never run in production
@@ -201,6 +203,7 @@ export class UsersService implements OnModuleInit {
   }
 
   async findPublicConsultants(): Promise<PublicConsultant[]> {
+    // Show ACTIVE users of any role — includes both CONSULTANT and ADMIN (for leadership cards)
     const entities = await this.repo.find({
       where: { role: Role.CONSULTANT, status: 'ACTIVE' },
       order: { createdAt: 'ASC' },
@@ -210,7 +213,7 @@ export class UsersService implements OnModuleInit {
 
   async findPublicConsultantById(id: string): Promise<PublicConsultant | null> {
     const e = await this.repo.findOne({
-      where: { id, role: Role.CONSULTANT, status: 'ACTIVE' },
+      where: { id, status: 'ACTIVE' },
     });
     return e ? toPublicConsultant(e) : null;
   }

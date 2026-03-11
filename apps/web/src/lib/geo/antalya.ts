@@ -1,7 +1,22 @@
 /**
  * Static Antalya province administrative data.
- * Source: Turkish postal / administrative boundaries.
+ * Source: Turkish postal / administrative boundaries (TÜİK, PTT).
  * Update manually if new districts or neighbourhoods are added.
+ *
+ * Corrections applied (2026):
+ * - "Archaeologia" removed from Konyaaltı (not a Turkish mahalle name)
+ * - "Tekirova" removed from Konyaaltı (belongs to Kemer district)
+ * - "Gazipaşa" removed from Alanya (it is a separate district)
+ * - "Camyuva" removed from Kemer (duplicate of "Çamyuva")
+ * - "Finike" removed from Kumluca (it is a separate district)
+ * - "Karaöz" removed from Finike (belongs to Kumluca district)
+ * - "Boğazkent" removed from Aksu (belongs to Serik district)
+ * - "Kadriye" removed from Aksu (belongs to Serik district)
+ * - "Çolaklı" removed from Aksu (belongs to Serik/Manavgat area)
+ * - "Kadriye" removed from Manavgat (belongs to Serik district)
+ * - "İn Yavuz Selim" removed from Kepez (duplicate of "Yavuz Selim")
+ * - "Korkuteli" removed from Kepez (it is a separate district)
+ * - "İbradı yolu" replaced in Akseki (not a registered mahalle name)
  */
 
 export const DISTRICTS: string[] = [
@@ -52,17 +67,16 @@ export const NEIGHBORHOODS: Record<string, string[]> = {
     "Çankaya", "Demirel", "Duacı", "Duraliler", "Düden", "Emek",
     "Erenköy", "Esentepe", "Fabrikalar", "Fatih", "Fevzi Çakmak",
     "Gazi", "Göçerler", "Gökpınar", "Gülveren", "Gündoğdu", "Güneş",
-    "Habibler", "Hüsnü Karakaş", "İn Yavuz Selim", "Kanal", "Karşıyaka",
-    "Kazım Karabekir", "Kepez", "Kirişçiler", "Korkuteli", "Kültür",
-    "Kütükçü", "Menderes", "Merkez Köy", "Metin Çakas", "Metin Kasapoğlu", "Mehmet Akif Ersoy",
-    "Odabaşı", "Özgürlük", "Santral", "Sütçüler", "Şafak", "Şelale",
-    "Teomanpaşa", "Toki", "Ulus", "Ünsal", "Varak", "Yavuz Selim",
-    "Yeni", "Yeni Doğan", "Yeni Emek", "Yeni Mahalle", "Yeşiltepe",
-    "Yeşilyurt", "Yükseliş", "Zeytinlik",
+    "Habibler", "Hüsnü Karakaş", "Kanal", "Karşıyaka",
+    "Kazım Karabekir", "Kepez", "Kirişçiler", "Kültür",
+    "Kütükçü", "Menderes", "Merkez Köy", "Metin Çakas", "Metin Kasapoğlu",
+    "Mehmet Akif Ersoy", "Odabaşı", "Özgürlük", "Santral", "Sütçüler",
+    "Şafak", "Şelale", "Teomanpaşa", "Toki", "Ulus", "Ünsal",
+    "Varak", "Yavuz Selim", "Yeni", "Yeni Doğan", "Yeni Emek",
+    "Yeni Mahalle", "Yeşiltepe", "Yeşilyurt", "Yükseliş", "Zeytinlik",
   ],
   Konyaaltı: [
     "Arapsuyu",
-    "Archaeologia",
     "Askeriye",
     "Atatürk",
     "Bahçeyaka",
@@ -73,11 +87,11 @@ export const NEIGHBORHOODS: Record<string, string[]> = {
     "Hacıveyiszade",
     "Hurma",
     "Konyaaltı",
+    "Kuzdere",
     "Liman",
     "Sarısu",
     "Siteler",
     "Solak",
-    "Tekirova",
     "Uncalı",
     "Yeşilbayır",
   ],
@@ -98,12 +112,9 @@ export const NEIGHBORHOODS: Record<string, string[]> = {
   ],
   Aksu: [
     "Atatürk",
-    "Boğazkent",
-    "Çolaklı",
     "Düden",
     "Gökçeler",
     "Güzelyurt",
-    "Kadriye",
     "Kavacık",
     "Kundu",
     "Kurşunlu",
@@ -113,10 +124,11 @@ export const NEIGHBORHOODS: Record<string, string[]> = {
   Alanya: [
     "Alanya Merkez",
     "Avsallar",
+    "Bektaş",
     "Cikcilli",
+    "Demirtaş",
     "Dim",
     "Elikesik",
-    "Gazipaşa",
     "Güllerpınarı",
     "Hacet",
     "İncekum",
@@ -137,7 +149,6 @@ export const NEIGHBORHOODS: Record<string, string[]> = {
     "Çolaklı",
     "Evrenseki",
     "Gündoğdu",
-    "Kadriye",
     "Kumköy",
     "Manavgat Merkez",
     "Sarılar",
@@ -157,21 +168,73 @@ export const NEIGHBORHOODS: Record<string, string[]> = {
   ],
   Kemer: [
     "Beldibi",
-    "Camyuva",
     "Çamyuva",
     "Göynük",
     "Kemer Merkez",
     "Kiriş",
     "Tekirova",
   ],
-  Kumluca: ["Adrasan", "Finike", "Karaöz", "Kumluca Merkez", "Mavikent", "Sahilkent"],
-  Finike: ["Finike Merkez", "Karaöz", "Limyra", "Turunçova"],
-  Kaş: ["Bayındır", "Kalkan", "Kaş Merkez", "Kınık", "Patara"],
-  Demre: ["Demre Merkez", "Kale", "Myra", "Sülüklü", "Üçağız"],
-  Elmalı: ["Elmalı Merkez", "Gödene", "Kızılcadağ", "Ovacık", "Yeşilgöl"],
-  Korkuteli: ["Çığlık", "Korkuteli Merkez", "Sarıkavak", "Yazır"],
-  Akseki: ["Akseki Merkez", "Çimi", "İbradı yolu"],
-  Gündoğmuş: ["Gündoğmuş Merkez"],
-  İbradı: ["İbradı Merkez"],
-  Gazipaşa: ["Gazipaşa Merkez", "Kaledran", "Konakpınar"],
+  Kumluca: [
+    "Adrasan",
+    "Karaöz",
+    "Kumluca Merkez",
+    "Mavikent",
+    "Sahilkent",
+  ],
+  Finike: [
+    "Finike Merkez",
+    "Limyra",
+    "Turunçova",
+    "Çayköy",
+  ],
+  Kaş: [
+    "Bayındır",
+    "Kalkan",
+    "Kaş Merkez",
+    "Kınık",
+    "Patara",
+  ],
+  Demre: [
+    "Demre Merkez",
+    "Kale",
+    "Myra",
+    "Sülüklü",
+    "Üçağız",
+  ],
+  Elmalı: [
+    "Elmalı Merkez",
+    "Gödene",
+    "Kızılcadağ",
+    "Ovacık",
+    "Yeşilgöl",
+  ],
+  Korkuteli: [
+    "Çığlık",
+    "Korkuteli Merkez",
+    "Sarıkavak",
+    "Yazır",
+  ],
+  Akseki: [
+    "Akseki Merkez",
+    "Çimi",
+    "Gedikbaşı",
+    "Naldöken",
+  ],
+  Gündoğmuş: [
+    "Gündoğmuş Merkez",
+    "Kızılcadağ",
+    "Ortaköy",
+    "Sarıot",
+  ],
+  İbradı: [
+    "İbradı Merkez",
+    "Gidengelmez",
+    "Kırkpınar",
+  ],
+  Gazipaşa: [
+    "Gazipaşa Merkez",
+    "Kaledran",
+    "Konakpınar",
+    "Bıçkıcı",
+  ],
 };

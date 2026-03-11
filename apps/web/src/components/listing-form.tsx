@@ -132,9 +132,12 @@ export function ListingForm({ mode, initialValues, listingId }: ListingFormProps
     const descText = description.replace(/<[^>]*>/g, "").trim();
     if (!descText || descText.length < 50)
       e.description = "Açıklama en az 50 karakter olmalıdır.";
-    if (!district) e.district = "İlçe zorunludur.";
-    if (!neighborhood.trim()) e.neighborhood = "Mahalle zorunludur.";
-    else if (!neighborhoodValid) e.neighborhood = "Listeden bir mahalle seçin.";
+    // Location is only required in edit mode — on create it is added later during review
+    if (mode === "edit") {
+      if (!district) e.district = "İlçe zorunludur.";
+      if (!neighborhood.trim()) e.neighborhood = "Mahalle zorunludur.";
+      else if (!neighborhoodValid) e.neighborhood = "Listeden bir mahalle seçin.";
+    }
     if (!grossArea || Number(grossArea) < 1)
       e.grossArea = "Brüt alan en az 1 m² olmalıdır.";
     return e;
@@ -142,16 +145,9 @@ export function ListingForm({ mode, initialValues, listingId }: ListingFormProps
 
   function buildDto() {
     const category = cat2ToCategory(cat2) ?? undefined;
-    return {
-      title: title.trim(),
-      description: description.trim() || undefined,
-      category,
-      propertyType: cat1 || undefined,
-      subtype: cat3 || undefined,
-      price: priceAmount
-        ? { amount: Number(priceAmount), currency: priceCurrency, isNegotiable }
-        : undefined,
-      location: district
+    // Location is only included in edit mode — on create it is provided later during review
+    const locationDto =
+      mode === "edit" && district
         ? {
             city: "Antalya",
             district,
@@ -161,7 +157,17 @@ export function ListingForm({ mode, initialValues, listingId }: ListingFormProps
                 ? { latitude: Number(lat), longitude: Number(lng) }
                 : undefined,
           }
+        : undefined;
+    return {
+      title: title.trim(),
+      description: description.trim() || undefined,
+      category,
+      propertyType: cat1 || undefined,
+      subtype: cat3 || undefined,
+      price: priceAmount
+        ? { amount: Number(priceAmount), currency: priceCurrency, isNegotiable }
         : undefined,
+      location: locationDto,
       specifications: {
         roomCount: roomCountIdx !== "" ? Number(roomCountIdx) : undefined,
         bathroomCount: bathroomCount !== "" ? Number(bathroomCount) : undefined,
@@ -534,73 +540,74 @@ export function ListingForm({ mode, initialValues, listingId }: ListingFormProps
         </div>
       </Section>
 
-      {/* Konum */}
-      <Section title="Konum">
-        <p className="text-xs text-zinc-400">Şehir Antalya olarak sabitlenmiştir.</p>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="İlçe" required error={errors.district}>
-            <select
-              value={district}
-              onChange={(e) => {
-                setDistrict(e.target.value);
-                // Reset neighborhood when district changes
-                setNeighborhood("");
-                setNeighborhoodValid(false);
-              }}
-              className={inputCls()}
-            >
-              <option value="">İlçe seçin…</option>
-              {DISTRICTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </Field>
-          {/* NeighborhoodCombobox renders its own error message — pass error only to it */}
-          <Field label="Mahalle" required>
-            <NeighborhoodCombobox
-              district={district}
-              value={neighborhood}
-              onChange={setNeighborhood}
-              onValidChange={setNeighborhoodValid}
-              disabled={!district}
-              placeholder={district ? "Mahalle seçin…" : "Önce ilçe seçin"}
-              error={errors.neighborhood}
-            />
-          </Field>
-          <Field label="Enlem (isteğe bağlı)">
-            <input
-              type="number"
-              step="0.00000001"
-              placeholder="36.88…"
-              value={lat}
-              onChange={(e) => setLat(e.target.value)}
-              className={inputCls()}
-            />
-          </Field>
-          <Field label="Boylam (isteğe bağlı)">
-            <input
-              type="number"
-              step="0.00000001"
-              placeholder="30.70…"
-              value={lng}
-              onChange={(e) => setLng(e.target.value)}
-              className={inputCls()}
-            />
-          </Field>
-        </div>
-        <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-xs text-zinc-400">
-          Harita konumu — yakında
-        </div>
-      </Section>
+      {/* Konum — only shown in edit mode; skipped on create (added later during review) */}
+      {mode === "edit" && (
+        <Section title="Konum">
+          <p className="text-xs text-zinc-400">Şehir Antalya olarak sabitlenmiştir.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="İlçe" required error={errors.district}>
+              <select
+                value={district}
+                onChange={(e) => {
+                  setDistrict(e.target.value);
+                  setNeighborhood("");
+                  setNeighborhoodValid(false);
+                }}
+                className={inputCls()}
+              >
+                <option value="">İlçe seçin…</option>
+                {DISTRICTS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Mahalle" required>
+              <NeighborhoodCombobox
+                district={district}
+                value={neighborhood}
+                onChange={setNeighborhood}
+                onValidChange={setNeighborhoodValid}
+                disabled={!district}
+                placeholder={district ? "Mahalle seçin…" : "Önce ilçe seçin"}
+                error={errors.neighborhood}
+              />
+            </Field>
+            <Field label="Enlem (isteğe bağlı)">
+              <input
+                type="number"
+                step="0.00000001"
+                placeholder="36.88…"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                className={inputCls()}
+              />
+            </Field>
+            <Field label="Boylam (isteğe bağlı)">
+              <input
+                type="number"
+                step="0.00000001"
+                placeholder="30.70…"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                className={inputCls()}
+              />
+            </Field>
+          </div>
+          <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-xs text-zinc-400">
+            Harita konumu — yakında
+          </div>
+        </Section>
+      )}
 
-      {/* Medya */}
-      <Section title="Medya">
-        <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-xs text-zinc-400">
-          Fotoğraf yükleme — yakında (fotoğraf sayısını yukarıdan girin)
+      {/* Create-mode info note */}
+      {mode === "create" && (
+        <div className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong>Konum ve fotoğraflar</strong> ilan oluşturulduktan sonra ilan
+          detay sayfasından eklenebilir.
         </div>
-      </Section>
+      )}
 
       {apiError && <ApiErrorMessage error={apiError} />}
 

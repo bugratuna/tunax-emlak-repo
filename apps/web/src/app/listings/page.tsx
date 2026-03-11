@@ -323,12 +323,20 @@ export default async function ListingsPage({ searchParams }: Props) {
         {fetchError ? (
           <ApiErrorMessage error={fetchError} />
         ) : listings.length === 0 ? (
-          <div className="rounded-lg border border-zinc-200 bg-white px-6 py-12 text-center">
-            <p className="text-sm text-zinc-500">
+          <div className="rounded-xl border border-zinc-200/80 bg-white px-6 py-16 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-2xl">
+              🏠
+            </div>
+            <p className="text-sm font-medium text-zinc-700">
               {hasActiveFilters
                 ? "Seçili filtrelere uygun ilan bulunamadı."
                 : "Henüz yayınlanmış ilan bulunmuyor."}
             </p>
+            {hasActiveFilters && (
+              <a href="/listings" className="mt-3 inline-block text-xs text-amber-700 hover:underline">
+                Filtreleri temizle
+              </a>
+            )}
           </div>
         ) : viewMode === "list" ? (
           <div className="flex flex-col gap-3">
@@ -486,7 +494,7 @@ function ListingCard({ listing }: { listing: Listing }) {
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="block rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-300 hover:shadow-sm transition-shadow"
+      className="rt-listing-card block rounded-xl border border-zinc-200/80 bg-white p-4 hover:border-zinc-300"
     >
       {photo ? (
         <div className="relative mb-3 h-36 overflow-hidden rounded bg-zinc-100">
@@ -543,7 +551,7 @@ function ListingCardRow({ listing }: { listing: Listing }) {
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="flex gap-4 rounded-lg border border-zinc-200 bg-white p-3 hover:border-zinc-300 hover:shadow-sm transition-shadow"
+      className="rt-listing-card flex gap-4 rounded-xl border border-zinc-200/80 bg-white p-3 hover:border-zinc-300"
     >
       {/* Thumbnail */}
       <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded bg-zinc-100">

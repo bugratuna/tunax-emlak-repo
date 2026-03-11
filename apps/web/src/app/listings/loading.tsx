@@ -1,22 +1,30 @@
-import { Building2 } from "lucide-react";
+import Image from "next/image";
 
 /**
  * Next.js App Router automatic loading boundary for /listings.
  * Shown while the server component is streaming in.
- * Must NOT be a Client Component — no "use client" here.
  */
 export default function ListingsLoading() {
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-blue-50/80 backdrop-blur-sm"
       role="status"
-      aria-label="İlanlar yükleniyor"
+      aria-label="Yükleniyor"
     >
-      <div className="flex flex-col items-center gap-4">
-        <div className="animate-pulse rounded-2xl bg-blue-100 p-5">
-          <Building2 size={40} className="text-blue-400" strokeWidth={1.5} />
+      <div className="relative flex items-center justify-center">
+        {/* Dışarıdaki dönen daire */}
+        <div className="h-20 w-20 animate-spin rounded-full border-4 border-blue-400 border-t-transparent"></div>
+
+        {/* Ortadaki sabit logo */}
+        <div className="absolute animate-pulse">
+          <Image
+            src="/brand/logo-icon.svg"
+            alt="Logo"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
         </div>
-        <p className="text-sm font-medium text-blue-600">İlanlar yükleniyor…</p>
       </div>
     </div>
   );

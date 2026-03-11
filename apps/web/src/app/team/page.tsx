@@ -28,8 +28,12 @@ const LEADERSHIP_TITLES = new Set([
 ]);
 
 function isLeadership(c: ConsultantPublicProfile): boolean {
-  if (c.title && LEADERSHIP_TITLES.has(c.title)) return true;
-  if (c.role === "ADMIN" && !c.title) return true;
+
+  if (c.title && LEADERSHIP_TITLES.has(c.title))
+    return true;
+
+  if (c.role === "ADMIN" && !c.title)
+    return true;
   return false;
 }
 
