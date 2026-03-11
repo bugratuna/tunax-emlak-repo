@@ -105,12 +105,6 @@ export function Nav() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [searchOpen]);
 
-  // Close mobile menu on route change
-  const pathname = usePathname();
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
-
   function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const q = searchValue.trim();

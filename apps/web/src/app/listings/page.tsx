@@ -333,9 +333,9 @@ export default async function ListingsPage({ searchParams }: Props) {
                 : "Henüz yayınlanmış ilan bulunmuyor."}
             </p>
             {hasActiveFilters && (
-              <a href="/listings" className="mt-3 inline-block text-xs text-amber-700 hover:underline">
+              <Link href="/listings" className="mt-3 inline-block text-xs text-amber-700 hover:underline">
                 Filtreleri temizle
-              </a>
+              </Link>
             )}
           </div>
         ) : viewMode === "list" ? (
