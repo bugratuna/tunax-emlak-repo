@@ -8,6 +8,11 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky",
+    "lint": "npm run lint:api && npm run lint:web && npm run lint:worker",
+    "lint:api": "cd apps/api && npm run lint:ci",
+    "lint:web": "cd apps/web && npm run lint",
+    "lint:worker": "cd apps/worker && npm run lint",
     "start:all": "npx concurrently -n \"api,worker,web\" -c \"blue,green,magenta\" \"npm run start:api\" \"npm run start:worker\" \"npm run start:web\"",
     "start:api": "cd apps/api && npm run start:dev",
     "start:worker": "cd apps/worker && npm run start:dev",
@@ -34,5 +39,8 @@
   "bugs": {
     "url": "https://github.com/bugratuna/tunax-emlak-repo/issues"
   },
-  "homepage": "https://github.com/bugratuna/tunax-emlak-repo#readme"
+  "homepage": "https://github.com/bugratuna/tunax-emlak-repo#readme",
+  "devDependencies": {
+    "husky": "^9.1.0"
+  }
 }

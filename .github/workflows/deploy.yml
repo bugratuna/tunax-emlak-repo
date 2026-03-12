@@ -67,6 +67,19 @@ jobs:
             | docker login --username AWS --password-stdin \
             ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-          docker compose --env-file .env -f compose.yml down
+          # Pull the new image before touching running services
           docker compose --env-file .env -f compose.yml pull
+
+          # Run database migrations in a one-shot container.
+          # compose run automatically starts declared dependencies (postgres_gis, redis)
+          # and waits for their health checks before executing the command.
+          # The container is removed on exit (--rm).
+          # `set -e` above ensures this step fails the workflow if migrations fail,
+          # preventing a broken schema from reaching the running application.
+          docker compose --env-file .env -f compose.yml run --rm \
+            main_app sh -c "cd /app/apps/api && npm run migration:run"
+
+          # Bring all services up with the new image.
+          # main_app is recreated with the new image; postgres_gis and redis
+          # continue running uninterrupted (no `compose down` = less downtime).
           docker compose --env-file .env -f compose.yml up -d

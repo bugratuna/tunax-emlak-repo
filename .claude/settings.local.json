@@ -42,7 +42,10 @@
       "Bash(echo \"exit code: $?\")",
       "Bash(echo \"exit: $?\")",
       "Bash(grep -r \"localhost\\\\|127.0.0.1\\\\|api\\\\.realtytunax\\\\|api\\\\.arep\\\\|http://\" c:UsersscreaWebstormProjectstunax-emlak-repoappswebsrc --include=*.ts --include=*.tsx --include=*.js --include=*.json)",
-      "Bash(find /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/src -name *migration* -type f)"
+      "Bash(find /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/src -name *migration* -type f)",
+      "Bash(find . -maxdepth 1 -name Dockerfile* -o -name docker*)",
+      "Bash(grep -r \"loading\\\\|Loading\\\\|Loader\\\\|loader\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/web/src --include=*.tsx --include=*.ts -l)",
+      "Bash(ls -la /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/*/Dockerfile)"
     ]
   }
 }

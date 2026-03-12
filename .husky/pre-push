@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+
+echo ""
+echo "▶  Pre-push: running lint checks across all apps..."
+echo ""
+
+# API — lint:ci has no --fix so errors surface cleanly
+echo "  [1/3] apps/api"
+npm run lint:api
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✖  Lint failed in apps/api. Push blocked."
+  echo "   Run 'npm run lint:api' (or 'cd apps/api && npm run lint') to fix."
+  exit 1
+fi
+
+# Web — next eslint (no --fix)
+echo "  [2/3] apps/web"
+npm run lint:web
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✖  Lint failed in apps/web. Push blocked."
+  echo "   Run 'npm run lint:web' to fix."
+  exit 1
+fi
+
+# Worker
+echo "  [3/3] apps/worker"
+npm run lint:worker
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✖  Lint failed in apps/worker. Push blocked."
+  echo "   Run 'npm run lint:worker' to fix."
+  exit 1
+fi
+
+echo ""
+echo "✔  All lint checks passed. Pushing..."
+echo ""
