@@ -6,7 +6,9 @@ export class SetSaleStatusDto {
   @IsBoolean()
   isSold: boolean;
 
-  @ApiPropertyOptional({ description: 'Sale date (ISO 8601). Defaults to now when isSold=true.' })
+  @ApiPropertyOptional({
+    description: 'Sale date (ISO 8601). Defaults to now when isSold=true.',
+  })
   @IsOptional()
   @IsISO8601()
   soldAt?: string;

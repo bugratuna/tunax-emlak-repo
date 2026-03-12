@@ -341,7 +341,9 @@ export class ListingsController {
       'Caller must own the listing. Listing must be PUBLISHED. ' +
       'This ensures the completedSales stats counter remains accurate.',
   })
-  @ApiOkResponse({ description: 'Listing with isSold=true, status=UNPUBLISHED' })
+  @ApiOkResponse({
+    description: 'Listing with isSold=true, status=UNPUBLISHED',
+  })
   @ApiNotFoundResponse({ description: 'Listing not found' })
   @ApiForbiddenResponse({ description: 'Not owner or wrong role' })
   @ApiUnauthorizedResponse()

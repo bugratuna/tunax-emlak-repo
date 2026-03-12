@@ -78,7 +78,9 @@ export class AuthService {
         );
       }
       if (input.profilePhoto.size > MAX_SIZE) {
-        throw new BadRequestException('Profil fotoğrafı en fazla 5 MB olabilir.');
+        throw new BadRequestException(
+          'Profil fotoğrafı en fazla 5 MB olabilir.',
+        );
       }
       const ext =
         input.profilePhoto.originalname

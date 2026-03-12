@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { randomUUID } from 'crypto';
 import {
   BadRequestException,
@@ -1306,6 +1307,7 @@ export class ListingsService {
     });
     if (!entity) throw new NotFoundException(`Listing ${id} not found`);
     entity.isSold = isSold;
+
     entity.soldAt = isSold
       ? soldAt
         ? new Date(soldAt)
@@ -1328,7 +1330,9 @@ export class ListingsService {
           where: { status: 'PUBLISHED', isSold: false },
         }),
         this.listingRepo.count({ where: { isSold: true } }),
-        this.userRepo.count({ where: { role: 'CONSULTANT' as any, status: 'ACTIVE' } }),
+        this.userRepo.count({
+          where: { role: 'CONSULTANT' as any, status: 'ACTIVE' },
+        }),
       ]);
     return { activeListings, completedSales, expertConsultants };
   }

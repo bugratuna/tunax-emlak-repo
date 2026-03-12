@@ -469,7 +469,8 @@ export class ListListingsDto {
   @ApiProperty({
     required: false,
     example: 'uuid-of-consultant',
-    description: 'Filter listings by consultant UUID. Used by consultant dashboard.',
+    description:
+      'Filter listings by consultant UUID. Used by consultant dashboard.',
   })
   @IsString()
   @IsOptional()

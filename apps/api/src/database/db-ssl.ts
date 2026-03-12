@@ -42,8 +42,7 @@ export function resolveSslConfig(): false | { rejectUnauthorized: boolean } {
   // Default: reject unauthorized (full cert chain validation).
   // Set DB_SSL_REJECT_UNAUTHORIZED=false only when Postgres uses a self-signed cert
   // on a network you fully control (e.g. private VPS VLAN).
-  const rejectUnauthorized =
-    process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
+  const rejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
 
   return { rejectUnauthorized };
 }

@@ -132,7 +132,9 @@ async function createAdmin(): Promise<void> {
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    console.error(`[admin:create] ERROR: "${email}" is not a valid email address.`);
+    console.error(
+      `[admin:create] ERROR: "${email}" is not a valid email address.`,
+    );
     process.exit(1);
   }
 

@@ -193,18 +193,22 @@ export function validateEnv(): void {
       const dbUrl = process.env.DATABASE_URL ?? '';
       if (isInternalDbHost(dbUrl)) {
         let hostname = '(unknown)';
-        try { hostname = new URL(dbUrl).hostname; } catch { /* ignore */ }
+        try {
+          hostname = new URL(dbUrl).hostname;
+        } catch {
+          /* ignore */
+        }
         console.warn(
           `[Tunax] WARNING: DB_SSL=false in production — ` +
-          `host "${hostname}" is an internal/private network address (Docker, VPC). ` +
-          `SSL is not required within a trusted private network. ` +
-          `Ensure this host is never exposed to the public internet.`,
+            `host "${hostname}" is an internal/private network address (Docker, VPC). ` +
+            `SSL is not required within a trusted private network. ` +
+            `Ensure this host is never exposed to the public internet.`,
         );
       } else {
         errors.push(
           `  UNSAFE   DB_SSL=false  — SSL must not be disabled for external database hosts. ` +
-          `Set DB_SSL=true. To suppress this for a Docker/VPC host, ensure DATABASE_URL uses ` +
-          `an internal hostname (no dots) or a private IP (10.x / 172.16-31.x / 192.168.x).`,
+            `Set DB_SSL=true. To suppress this for a Docker/VPC host, ensure DATABASE_URL uses ` +
+            `an internal hostname (no dots) or a private IP (10.x / 172.16-31.x / 192.168.x).`,
         );
       }
     }

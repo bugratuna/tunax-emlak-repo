@@ -54,6 +54,7 @@ export function ContactReveal({
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white">
           {photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={photo}
               alt="Profil fotoğrafı"

@@ -98,7 +98,7 @@ export class UsersService implements OnModuleInit {
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
     private readonly s3: S3Service,
-  ) { }
+  ) {}
 
   // Seed dev users into PostgreSQL on every boot (upsert — safe to re-run).
   // Only runs when FEATURE_SEED_USERS=true. Must never run in production
@@ -268,7 +268,12 @@ export class UsersService implements OnModuleInit {
     if (buffer.length > MAX_PHOTO_BYTES) {
       throw new BadRequestException('Fotoğraf boyutu 5 MB sınırını aşıyor.');
     }
-    const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
+    const ext =
+      mimeType === 'image/png'
+        ? 'png'
+        : mimeType === 'image/webp'
+          ? 'webp'
+          : 'jpg';
     const key = `users/${id}/profile.${ext}`;
     const publicUrl = await this.s3.putObject(key, buffer, mimeType);
 

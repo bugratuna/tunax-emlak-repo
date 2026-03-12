@@ -58,16 +58,27 @@ export class UsersController {
   }
 
   @Post('me/photo')
-  @UseInterceptors(FileInterceptor('photo', { limits: { fileSize: 5 * 1024 * 1024 } }))
+  @UseInterceptors(
+    FileInterceptor('photo', { limits: { fileSize: 5 * 1024 * 1024 } }),
+  )
   @ApiOperation({ summary: 'Upload own profile photo (authenticated)' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { photo: { type: 'string', format: 'binary' } } } })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { photo: { type: 'string', format: 'binary' } },
+    },
+  })
   @ApiOkResponse({ description: 'Updated SafeUser with new profilePhotoUrl' })
   @ApiUnauthorizedResponse()
   async uploadPhoto(
     @CurrentUser() user: JwtPayload,
     @UploadedFile() file: MulterFile,
   ) {
-    return this.usersService.uploadProfilePhoto(user.sub, file.buffer, file.mimetype);
+    return this.usersService.uploadProfilePhoto(
+      user.sub,
+      file.buffer,
+      file.mimetype,
+    );
   }
 }

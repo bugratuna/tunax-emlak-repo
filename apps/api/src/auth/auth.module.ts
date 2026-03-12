@@ -15,9 +15,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       useFactory: (): JwtModuleOptions => {
         const secret = process.env.JWT_ACCESS_SECRET;
         if (!secret) throw new Error('JWT_ACCESS_SECRET env var is required');
-        const expiresIn = (
-          process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ?? '24h'
-        ) as StringValue;
+        const expiresIn = (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN ??
+          '24h') as StringValue;
         return { secret, signOptions: { expiresIn } };
       },
     }),
