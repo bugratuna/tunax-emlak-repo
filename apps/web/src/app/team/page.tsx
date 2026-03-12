@@ -24,7 +24,7 @@ const LEADERSHIP_TITLES = new Set([
   "Genel Müdür",
   "Partner",
   "Yönetici",
-  "Ofis Sahibi (Booker)",
+  "Ofis Sahibi (Broker)",
 ]);
 
 function isLeadership(c: ConsultantPublicProfile): boolean {
