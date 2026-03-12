@@ -63,10 +63,14 @@ export default function ListingMapView({ lat, lng, title }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // `isolate` (CSS isolation:isolate) creates a new stacking context for the
+  // map container. This confines Leaflet's internal z-indices (panes: 200–1000,
+  // controls: 1000) to compete only within this element — they can no longer
+  // bleed above `position:fixed` overlays such as the photo lightbox.
   return (
     <div
       ref={containerRef}
-      className="h-64 w-full rounded-lg border border-zinc-200 overflow-hidden"
+      className="h-64 w-full rounded-lg border border-zinc-200 overflow-hidden isolate"
     />
   );
 }

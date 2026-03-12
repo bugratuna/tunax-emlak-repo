@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import type { MediaItem } from "@/lib/types";
 
@@ -9,8 +9,54 @@ interface Props {
   title: string;
 }
 
+/**
+ * Returns the URL to display publicly for a given photo.
+ * Prefers the watermarked variant (branded delivery) and falls back to the
+ * original for legacy images or when generation failed.
+ */
+function publicSrc(photo: MediaItem): string {
+  return photo.watermarkedUrl ?? photo.url;
+}
+
 export default function ListingPhotoGallery({ photos, title }: Props) {
   const [lightbox, setLightbox] = useState<number | null>(null);
+
+  // ── Keyboard navigation + body-scroll lock ──────────────────────────────
+  //
+  // Runs whenever the lightbox opens or closes.
+  // - Locks body scroll so the page beneath cannot be scrolled while the
+  //   lightbox is visible. The previous overflow value is restored exactly
+  //   on close to avoid interfering with custom scroll containers.
+  // - Escape closes the viewer. Arrow keys navigate between photos.
+  // - The effect removes its listener on cleanup so no event handlers leak
+  //   when the component unmounts or the lightbox opens/closes repeatedly.
+  useEffect(() => {
+    if (lightbox === null) return;
+
+    const len = photos.length;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setLightbox(null);
+      } else if (e.key === "ArrowLeft") {
+        setLightbox((i) => (i === null ? null : (i - 1 + len) % len));
+      } else if (e.key === "ArrowRight") {
+        setLightbox((i) => (i === null ? null : (i + 1) % len));
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+
+    // Lock scroll — save and restore whatever value was already set so we
+    // don't clobber a parent component's intentional overflow style.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [lightbox, photos.length]);
 
   if (photos.length === 0) return null;
 
@@ -35,7 +81,7 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
           className="col-span-2 row-span-2 relative overflow-hidden focus:outline-none"
         >
           <Image
-            src={cover.url}
+            src={publicSrc(cover)}
             alt={`${title} — 1`}
             fill
             sizes="50vw"
@@ -53,7 +99,7 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
             className="relative overflow-hidden focus:outline-none"
           >
             <Image
-              src={photo.url}
+              src={publicSrc(photo)}
               alt={`${title} — ${idx + 2}`}
               fill
               sizes="25vw"
@@ -75,21 +121,28 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
         ))}
       </div>
 
-      {/* Lightbox */}
+      {/* ── Lightbox ────────────────────────────────────────────────────────
+          z-[1200]: well above Leaflet's panes (max z-index 1000) and controls.
+          The map container itself uses `isolation: isolate` which further confines
+          Leaflet z-indices, but this z-value ensures correctness even without it.
+      ─────────────────────────────────────────────────────────────────────── */}
       {lightbox !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${title} — fotoğraf ${lightbox + 1} / ${photos.length}`}
+          className="fixed inset-0 z-1200 flex items-center justify-center bg-black/90"
           onClick={() => setLightbox(null)}
         >
-          {/* Close */}
+          {/* Close — higher contrast so it's visible against bright photos */}
           <button
             type="button"
             onClick={() => setLightbox(null)}
-            aria-label="Kapat"
-            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+            aria-label="Kapat (Esc)"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
@@ -98,22 +151,22 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); prev(); }}
-              aria-label="Önceki"
-              className="absolute left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+              aria-label="Önceki fotoğraf"
+              className="absolute left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
           )}
 
-          {/* Image */}
+          {/* Image — stopPropagation so clicking the photo itself does not close */}
           <div
             className="relative max-h-[85vh] max-w-[90vw] w-full h-full"
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={photos[lightbox].url}
+              src={publicSrc(photos[lightbox])}
               alt={`${title} — ${lightbox + 1}`}
               fill
               className="object-contain"
@@ -126,17 +179,17 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); next(); }}
-              aria-label="Sonraki"
-              className="absolute right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+              aria-label="Sonraki fotoğraf"
+              className="absolute right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/20 hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           )}
 
           {/* Counter */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs text-white">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white select-none">
             {lightbox + 1} / {photos.length}
           </div>
         </div>

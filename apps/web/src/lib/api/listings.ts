@@ -336,6 +336,9 @@ export interface UpdateLocationDto {
   city?: string;
   district?: string;
   neighborhood?: string;
+  street?: string;
+  /** Free-text address details. User-owned, never auto-filled by geocoder. */
+  addressDetails?: string;
 }
 
 /** Update listing coordinates (and optionally address fields). */

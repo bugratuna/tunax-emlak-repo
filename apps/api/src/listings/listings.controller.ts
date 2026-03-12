@@ -207,6 +207,41 @@ export class ListingsController {
     return this.listingsService.listAll(filters);
   }
 
+  // ── REVERSE GEOCODING PROXY ───────────────────────────────────────────────
+  //
+  // Must be registered BEFORE @Get(':id') so NestJS routes 'geocode/reverse'
+  // as a literal segment instead of treating it as an :id param.
+
+  @Get('geocode/reverse')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Reverse-geocode coordinates via Nominatim proxy (CONSULTANT/ADMIN)',
+    description:
+      'Proxies a Nominatim request server-side so the browser never contacts ' +
+      'the OSM API directly. Returns the raw Nominatim JSON; the client applies ' +
+      'its own normalization. Requires a valid JWT.',
+  })
+  @ApiQuery({ name: 'lat', required: true, type: Number, example: 36.89 })
+  @ApiQuery({ name: 'lng', required: true, type: Number, example: 30.71 })
+  @ApiOkResponse({ description: 'Raw Nominatim reverse-geocode response' })
+  @ApiBadRequestResponse({ description: 'Invalid lat/lng or geocoder error' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
+  reverseGeocode(
+    @Query('lat') lat: string,
+    @Query('lng') lng: string,
+  ) {
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    if (isNaN(latNum) || isNaN(lngNum)) {
+      throw new BadRequestException('lat and lng must be valid numbers');
+    }
+    if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+      throw new BadRequestException('lat must be −90..90 and lng must be −180..180');
+    }
+    return this.listingsService.reverseGeocodeProxy(latNum, lngNum);
+  }
+
   // ── GET BY ID ─────────────────────────────────────────────────────────────
 
   @Get(':id')

@@ -17,7 +17,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "rejected", label: "Reddedildi / Kaldırıldı" },
 ];
 
-const PAGE_SIZE_OPTIONS = [10, 20, 100] as const;
+const PAGE_SIZE_OPTIONS = [12, 24, 100] as const;
 
 interface SearchParams {
   tab?: string;
@@ -74,7 +74,7 @@ export default async function AdminAllListingsPage({ searchParams }: Props) {
   const page = params.page ? parseInt(params.page, 10) : 1;
   const pageSize = PAGE_SIZE_OPTIONS.includes(Number(params.limit) as typeof PAGE_SIZE_OPTIONS[number])
     ? Number(params.limit)
-    : 20;
+    : 10;
 
   let allListings: Listing[] = [];
   let total = 0;

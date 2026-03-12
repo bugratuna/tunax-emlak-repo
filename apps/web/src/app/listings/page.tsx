@@ -190,7 +190,7 @@ export default async function ListingsPage({ searchParams }: Props) {
     accessibility: arr(params.accessibility),
     sortBy: str(params.sortBy) ?? "newest",
     page: str(params.page) ? Number(str(params.page)) : 1,
-    limit: [10, 20, 100].includes(Number(str(params.limit))) ? Number(str(params.limit)) : 10,
+    limit: [12, 24, 100].includes(Number(str(params.limit))) ? Number(str(params.limit)) : 12,
   };
 
   // roomCounts multi-select is now handled by the backend (IN query).
@@ -378,7 +378,7 @@ export default async function ListingsPage({ searchParams }: Props) {
               <span className="text-zinc-300">|</span>
               <span className="text-xs">Sayfa başına:</span>
               <div className="flex gap-1">
-                {[10, 20, 100].map((n) => (
+                {[12, 24, 100].map((n) => (
                   <PageSizeLink key={n} params={params} size={n} current={pageSize}>
                     {n}
                   </PageSizeLink>

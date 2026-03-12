@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -89,6 +90,24 @@ export class S3Service {
       }),
     );
     return this.buildPublicUrl(key);
+  }
+
+  /**
+   * Downloads an object and returns its content as a Buffer.
+   * Used by the watermarking pipeline to fetch originals uploaded via the
+   * presigned-PUT flow (where the API never handled the binary directly).
+   * Throws on S3 error or empty response — caller should catch and degrade.
+   */
+  async getObjectAsBuffer(key: string): Promise<Buffer> {
+    const response = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+    if (!response.Body) {
+      throw new Error(`[S3Service] Empty body returned for key: ${key}`);
+    }
+    // AWS SDK v3 enriches Body with transformToByteArray()
+    const bytes = await (response.Body as { transformToByteArray(): Promise<Uint8Array> }).transformToByteArray();
+    return Buffer.from(bytes);
   }
 
   /** Hard-deletes an object. Throws on S3 error; caller decides how to handle. */

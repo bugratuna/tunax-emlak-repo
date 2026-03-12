@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -21,6 +22,7 @@ import { ListingLocationEntity } from '../database/entities/listing-location.ent
 import { ListingMediaEntity } from '../database/entities/listing-media.entity';
 import { UserEntity } from '../database/entities/user.entity';
 import { S3Service } from '../media/s3.service';
+import { WatermarkService } from '../media/watermark.service';
 import { InMemoryStore } from '../store/store';
 import type { Listing } from '../store/store';
 import { AUTOMATION_QUEUE } from './automation-queue.provider';
@@ -56,12 +58,34 @@ export interface MediaItem {
   url: string;
   s3Key: string;
   publicUrl: string;
+  /**
+   * URL of the watermarked public-delivery variant.
+   * Absent for legacy images or when watermark generation failed.
+   * Frontend should use `watermarkedUrl ?? url` for public-facing pages.
+   */
+  watermarkedUrl?: string;
   contentType?: string;
   width?: number;
   height?: number;
   sortOrder: number;
   isCover: boolean;
   uploadedAt: string;
+}
+
+// ── Watermarked S3 key helper ─────────────────────────────────────────────────
+
+/**
+ * Derives the watermarked-variant key from an original S3 key.
+ * Always produces a `.jpg` output since watermarked variants are encoded as JPEG.
+ *
+ * Example:
+ *   "listings/abc/uuid.png"  →  "listings/abc/uuid_wm.jpg"
+ *   "listings/abc/uuid.jpg"  →  "listings/abc/uuid_wm.jpg"
+ */
+function buildWatermarkedKey(originalKey: string): string {
+  const lastDot = originalKey.lastIndexOf('.');
+  const base = lastDot === -1 ? originalKey : originalKey.slice(0, lastDot);
+  return `${base}_wm.jpg`;
 }
 
 // ── Entity → Listing DTO mapper ───────────────────────────────────────────────
@@ -108,6 +132,8 @@ function toListingDto(
           city: location.city ?? undefined,
           district: location.district ?? undefined,
           neighborhood: location.neighborhood ?? undefined,
+          street: location.street ?? undefined,
+          addressDetails: location.addressDetails ?? undefined,
           coordinates:
             location.lat != null && location.lng != null
               ? { latitude: location.lat, longitude: location.lng }
@@ -166,6 +192,8 @@ export interface PresignResult {
 
 @Injectable()
 export class ListingsService {
+  private readonly logger = new Logger(ListingsService.name);
+
   constructor(
     @InjectRepository(ListingEntity)
     private readonly listingRepo: Repository<ListingEntity>,
@@ -182,6 +210,7 @@ export class ListingsService {
     @Inject(AUTOMATION_QUEUE)
     private readonly automationQueue: Queue,
     private readonly s3Service: S3Service,
+    private readonly watermarkService: WatermarkService,
     private readonly store: InMemoryStore,
   ) {}
 
@@ -772,10 +801,32 @@ export class ListingsService {
       isCover: false,
       width: dto.width ?? null,
       height: dto.height ?? null,
+      watermarkedS3Key: null,
+      watermarkedUrl: null,
     });
     await this.mediaRepo.save(media);
 
     await this.listingRepo.increment({ id: listingId }, 'imageCount', 1);
+
+    // ── Watermark: download original, composite logo, upload variant ─────────
+    // Done after the row is saved so the commit endpoint always returns quickly
+    // even if watermarking takes extra time. A NULL watermarkedUrl is safe —
+    // the frontend falls back to publicUrl.
+    try {
+      const originalBuffer = await this.s3Service.getObjectAsBuffer(dto.s3Key);
+      const wmBuffer = await this.watermarkService.applyWatermark(originalBuffer);
+      const wmKey = buildWatermarkedKey(dto.s3Key);
+      const wmUrl = await this.s3Service.putObject(wmKey, wmBuffer, 'image/jpeg');
+      media.watermarkedS3Key = wmKey;
+      media.watermarkedUrl = wmUrl;
+      await this.mediaRepo.save(media);
+    } catch (err) {
+      this.logger.warn(
+        `[commitMedia] Watermark generation failed for ${dto.s3Key} — ` +
+          'public pages will fall back to original:',
+        err,
+      );
+    }
 
     const all = await this.mediaRepo.find({
       where: { listingId },
@@ -806,6 +857,20 @@ export class ListingsService {
       );
 
     await this.s3Service.deleteObject(media.s3Key);
+
+    // Also delete the watermarked variant if one was generated.
+    // Failures are non-fatal — the row is removed from DB regardless.
+    if (media.watermarkedS3Key) {
+      try {
+        await this.s3Service.deleteObject(media.watermarkedS3Key);
+      } catch (err) {
+        this.logger.warn(
+          `[deleteMedia] Could not delete watermarked variant ${media.watermarkedS3Key}:`,
+          err,
+        );
+      }
+    }
+
     await this.mediaRepo.delete(mediaId);
     await this.dataSource.query(
       `UPDATE listings SET image_count = GREATEST(image_count - 1, 0) WHERE id = $1`,
@@ -852,6 +917,21 @@ export class ListingsService {
         file.mimetype,
       );
 
+      // ── Watermark: generate branded derivative alongside the original ─────
+      let watermarkedS3Key: string | null = null;
+      let watermarkedUrl: string | null = null;
+      try {
+        const wmBuffer = await this.watermarkService.applyWatermark(file.buffer);
+        const wmKey = buildWatermarkedKey(key);
+        watermarkedUrl = await this.s3Service.putObject(wmKey, wmBuffer, 'image/jpeg');
+        watermarkedS3Key = wmKey;
+      } catch (err) {
+        this.logger.warn(
+          `[uploadPhotos] Watermark failed for ${key} — falling back to original:`,
+          err,
+        );
+      }
+
       const media = this.mediaRepo.create({
         listingId,
         s3Key: key,
@@ -861,6 +941,8 @@ export class ListingsService {
         sizeBytes: file.size,
         sortOrder: currentCount + i,
         isCover: currentCount === 0 && i === 0,
+        watermarkedS3Key,
+        watermarkedUrl,
       });
       savedMedia.push(await this.mediaRepo.save(media));
     }
@@ -931,6 +1013,9 @@ export class ListingsService {
       if (dto.district !== undefined) listing.location.district = dto.district;
       if (dto.neighborhood !== undefined)
         listing.location.neighborhood = dto.neighborhood;
+      if (dto.street !== undefined) listing.location.street = dto.street;
+      if (dto.addressDetails !== undefined)
+        listing.location.addressDetails = dto.addressDetails;
       await this.locationRepo.save(listing.location);
     } else {
       const loc = this.locationRepo.create({
@@ -940,11 +1025,39 @@ export class ListingsService {
         city: dto.city ?? null,
         district: dto.district ?? null,
         neighborhood: dto.neighborhood ?? null,
+        street: dto.street ?? null,
+        addressDetails: dto.addressDetails ?? null,
       });
       await this.locationRepo.save(loc);
     }
 
     return this.findById(listingId);
+  }
+
+  // ── REVERSE GEOCODING PROXY ───────────────────────────────────────────────
+
+  /**
+   * Proxies a Nominatim reverse-geocode request server-side.
+   * Returns the raw Nominatim JSON so the caller can apply their own
+   * normalization logic. All Nominatim usage-policy headers are set here;
+   * the browser never contacts Nominatim directly.
+   */
+  async reverseGeocodeProxy(lat: number, lng: number): Promise<unknown> {
+    const url =
+      `https://nominatim.openstreetmap.org/reverse` +
+      `?lat=${lat}&lon=${lng}&format=json&accept-language=tr&zoom=18&addressdetails=1`;
+
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'RealtyTunax/1.0 (realtytunax.com)',
+      },
+    });
+
+    if (!res.ok) {
+      throw new BadRequestException(`Geocoder returned HTTP ${res.status}`);
+    }
+
+    return res.json();
   }
 
   // ── UPDATE LISTING (NEEDS_CHANGES or DRAFT) ─────────────────────────────
@@ -1351,11 +1464,13 @@ export class ListingsService {
   // ── Private helpers ───────────────────────────────────────────────────────
 
   private toMediaItem(m: ListingMediaEntity): MediaItem {
+    const originalUrl = m.publicUrl ?? this.s3Service.buildPublicUrl(m.s3Key);
     return {
       id: m.id,
-      url: m.publicUrl ?? this.s3Service.buildPublicUrl(m.s3Key),
+      url: originalUrl,
       s3Key: m.s3Key,
-      publicUrl: m.publicUrl ?? this.s3Service.buildPublicUrl(m.s3Key),
+      publicUrl: originalUrl,
+      watermarkedUrl: m.watermarkedUrl ?? undefined,
       contentType: m.contentType ?? undefined,
       width: m.width ?? undefined,
       height: m.height ?? undefined,

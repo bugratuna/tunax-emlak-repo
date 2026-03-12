@@ -45,7 +45,9 @@
       "Bash(find /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/api/src -name *migration* -type f)",
       "Bash(find . -maxdepth 1 -name Dockerfile* -o -name docker*)",
       "Bash(grep -r \"loading\\\\|Loading\\\\|Loader\\\\|loader\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/web/src --include=*.tsx --include=*.ts -l)",
-      "Bash(ls -la /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/*/Dockerfile)"
+      "Bash(ls -la /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/*/Dockerfile)",
+      "Bash(grep -n \"ConsultantListingWidgets\\\\|client-widgets\" /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/web/src/app/consultant/listings/[id]/page.tsx)",
+      "Bash(ls -la /c/Users/screa/WebstormProjects/tunax-emlak-repo/apps/web/src/app/listings/[id]/)"
     ]
   }
 }

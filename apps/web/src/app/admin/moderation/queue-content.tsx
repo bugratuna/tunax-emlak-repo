@@ -11,7 +11,7 @@ const TABS = [
   { status: "NEEDS_CHANGES", label: "Değişiklik Bekleniyor" },
 ] as const;
 
-const PAGE_SIZE_OPTIONS = [10, 20, 100] as const;
+const PAGE_SIZE_OPTIONS = [12, 24, 100] as const;
 type PageSize = (typeof PAGE_SIZE_OPTIONS)[number];
 
 interface Props {
@@ -24,7 +24,7 @@ export function QueueContent({ items, total, currentStatus }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<PageSize>(20);
+  const [pageSize, setPageSize] = useState<PageSize>(12);
 
   const filtered = search.trim()
     ? items.filter(

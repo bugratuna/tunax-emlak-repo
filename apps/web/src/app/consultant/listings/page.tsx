@@ -16,7 +16,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "rejected", label: "Reddedildi / Kaldırıldı" },
 ];
 
-const PAGE_SIZE_OPTIONS = [10, 20, 100];
+const PAGE_SIZE_OPTIONS = [12, 24, 100];
 
 function filterByTab(listings: Listing[], tab: Tab): Listing[] {
   switch (tab) {

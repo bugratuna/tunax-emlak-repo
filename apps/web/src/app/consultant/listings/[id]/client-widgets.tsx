@@ -49,6 +49,8 @@ export default function ConsultantListingWidgets({ listing }: Props) {
         initialCity={listing.location?.city ?? null}
         initialDistrict={listing.location?.district ?? null}
         initialNeighborhood={listing.location?.neighborhood ?? null}
+        initialStreet={listing.location?.street ?? null}
+        initialAddressDetails={listing.location?.addressDetails ?? null}
       />
     </>
   );

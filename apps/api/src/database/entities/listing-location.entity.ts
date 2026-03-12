@@ -32,6 +32,12 @@ export class ListingLocationEntity {
   })
   neighborhood: string | null;
 
+  @Column({ name: 'street', type: 'varchar', length: 200, nullable: true })
+  street: string | null;
+
+  @Column({ name: 'address_details', type: 'text', nullable: true })
+  addressDetails: string | null;
+
   @Column({ name: 'lat', type: 'double precision', nullable: true })
   lat: number | null;
 

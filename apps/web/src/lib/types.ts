@@ -35,6 +35,9 @@ export interface ListingLocation {
   city?: string;
   district?: string;
   neighborhood?: string;
+  street?: string;
+  /** Free-text: apartment/door number, floor, building/site name, postal code. User-owned, never auto-filled. */
+  addressDetails?: string;
   coordinates?: {
     latitude: number;
     longitude: number;
@@ -68,6 +71,12 @@ export interface MediaItem {
   url: string;
   s3Key: string;
   publicUrl: string;
+  /**
+   * URL of the branded public-delivery variant (watermarked).
+   * Absent for legacy images or when generation failed.
+   * Use `watermarkedUrl ?? url` on public-facing pages.
+   */
+  watermarkedUrl?: string;
   contentType?: string;
   width?: number;
   height?: number;

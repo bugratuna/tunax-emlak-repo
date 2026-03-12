@@ -38,4 +38,19 @@ export class UpdateLocationDto {
   @IsString()
   @MaxLength(100)
   neighborhood?: string;
+
+  @ApiPropertyOptional({ example: 'Atatürk Caddesi' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  street?: string;
+
+  @ApiPropertyOptional({
+    example: 'Daire 5, Kat 3, Liman Sitesi',
+    description: 'Free-text address details: apt/door number, floor, building/site name, postal code',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  addressDetails?: string;
 }
