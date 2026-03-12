@@ -70,4 +70,6 @@ jobs:
           docker compose --env-file .env -f compose.yml down
           docker compose --env-file .env -f compose.yml pull
           docker compose --env-file .env -f compose.yml up -d
-          docker exec -it rt_full_stack sh -lc "cd /app/apps/api && npm run migration:run"
+          sleep 10
+
+          docker compose exec -T rt_full_stack sh -c "cd /app/apps/api && npm run migration:run"
