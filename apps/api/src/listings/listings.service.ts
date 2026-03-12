@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, IsNull, Not, Repository } from 'typeorm';
 import {
   ListingEntity,
   ListingStatus,
@@ -36,6 +36,7 @@ import {
   validateConditionalFilters,
   validateFeatureValues,
 } from './taxonomy/taxonomy.validator';
+import { Role } from 'src/common/enums/role.enum';
 
 // ── Multer file shape (avoids @types/multer peer dep) ─────────────────────────
 
@@ -1331,7 +1332,17 @@ export class ListingsService {
         }),
         this.listingRepo.count({ where: { isSold: true } }),
         this.userRepo.count({
-          where: { role: 'CONSULTANT' as any, status: 'ACTIVE' },
+          where: [
+            {
+              status: 'ACTIVE',
+              role: Role.CONSULTANT,
+            },
+            {
+              status: 'ACTIVE',
+              role: Role.ADMIN,
+              title: Not(IsNull()),
+            },
+          ],
         }),
       ]);
     return { activeListings, completedSales, expertConsultants };
