@@ -253,7 +253,7 @@ export function AboutContent() {
                 name="İsmail Tuna"
                 role="Ofis Sahibi (Broker)"
                 imageSrc="https://image5.sahibinden.com/users/26/40/67/p200_profile_96264067_3278857.jpg"
-                href="/team"
+                href="/team/e73767f3-8a89-46f7-8aba-8283fd1e6582"
               />
               <TeamMini
                 name="Ertuğrul Uygun"

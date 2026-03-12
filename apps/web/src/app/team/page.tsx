@@ -40,6 +40,8 @@ function isLeadership(c: ConsultantPublicProfile): boolean {
 // ── Leadership Card (premium, rectangular portrait) ───────────────────────────
 
 function LeadershipCard({ consultant }: { consultant: ConsultantPublicProfile }) {
+  
+  console.log(consultant.firstName, consultant.lastName, consultant.title, consultant.role);
   const fullName =
     consultant.firstName && consultant.lastName
       ? `${consultant.firstName} ${consultant.lastName}`
@@ -183,6 +185,7 @@ export default async function TeamPage() {
   } catch {
     // Non-critical — render empty state below
   }
+  console.group(all);
 
   const leaders = all.filter(isLeadership);
   const agents = all.filter((c) => !isLeadership(c));

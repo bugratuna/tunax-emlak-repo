@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { S3Service } from '../media/s3.service';
 import { UserEntity, UserStatus } from '../database/entities/user.entity';
 import { Role } from '../common/enums/role.enum';
@@ -214,7 +214,19 @@ export class UsersService implements OnModuleInit {
   async findPublicConsultants(): Promise<PublicConsultant[]> {
     // Show ACTIVE users of any role — includes both CONSULTANT and ADMIN (for leadership cards)
     const entities = await this.repo.find({
-      where: { role: Role.CONSULTANT, status: 'ACTIVE' },
+      where: [
+        // 1. Durum: Status ACTIVE olsun VE role ADMIN olmasın (Title ne olursa olsun gelir)
+        {
+          status: 'ACTIVE',
+          role: Role.CONSULTANT,
+        },
+        // 2. Durum: Status ACTIVE olsun VE role ADMIN olsun VE title NULL olmasın
+        {
+          status: 'ACTIVE',
+          role: Role.ADMIN,
+          title: Not(IsNull()),
+        },
+      ],
       order: { createdAt: 'ASC' },
     });
     return entities.map(toPublicConsultant);
