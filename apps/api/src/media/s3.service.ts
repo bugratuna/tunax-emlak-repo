@@ -106,7 +106,9 @@ export class S3Service {
       throw new Error(`[S3Service] Empty body returned for key: ${key}`);
     }
     // AWS SDK v3 enriches Body with transformToByteArray()
-    const bytes = await (response.Body as { transformToByteArray(): Promise<Uint8Array> }).transformToByteArray();
+    const bytes = await (
+      response.Body as { transformToByteArray(): Promise<Uint8Array> }
+    ).transformToByteArray();
     return Buffer.from(bytes);
   }
 

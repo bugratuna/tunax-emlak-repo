@@ -53,14 +53,24 @@ export class ListingMediaEntity {
    * NULL for legacy images uploaded before watermarking was introduced.
    * Pattern: listings/{listingId}/{uuid}_wm.jpg
    */
-  @Column({ name: 'watermarked_s3_key', type: 'varchar', length: 1000, nullable: true })
+  @Column({
+    name: 'watermarked_s3_key',
+    type: 'varchar',
+    length: 1000,
+    nullable: true,
+  })
   watermarkedS3Key: string | null;
 
   /**
    * Public HTTPS URL of the watermarked variant.
    * NULL when generation failed or pre-dating watermarking. Frontend falls back to publicUrl.
    */
-  @Column({ name: 'watermarked_url', type: 'varchar', length: 1000, nullable: true })
+  @Column({
+    name: 'watermarked_url',
+    type: 'varchar',
+    length: 1000,
+    nullable: true,
+  })
   watermarkedUrl: string | null;
 
   @CreateDateColumn({ name: 'uploaded_at', type: 'timestamptz' })

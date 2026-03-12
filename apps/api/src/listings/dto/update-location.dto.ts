@@ -47,7 +47,8 @@ export class UpdateLocationDto {
 
   @ApiPropertyOptional({
     example: 'Daire 5, Kat 3, Liman Sitesi',
-    description: 'Free-text address details: apt/door number, floor, building/site name, postal code',
+    description:
+      'Free-text address details: apt/door number, floor, building/site name, postal code',
   })
   @IsOptional()
   @IsString()

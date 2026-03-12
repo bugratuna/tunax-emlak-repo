@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { randomUUID } from 'crypto';
 import {
   BadRequestException,
@@ -814,9 +813,14 @@ export class ListingsService {
     // the frontend falls back to publicUrl.
     try {
       const originalBuffer = await this.s3Service.getObjectAsBuffer(dto.s3Key);
-      const wmBuffer = await this.watermarkService.applyWatermark(originalBuffer);
+      const wmBuffer =
+        await this.watermarkService.applyWatermark(originalBuffer);
       const wmKey = buildWatermarkedKey(dto.s3Key);
-      const wmUrl = await this.s3Service.putObject(wmKey, wmBuffer, 'image/jpeg');
+      const wmUrl = await this.s3Service.putObject(
+        wmKey,
+        wmBuffer,
+        'image/jpeg',
+      );
       media.watermarkedS3Key = wmKey;
       media.watermarkedUrl = wmUrl;
       await this.mediaRepo.save(media);
@@ -921,9 +925,15 @@ export class ListingsService {
       let watermarkedS3Key: string | null = null;
       let watermarkedUrl: string | null = null;
       try {
-        const wmBuffer = await this.watermarkService.applyWatermark(file.buffer);
+        const wmBuffer = await this.watermarkService.applyWatermark(
+          file.buffer,
+        );
         const wmKey = buildWatermarkedKey(key);
-        watermarkedUrl = await this.s3Service.putObject(wmKey, wmBuffer, 'image/jpeg');
+        watermarkedUrl = await this.s3Service.putObject(
+          wmKey,
+          wmBuffer,
+          'image/jpeg',
+        );
         watermarkedS3Key = wmKey;
       } catch (err) {
         this.logger.warn(

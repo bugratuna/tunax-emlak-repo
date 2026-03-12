@@ -5,9 +5,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Intended for apartment/door numbers, postal codes, and building/site names.
  * Existing rows are unaffected (NULL by default). Fully backward-compatible.
  */
-export class AddAddressDetailsToLocation1709000000013
-  implements MigrationInterface
-{
+export class AddAddressDetailsToLocation1709000000013 implements MigrationInterface {
   name = 'AddAddressDetailsToLocation1709000000013';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

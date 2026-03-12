@@ -41,8 +41,28 @@ function assetCandidates(): string[] {
   return [
     process.env.WATERMARK_ASSET_PATH ?? null,
     path.resolve(process.cwd(), 'apps', 'web', 'public', 'brand', 'logo.png'),
-    path.resolve(process.cwd(), '..', '..', 'apps', 'web', 'public', 'brand', 'logo.png'),
-    path.resolve(__dirname, '..', '..', '..', '..', 'apps', 'web', 'public', 'brand', 'logo.png'),
+    path.resolve(
+      process.cwd(),
+      '..',
+      '..',
+      'apps',
+      'web',
+      'public',
+      'brand',
+      'logo.png',
+    ),
+    path.resolve(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      '..',
+      'apps',
+      'web',
+      'public',
+      'brand',
+      'logo.png',
+    ),
   ].filter((p): p is string => typeof p === 'string');
 }
 
@@ -79,6 +99,7 @@ export class WatermarkService implements OnModuleInit {
   /** Cached logo buffer loaded once at startup. Null = watermarking disabled. */
   private logoBuffer: Buffer | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async onModuleInit(): Promise<void> {
     for (const candidate of assetCandidates()) {
       try {
@@ -115,9 +136,8 @@ export class WatermarkService implements OnModuleInit {
 
     try {
       // ── 1. Read host image dimensions ─────────────────────────────────────
-      const { width: imgW = 800, height: imgH = 600 } = await sharp(
-        imageBuffer,
-      ).metadata();
+      const { width: imgW = 800, height: imgH = 600 } =
+        await sharp(imageBuffer).metadata();
 
       // ── 2. Determine watermark dimensions ─────────────────────────────────
       const targetWidth = Math.max(
@@ -161,7 +181,10 @@ export class WatermarkService implements OnModuleInit {
         .jpeg({ quality: 90, mozjpeg: true })
         .toBuffer();
     } catch (err) {
-      this.logger.warn('[WatermarkService] Watermarking failed — serving original:', err);
+      this.logger.warn(
+        '[WatermarkService] Watermarking failed — serving original:',
+        err,
+      );
       return imageBuffer;
     }
   }

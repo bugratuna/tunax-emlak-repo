@@ -216,7 +216,8 @@ export class ListingsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Reverse-geocode coordinates via Nominatim proxy (CONSULTANT/ADMIN)',
+    summary:
+      'Reverse-geocode coordinates via Nominatim proxy (CONSULTANT/ADMIN)',
     description:
       'Proxies a Nominatim request server-side so the browser never contacts ' +
       'the OSM API directly. Returns the raw Nominatim JSON; the client applies ' +
@@ -227,17 +228,16 @@ export class ListingsController {
   @ApiOkResponse({ description: 'Raw Nominatim reverse-geocode response' })
   @ApiBadRequestResponse({ description: 'Invalid lat/lng or geocoder error' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-  reverseGeocode(
-    @Query('lat') lat: string,
-    @Query('lng') lng: string,
-  ) {
+  reverseGeocode(@Query('lat') lat: string, @Query('lng') lng: string) {
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
     if (isNaN(latNum) || isNaN(lngNum)) {
       throw new BadRequestException('lat and lng must be valid numbers');
     }
     if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
-      throw new BadRequestException('lat must be −90..90 and lng must be −180..180');
+      throw new BadRequestException(
+        'lat must be −90..90 and lng must be −180..180',
+      );
     }
     return this.listingsService.reverseGeocodeProxy(latNum, lngNum);
   }
