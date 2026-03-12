@@ -50,7 +50,7 @@ export function LoginScreen() {
     >
       <View style={styles.card}>
         <Text style={styles.title}>Consultant Login</Text>
-        <Text style={styles.subtitle}>AREP — Antalya Real Estate Platform</Text>
+        <Text style={styles.subtitle}>Realty Tunax — Antalya Real Estate Platform</Text>
 
         {errors.api && <Text style={styles.apiError}>{errors.api}</Text>}
 

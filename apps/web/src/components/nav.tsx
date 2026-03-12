@@ -4,15 +4,295 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, X, LogOut } from "lucide-react";
+import { Search, X, LogOut, ChevronDown, UserCircle2 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
+import { getMe } from "@/lib/api/users";
+import type { UserProfile } from "@/lib/types";
+
+// ── Account dropdown helpers ───────────────────────────────────────────────────
+
+const CONSULTANT_MENU = [
+  { href: "/profile", label: "Profil Ayarları" },
+  { href: "/consultant/listings", label: "İlanlarım" },
+];
+
+const ADMIN_MENU = [
+  { href: "/profile", label: "Profil Ayarları" },
+  { href: "/admin/listings", label: "İlanlar" },
+  { href: "/admin/moderation", label: "Moderasyon" },
+  { href: "/admin/users", label: "Kullanıcılar" },
+];
+
+function getDisplayName(profile: UserProfile | null, email: string): string {
+  if (profile) {
+    const first = profile.firstName?.trim();
+    const last = profile.lastName?.trim();
+    if (first && last) return `${first} ${last}`;
+    const name = profile.name?.trim();
+    if (name) return name;
+  }
+  return email.split("@")[0];
+}
+
+function AccountDropdown({ profile }: { profile: UserProfile | null }) {
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  if (!user) return null;
+
+  const menuItems = user.role === "ADMIN" ? ADMIN_MENU : CONSULTANT_MENU;
+  const displayName = getDisplayName(profile, user.email);
+  const roleLabel = user.role === "ADMIN" ? "Yönetici" : "Danışman";
+
+  // Profile photo if available
+  const photoUrl = profile?.profilePhotoUrl ?? null;
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="true"
+        aria-expanded={open}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          background: open ? "#F0EDE8" : "transparent",
+          border: "1px solid #E5E2DC",
+          borderRadius: "999px",
+          padding: "4px 12px 4px 6px",
+          cursor: "pointer",
+          transition: "background 150ms ease, border-color 150ms ease",
+        }}
+        onMouseEnter={(e) => {
+          if (!open)
+            (e.currentTarget as HTMLButtonElement).style.background = "#F5F3EF";
+        }}
+        onMouseLeave={(e) => {
+          if (!open)
+            (e.currentTarget as HTMLButtonElement).style.background =
+              "transparent";
+        }}
+      >
+        {/* Profile icon / photo */}
+        {photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoUrl}
+            alt={displayName}
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              flexShrink: 0,
+            }}
+          />
+        ) : (
+          <UserCircle2
+            size={28}
+            style={{ color: "#1A1A2E", flexShrink: 0 }}
+          />
+        )}
+        {/* Name */}
+        <span
+          className="hidden lg:block"
+          style={{
+            fontSize: "12px",
+            fontWeight: 500,
+            color: "#1A1A2E",
+            maxWidth: "120px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {displayName}
+        </span>
+        <ChevronDown
+          size={13}
+          style={{
+            color: "#9B8E7E",
+            transition: "transform 150ms ease",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: "calc(100% + 8px)",
+            width: "220px",
+            background: "#FAFAF8",
+            border: "1px solid #E5E2DC",
+            borderRadius: "12px",
+            boxShadow:
+              "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
+            overflow: "hidden",
+            zIndex: 9999,
+          }}
+        >
+          {/* User header */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "12px 16px",
+              borderBottom: "1px solid #EAE7E2",
+            }}
+          >
+            {photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={photoUrl}
+                alt={displayName}
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  flexShrink: 0,
+                }}
+              />
+            ) : (
+              <UserCircle2
+                size={36}
+                style={{ color: "#1A1A2E", flexShrink: 0 }}
+              />
+            )}
+            <div style={{ minWidth: 0 }}>
+              <p
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#0F0F1A",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  margin: 0,
+                }}
+              >
+                {displayName}
+              </p>
+              <p style={{ fontSize: "11px", color: "#9B8E7E", margin: 0 }}>
+                {roleLabel}
+              </p>
+            </div>
+          </div>
+
+          {/* Menu items */}
+          <div style={{ padding: "4px 0" }}>
+            {menuItems.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "9px 16px",
+                    fontSize: "13px",
+                    color: isActive ? "#0F0F1A" : "#3A3A4A",
+                    background: isActive ? "#F0EDE8" : "transparent",
+                    textDecoration: "none",
+                    fontWeight: isActive ? 600 : 400,
+                    transition: "background 120ms ease",
+                    borderLeft: isActive
+                      ? "3px solid #C9A96E"
+                      : "3px solid transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLAnchorElement).style.background =
+                        "#F5F3EF";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLAnchorElement).style.background =
+                        "transparent";
+                  }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Logout */}
+          <div style={{ borderTop: "1px solid #EAE7E2", padding: "4px 0" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                logout();
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                width: "100%",
+                padding: "9px 16px",
+                fontSize: "13px",
+                color: "#C0392B",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "background 120ms ease",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "#FEF2F2")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "transparent")
+              }
+            >
+              <LogOut size={13} style={{ flexShrink: 0 }} />
+              Çıkış Yap
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── NavLink — gold underline hover animation ───────────────────────────────────
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+  const isActive =
+    pathname === href || (href !== "/" && pathname.startsWith(href));
   return (
     <Link
       href={href}
@@ -25,7 +305,13 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
 
 // ── CTA Button ─────────────────────────────────────────────────────────────────
 
-function CtaButton({ href, children }: { href: string; children: React.ReactNode }) {
+function CtaButton({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -48,15 +334,17 @@ function MobileLink({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+  const isActive =
+    pathname === href || (href !== "/" && pathname.startsWith(href));
   return (
     <Link
       href={href}
       onClick={onClick}
-      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
-        ? "bg-[#F5F0E8] text-[#0F0F1A]"
-        : "text-[#6B6B7A] hover:bg-[#F5F3EF] hover:text-[#0F0F1A]"
-        }`}
+      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+        isActive
+          ? "bg-[#F5F0E8] text-[#0F0F1A]"
+          : "text-[#6B6B7A] hover:bg-[#F5F3EF] hover:text-[#0F0F1A]"
+      }`}
     >
       {children}
     </Link>
@@ -66,7 +354,7 @@ function MobileLink({
 // ── Nav ────────────────────────────────────────────────────────────────────────
 
 export function Nav() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
 
@@ -74,7 +362,18 @@ export function Nav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch profile once when authenticated
+  useEffect(() => {
+    if (!user) return;
+    getMe()
+      .then(setProfile)
+      .catch(() => {
+        /* non-fatal */
+      });
+  }, [user]);
 
   // Sticky scroll detection
   useEffect(() => {
@@ -96,7 +395,10 @@ export function Nav() {
     if (!searchOpen) return;
     function handleClick(e: MouseEvent) {
       const target = e.target as Node;
-      if (searchInputRef.current && !searchInputRef.current.closest("form")?.contains(target)) {
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.closest("form")?.contains(target)
+      ) {
         setSearchOpen(false);
         setSearchValue("");
       }
@@ -121,6 +423,7 @@ export function Nav() {
     }
   }
 
+  const pathname = usePathname();
   const navLinks = [
     { href: "/listings", label: "İlanlar" },
     { href: "/team", label: "Ekibimiz" },
@@ -128,13 +431,13 @@ export function Nav() {
     { href: "/contact", label: "İletişim" },
   ];
 
-
   return (
     <header
-      className="sticky top-0 z-50"
+      className="sticky top-0 z-9999"
       style={{
         background: scrolled ? "rgba(250,250,248,0.96)" : "#FAFAF8",
-        transition: "background 300ms ease, box-shadow 300ms ease, height 280ms ease",
+        transition:
+          "background 300ms ease, box-shadow 300ms ease, height 280ms ease",
         height: scrolled ? "60px" : "80px",
         boxShadow: scrolled ? "0 1px 0 0 rgba(229,226,220,0.8)" : "none",
         backdropFilter: scrolled ? "blur(14px)" : "none",
@@ -163,22 +466,15 @@ export function Nav() {
         </Link>
 
         {/* ── Desktop nav ───────────────────────────────────────────────────── */}
-        <nav className="hidden md:flex items-center gap-8" aria-label="Ana navigasyon">
+        <nav
+          className="hidden md:flex items-center gap-8"
+          aria-label="Ana navigasyon"
+        >
           {navLinks.map(({ href, label }) => (
             <NavLink key={href} href={href}>
               {label}
             </NavLink>
           ))}
-          {user?.role === "CONSULTANT" && (
-            <NavLink href="/consultant/listings">İlanlarım</NavLink>
-          )}
-          {user?.role === "ADMIN" && (
-            <>
-              <NavLink href="/admin/moderation">Moderasyon</NavLink>
-              <NavLink href="/admin/listings">İlanlar</NavLink>
-              <NavLink href="/admin/users">Kullanıcılar</NavLink>
-            </>
-          )}
         </nav>
 
         {/* ── Right zone ───────────────────────────────────────────────────── */}
@@ -221,7 +517,10 @@ export function Nav() {
                   />
                   <button
                     type="button"
-                    onClick={() => { setSearchOpen(false); setSearchValue(""); }}
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setSearchValue("");
+                    }}
                     className="text-[#6B6B7A] transition-colors hover:text-[#0F0F1A]"
                     aria-label="Aramayı kapat"
                   >
@@ -247,32 +546,11 @@ export function Nav() {
             </AnimatePresence>
           </div>
 
-          {/* CTA */}
-          {user?.role === "ADMIN" && (
-            <CtaButton href="/admin/listings/new">+ Yeni İlan</CtaButton>
-          )}
-          {!user && (
-            <CtaButton href="/login">Giriş Yap</CtaButton>
-          )}
+          {/* CTA — login only for anonymous visitors, not on the login page itself */}
+          {!user && pathname !== "/login" && <CtaButton href="/login">Giriş Yap</CtaButton>}
 
-          {/* Logged-in user info + logout */}
-          {user && (
-            <>
-              <span className="hidden lg:block text-xs text-[#6B6B7A]">
-                {user.email}{" "}
-                <span className="ml-1 rounded-full bg-[#E8DFD0] px-2 py-0.5 text-[10px] font-medium text-[#1A1A2E]">
-                  {user.role === "ADMIN" ? "Yönetici" : "Danışman"}
-                </span>
-              </span>
-              <button
-                onClick={logout}
-                className="flex items-center gap-1.5 rounded-md border border-[#E5E2DC] px-3 py-1.5 text-xs font-medium text-[#6B6B7A] transition-all hover:border-[#C9A96E] hover:text-[#0F0F1A]"
-              >
-                <LogOut size={13} />
-                <span className="hidden sm:inline">Çıkış</span>
-              </button>
-            </>
-          )}
+          {/* Account dropdown for authenticated users */}
+          {user && <AccountDropdown profile={profile} />}
 
           {/* Mobile hamburger */}
           <button
@@ -284,17 +562,31 @@ export function Nav() {
             <motion.span
               className="block h-[1.5px] w-5 bg-[#1A1A2E] origin-center"
               animate={menuOpen ? { rotate: 45, y: 6.5 } : { rotate: 0, y: 0 }}
-              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }}
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.2, ease: "easeOut" }
+              }
             />
             <motion.span
               className="block h-[1.5px] w-5 bg-[#1A1A2E]"
-              animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
-              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }}
+              animate={
+                menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }
+              }
+              transition={
+                shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }
+              }
             />
             <motion.span
               className="block h-[1.5px] w-5 bg-[#1A1A2E] origin-center"
-              animate={menuOpen ? { rotate: -45, y: -6.5 } : { rotate: 0, y: 0 }}
-              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }}
+              animate={
+                menuOpen ? { rotate: -45, y: -6.5 } : { rotate: 0, y: 0 }
+              }
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.2, ease: "easeOut" }
+              }
             />
           </button>
         </div>
@@ -305,7 +597,9 @@ export function Nav() {
         {menuOpen && (
           <motion.div
             key="mobile-menu"
-            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            initial={
+              shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }
+            }
             animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
             transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
@@ -330,7 +624,10 @@ export function Nav() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: navLinks.length * 0.04, duration: 0.18 }}
               >
-                <MobileLink href="/consultant/listings" onClick={() => setMenuOpen(false)}>
+                <MobileLink
+                  href="/consultant/listings"
+                  onClick={() => setMenuOpen(false)}
+                >
                   İlanlarım
                 </MobileLink>
               </motion.div>
@@ -346,7 +643,10 @@ export function Nav() {
                     key={href}
                     initial={shouldReduceMotion ? {} : { opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (navLinks.length + i) * 0.04, duration: 0.18 }}
+                    transition={{
+                      delay: (navLinks.length + i) * 0.04,
+                      duration: 0.18,
+                    }}
                   >
                     <MobileLink href={href} onClick={() => setMenuOpen(false)}>
                       {label}

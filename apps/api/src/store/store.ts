@@ -15,6 +15,9 @@ export interface User {
   firstName?: string | null;
   lastName?: string | null;
   phoneNumber?: string | null;
+  profilePhotoUrl?: string | null;
+  bio?: string | null;
+  title?: string | null;
   createdAt: string;
 }
 

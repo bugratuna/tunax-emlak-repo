@@ -138,6 +138,8 @@ function toListingDto(
     featuredSortOrder: entity.featuredSortOrder,
     isShowcase: entity.isShowcase,
     showcaseOrder: entity.showcaseOrder,
+    isSold: entity.isSold,
+    soldAt: entity.soldAt?.toISOString() ?? null,
     media: media.length > 0 ? media : undefined,
   } as Listing;
 }
@@ -337,6 +339,10 @@ export class ListingsService {
       }
     }
 
+    if (filters.consultantId)
+      qb.andWhere('l.consultantId = :consultantId', {
+        consultantId: filters.consultantId,
+      });
     if (filters.status)
       qb.andWhere('l.status = :status', { status: filters.status });
     if (filters.category)
@@ -1135,9 +1141,11 @@ export class ListingsService {
 
   // ── CONTACT INFO (public) ─────────────────────────────────────────────────
 
-  async getContactInfo(
-    listingId: string,
-  ): Promise<{ consultantName: string; phone: string | null }> {
+  async getContactInfo(listingId: string): Promise<{
+    consultantName: string;
+    phone: string | null;
+    profilePhotoUrl: string | null;
+  }> {
     const listing = await this.listingRepo.findOneBy({ id: listingId });
     if (!listing) throw new NotFoundException(`Listing ${listingId} not found`);
     if (listing.status !== 'PUBLISHED') {
@@ -1145,7 +1153,12 @@ export class ListingsService {
     }
 
     const user = await this.userRepo.findOneBy({ id: listing.consultantId });
-    if (!user) return { consultantName: 'Realty Tunax Danışmanı', phone: null };
+    if (!user)
+      return {
+        consultantName: 'Realty Tunax Danışmanı',
+        phone: null,
+        profilePhotoUrl: null,
+      };
 
     if (user.status === 'SUSPENDED') {
       throw new NotFoundException('Bu danışman şu anda aktif değil.');
@@ -1156,7 +1169,11 @@ export class ListingsService {
         ? `${user.firstName} ${user.lastName}`
         : (user.name ?? 'Realty Tunax Danışmanı');
 
-    return { consultantName: fullName, phone: user.phoneNumber ?? null };
+    return {
+      consultantName: fullName,
+      phone: user.phoneNumber ?? null,
+      profilePhotoUrl: user.profilePhotoUrl ?? null,
+    };
   }
 
   // ── UPSERT FROM STORE (migration helper) ─────────────────────────────────
@@ -1243,6 +1260,77 @@ export class ListingsService {
           .execute();
       }
     });
+  }
+
+  // ── COMPLETE SALE (consultant own listing) ────────────────────────────────
+
+  /**
+   * Marks the listing as sold and moves it PUBLISHED → UNPUBLISHED.
+   * Only the owning consultant may call this. Sets isSold=true, soldAt=now,
+   * status=UNPUBLISHED, isFeatured=false, isShowcase=false so the
+   * completedSales stats counter stays accurate.
+   */
+  async completeSale(id: string, consultantId: string): Promise<Listing> {
+    const entity = await this.listingRepo.findOne({
+      where: { id },
+      relations: { location: true },
+    });
+    if (!entity) throw new NotFoundException(`Listing ${id} not found`);
+    if (entity.consultantId !== consultantId) {
+      throw new ForbiddenException('You do not own this listing');
+    }
+    if (entity.status !== 'PUBLISHED') {
+      throw new UnprocessableEntityException(
+        `Only PUBLISHED listings can be completed as a sale (current: ${entity.status})`,
+      );
+    }
+    entity.isSold = true;
+    entity.soldAt = new Date();
+    entity.status = 'UNPUBLISHED';
+    entity.isFeatured = false;
+    entity.isShowcase = false;
+    const saved = await this.listingRepo.save(entity);
+    return toListingDto(saved, saved.location);
+  }
+
+  // ── SET SALE STATUS (admin) ───────────────────────────────────────────────
+
+  async setSaleStatus(
+    id: string,
+    isSold: boolean,
+    soldAt?: string | null,
+  ): Promise<Listing> {
+    const entity = await this.listingRepo.findOne({
+      where: { id },
+      relations: { location: true },
+    });
+    if (!entity) throw new NotFoundException(`Listing ${id} not found`);
+    entity.isSold = isSold;
+    entity.soldAt = isSold
+      ? soldAt
+        ? new Date(soldAt)
+        : (entity.soldAt ?? new Date())
+      : null;
+    const saved = await this.listingRepo.save(entity);
+    return toListingDto(saved, saved.location);
+  }
+
+  // ── PUBLIC STATS (no auth) ────────────────────────────────────────────────
+
+  async getPublicStats(): Promise<{
+    activeListings: number;
+    completedSales: number;
+    expertConsultants: number;
+  }> {
+    const [activeListings, completedSales, expertConsultants] =
+      await Promise.all([
+        this.listingRepo.count({
+          where: { status: 'PUBLISHED', isSold: false },
+        }),
+        this.listingRepo.count({ where: { isSold: true } }),
+        this.userRepo.count({ where: { role: 'CONSULTANT' as any, status: 'ACTIVE' } }),
+      ]);
+    return { activeListings, completedSales, expertConsultants };
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────

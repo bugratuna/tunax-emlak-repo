@@ -4,10 +4,12 @@ import {
   Injectable,
   NotFoundException,
   OnModuleInit,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
+import { S3Service } from '../media/s3.service';
 import { UserEntity, UserStatus } from '../database/entities/user.entity';
 import { Role } from '../common/enums/role.enum';
 import type { User } from '../store/store';
@@ -56,6 +58,9 @@ function toUser(e: UserEntity): User {
     name: e.name ?? e.email,
     status: e.status,
     isActive: e.status === 'ACTIVE',
+    profilePhotoUrl: e.profilePhotoUrl ?? null,
+    bio: e.bio ?? null,
+    title: e.title ?? null,
     firstName: e.firstName ?? null,
     lastName: e.lastName ?? null,
     phoneNumber: e.phoneNumber ?? null,
@@ -84,11 +89,15 @@ const SEED_USERS = [
   },
 ] as const;
 
+const ALLOWED_PHOTO_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5 MB
+
 @Injectable()
 export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
+    private readonly s3: S3Service,
   ) { }
 
   // Seed dev users into PostgreSQL on every boot (upsert — safe to re-run).
@@ -239,6 +248,33 @@ export class UsersService implements OnModuleInit {
     if (input.bio !== undefined) e.bio = input.bio ?? null;
     if (input.profilePhotoUrl !== undefined)
       e.profilePhotoUrl = input.profilePhotoUrl ?? null;
+    return toSafeUser(await this.repo.save(e));
+  }
+
+  /**
+   * Uploads a profile photo buffer to S3 under users/{id}/profile/{ext}
+   * and updates the user's profilePhotoUrl. Returns the updated profile.
+   */
+  async uploadProfilePhoto(
+    id: string,
+    buffer: Buffer,
+    mimeType: string,
+  ): Promise<SafeUser> {
+    if (!ALLOWED_PHOTO_MIME.includes(mimeType)) {
+      throw new BadRequestException(
+        'Yalnızca JPEG, PNG veya WebP formatında fotoğraf yüklenebilir.',
+      );
+    }
+    if (buffer.length > MAX_PHOTO_BYTES) {
+      throw new BadRequestException('Fotoğraf boyutu 5 MB sınırını aşıyor.');
+    }
+    const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
+    const key = `users/${id}/profile.${ext}`;
+    const publicUrl = await this.s3.putObject(key, buffer, mimeType);
+
+    const e = await this.repo.findOneBy({ id });
+    if (!e) throw new NotFoundException(`User ${id} not found`);
+    e.profilePhotoUrl = publicUrl;
     return toSafeUser(await this.repo.save(e));
   }
 

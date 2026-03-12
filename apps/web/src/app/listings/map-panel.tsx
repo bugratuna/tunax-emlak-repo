@@ -219,7 +219,7 @@ export default function MapPanel({ listings, currentParams }: MapPanelProps) {
       <div ref={containerRef} className="h-64 w-full" />
 
       {bboxActive && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 shadow-sm">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[999] flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 shadow-sm">
           <span>Harita alanı filtreleniyor</span>
           <button
             type="button"

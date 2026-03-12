@@ -302,13 +302,15 @@ export function FilterSidebar() {
   const neighborhoods = district ? (NEIGHBORHOODS[district] ?? []) : [];
   const selectedRoomCounts = (searchParams.get("roomCounts") ?? "").split(",").filter(Boolean);
 
+  const UI_ONLY_PARAMS = new Set(["bbox", "page", "limit", "sortBy", "viewMode"]);
+
   const activeCount = useMemo(() => {
     let n = 0;
     for (const [k, v] of searchParams.entries()) {
-      if (k !== "bbox" && v) n++;
+      if (!UI_ONLY_PARAMS.has(k) && v) n++;
     }
     return n;
-  }, [searchParams]);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasAnyFilter = activeCount > 0 || searchParams.has("bbox");
 
@@ -574,20 +576,6 @@ export function FilterSidebar() {
             />
           ))}
         </div>
-      </SidebarSection>
-
-      {/* Sıralama */}
-      <SidebarSection title="Sıralama" defaultOpen={false}>
-        <select
-          value={searchParams.get("sortBy") ?? "newest"}
-          onChange={(e) => update("sortBy", e.target.value === "newest" ? "" : e.target.value)}
-          className={selectCls}
-        >
-          <option value="newest">En Yeni</option>
-          <option value="oldest">En Eski</option>
-          <option value="price_asc">Fiyat: Düşükten Yükseğe</option>
-          <option value="price_desc">Fiyat: Yüksekten Düşüğe</option>
-        </select>
       </SidebarSection>
 
       {/* Reset */}

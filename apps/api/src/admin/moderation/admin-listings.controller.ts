@@ -28,6 +28,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { ListingsService } from '../../listings/listings.service';
 import { SetFeaturedDto } from './dto/set-featured.dto';
+import { SetSaleStatusDto } from './dto/set-sale-status.dto';
 import { SetShowcaseDto } from './dto/set-showcase.dto';
 
 @ApiTags('admin/listings')
@@ -109,6 +110,20 @@ export class AdminListingsController {
   @ApiForbiddenResponse()
   setShowcase(@Param('id') id: string, @Body() dto: SetShowcaseDto) {
     return this.listingsService.setShowcase(id, dto.isShowcase, dto.sortOrder);
+  }
+
+  @Patch(':id/sale-status')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Mark a listing as sold or unsold (ADMIN only)',
+    description: 'Sets isSold and soldAt. Unsetting isSold clears soldAt.',
+  })
+  @ApiOkResponse({ description: 'Listing with updated isSold + soldAt' })
+  @ApiNotFoundResponse({ description: 'Listing not found' })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  setSaleStatus(@Param('id') id: string, @Body() dto: SetSaleStatusDto) {
+    return this.listingsService.setSaleStatus(id, dto.isSold, dto.soldAt);
   }
 
   @Patch(':id/unpublish')

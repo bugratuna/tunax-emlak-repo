@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Vizyon & Misyon — AREP Gayrimenkul",
+  title: "Vizyon & Misyon — Realty Tunax Gayrimenkul",
   description:
-    "AREP'in Antalya gayrimenkul sektöründeki vizyonu ve misyonu.",
+    "Realty Tunax'ın Antalya gayrimenkul sektöründeki vizyonu ve misyonu.",
   icons: {
     icon: "/brand/logo-icon.svg",
   },
@@ -15,14 +15,17 @@ export default function VisionPage() {
     <div className="mx-auto max-w-3xl">
       {/* Breadcrumb */}
       <p className="mb-6 text-sm text-zinc-500">
-        <Link href="/" className="hover:underline">Ana Sayfa</Link>
+        <Link href="/" className="hover:underline">
+          Ana Sayfa
+        </Link>
         {" / "}
         <span>Vizyon &amp; Misyon</span>
       </p>
 
       <h1 className="text-3xl font-bold text-zinc-900">Vizyon &amp; Misyon</h1>
       <p className="mt-2 text-zinc-500">
-        AREP olarak Antalya gayrimenkul ekosistemini dönüştürme yolculuğumuz
+        Realty Tunax olarak Antalya gayrimenkul ekosistemini dönüştürme
+        yolculuğumuz
       </p>
 
       {/* Vision */}
@@ -31,13 +34,15 @@ export default function VisionPage() {
           Vizyonumuz
         </span>
         <h2 className="mt-3 text-2xl font-bold">
-          Antalya&apos;nın En Güvenilir<br />Gayrimenkul Ekosistemi
+          Antalya&apos;nın En Güvenilir
+          <br />
+          Gayrimenkul Ekosistemi
         </h2>
         <p className="mt-4 text-zinc-300 leading-relaxed">
           2030 yılına kadar Antalya ve Ege kıyı şeridinde teknoloji destekli,
           şeffaf ve erişilebilir bir gayrimenkul platformu oluşturmak; yerli ve
-          yabancı yatırımcılar için Türkiye&apos;nin referans gayrimenkul markası
-          olmak.
+          yabancı yatırımcılar için Türkiye&apos;nin referans gayrimenkul
+          markası olmak.
         </p>
       </div>
 
@@ -59,7 +64,9 @@ export default function VisionPage() {
 
       {/* Strategic goals */}
       <div className="mt-10">
-        <h2 className="text-xl font-semibold text-zinc-900">Stratejik Hedeflerimiz</h2>
+        <h2 className="text-xl font-semibold text-zinc-900">
+          Stratejik Hedeflerimiz
+        </h2>
         <div className="mt-5 space-y-4">
           {[
             {

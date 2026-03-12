@@ -327,6 +327,28 @@ export class ListingsController {
     );
   }
 
+  // ── COMPLETE SALE (CONSULTANT own listing) ───────────────────────────────
+
+  @Patch(':id/complete-sale')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CONSULTANT)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Mark a listing as sold and unpublish it (CONSULTANT — own only)',
+    description:
+      'Sets isSold=true, soldAt=now(), status=UNPUBLISHED, isFeatured=false, isShowcase=false. ' +
+      'Caller must own the listing. Listing must be PUBLISHED. ' +
+      'This ensures the completedSales stats counter remains accurate.',
+  })
+  @ApiOkResponse({ description: 'Listing with isSold=true, status=UNPUBLISHED' })
+  @ApiNotFoundResponse({ description: 'Listing not found' })
+  @ApiForbiddenResponse({ description: 'Not owner or wrong role' })
+  @ApiUnauthorizedResponse()
+  completeSale(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.listingsService.completeSale(id, user.sub);
+  }
+
   // ── RESUBMIT ──────────────────────────────────────────────────────────────
 
   @Patch(':id/resubmit')

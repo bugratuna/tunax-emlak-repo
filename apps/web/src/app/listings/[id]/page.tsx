@@ -61,7 +61,7 @@ export default async function ListingDetailPage({ params }: Props) {
   }
 
   // Consultant contact info (SSR — name only; phone revealed client-side)
-  let consultantName = listing.consultantId;
+  let consultantName = listing.consultantName ?? listing.consultantId;
   if (listing.status === "PUBLISHED") {
     try {
       const contact = await getListingContact(id);
@@ -301,7 +301,7 @@ export default async function ListingDetailPage({ params }: Props) {
           {listing.status === "PUBLISHED" ? (
             <ContactReveal listingId={listing.id} consultantName={consultantName} />
           ) : (
-            <ConsultantCard consultantId={listing.consultantId} />
+            <ConsultantCard consultantName={consultantName} />
           )}
         </div>
       </div>
@@ -358,20 +358,20 @@ function Tag({ label }: { label: string }) {
   );
 }
 
-function ConsultantCard({ consultantId }: { consultantId: string }) {
-  const initials = consultantId.slice(0, 2).toUpperCase();
+function ConsultantCard({ consultantName }: { consultantName: string }) {
+  const initials = consultantName.slice(0, 2).toUpperCase();
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-5">
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-400">
         Danışman
       </h2>
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white">
           {initials}
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-zinc-800">
-            {consultantId}
+            {consultantName}
           </p>
           <p className="text-xs text-zinc-400">Gayrimenkul Danışmanı</p>
         </div>

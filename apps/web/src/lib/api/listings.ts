@@ -85,11 +85,15 @@ export interface ListingsQueryParams {
   accessibility?: string[];
   // sort & pagination
   sortBy?: string;
+  page?: number | string;
+  limit?: number | string;
   // status filter
   status?: string;
   // featured/showcase flags
   isFeatured?: boolean | string;
   isShowcase?: boolean | string;
+  // consultant filter (used by consultant dashboard)
+  consultantId?: string;
 }
 
 export async function listListings(params?: ListingsQueryParams): Promise<ListAllResult> {
@@ -174,8 +178,8 @@ export async function getListingFeedback(
  */
 export async function getListingContact(
   id: string,
-): Promise<{ consultantName: string; phone: string | null }> {
-  return apiFetch<{ consultantName: string; phone: string | null }>(
+): Promise<{ consultantName: string; phone: string | null; profilePhotoUrl: string | null}> {
+  return apiFetch<{ consultantName: string; phone: string | null; profilePhotoUrl: string | null }>(
     `/api/listings/${id}/contact`,
   );
 }
@@ -214,6 +218,31 @@ export async function setFeaturedListing(
   return apiFetch<Listing>(`/api/admin/listings/${id}/featured`, {
     method: "PATCH",
     body: JSON.stringify({ isFeatured, sortOrder }),
+  });
+}
+
+/**
+ * Consultant: mark own PUBLISHED listing as sold and unpublish it in one step.
+ * Sets isSold=true, soldAt=now(), status=UNPUBLISHED on the backend.
+ * Ensures the completedSales stats counter stays correct.
+ */
+export async function completeSaleListing(id: string): Promise<Listing> {
+  return apiFetch<Listing>(`/api/listings/${id}/complete-sale`, {
+    method: "PATCH",
+  });
+}
+
+/**
+ * Admin: mark a listing as sold or unsold.
+ */
+export async function setSaleStatus(
+  id: string,
+  isSold: boolean,
+  soldAt?: string,
+): Promise<Listing> {
+  return apiFetch<Listing>(`/api/admin/listings/${id}/sale-status`, {
+    method: "PATCH",
+    body: JSON.stringify({ isSold, soldAt }),
   });
 }
 

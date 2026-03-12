@@ -102,6 +102,10 @@ export interface Listing {
   showcaseOrder?: number;
   /** Ordered photo list — present on GET /listings/:id */
   media?: MediaItem[];
+  /** Whether this listing has been marked as sold/completed. */
+  isSold?: boolean;
+  /** ISO timestamp of when the sale was recorded. Null if not sold. */
+  soldAt?: string | null;
   submittedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -266,6 +270,28 @@ export interface LeadScoreReport {
 export interface ModerationQueue {
   items: Listing[];
   count: number;
+}
+
+// ── Homepage public stats ──────────────────────────────────────────────────────
+export interface PublicStats {
+  activeListings: number;
+  completedSales: number;
+  expertConsultants: number;
+}
+
+// ── Authenticated user profile (GET /api/users/me) ────────────────────────────
+export interface UserProfile {
+  id: string;
+  email: string;
+  role: UserRole;
+  name: string;
+  status: UserStatus;
+  firstName: string | null;
+  lastName: string | null;
+  phoneNumber: string | null;
+  bio: string | null;
+  profilePhotoUrl: string | null;
+  createdAt: string;
 }
 
 // -- API error shape (NestJS default) --

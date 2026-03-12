@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { ContactContent } from "./contact-content";
 
 export const metadata: Metadata = {
-  title: "İletişim — AREP Gayrimenkul",
+  title: "İletişim — Realty Tunax Gayrimenkul",
   description:
-    "AREP Gayrimenkul ile iletişime geçin. Antalya'daki uzman danışmanlarımız size yardımcı olmaya hazır.",
+    "Realty Tunax Gayrimenkul ile iletişime geçin. Antalya'daki uzman danışmanlarımız size yardımcı olmaya hazır.",
   icons: {
     icon: "/brand/logo-icon.svg",
   },

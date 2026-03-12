@@ -19,13 +19,13 @@ import {
 } from "lucide-react";
 import { HeroSearchInput } from "@/components/hero-search-input";
 import { listListings } from "@/lib/api/listings";
-import type { Listing } from "@/lib/types";
+import { getPublicStats } from "@/lib/api/public";
+import type { Listing, PublicStats } from "@/lib/types";
 
 // ── SEO Metadata ──────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title:
-    "Antalya Satılık Daire & Gayrimenkul | Kepez Emlak | Realty Tunax",
+  title: "Antalya Satılık Daire & Gayrimenkul | Kepez Emlak | Realty Tunax",
   description:
     "Antalya'da satılık daire, kiralık daire ve ticari gayrimenkul. Kepez, Konyaaltı, Muratpaşa ve Alanya'da uzman gayrimenkul danışmanı desteğiyle güvenilir, şeffaf emlak hizmeti.",
   keywords: [
@@ -222,12 +222,8 @@ const DISTRICTS = [
   },
 ];
 
-const STATS = [
-  { value: "500+", label: "Aktif İlan" },
-  { value: "200+", label: "Tamamlanan Satış" },
-  { value: "12", label: "Uzman Danışman" },
-  { value: "10+", label: "Yıl Deneyim" },
-];
+// STATS is now fetched from the backend (GET /api/public/stats).
+// "Yıl Deneyim" remains static as it is not a DB-derived value.
 
 const SERVICES = [
   {
@@ -279,18 +275,21 @@ export default async function HomePage() {
   let showcaseListings: Listing[] = [];
   let featuredListings: Listing[] = [];
   let recentListings: Listing[] = [];
+  let stats: PublicStats | null = null;
 
   try {
-    const [showcaseRes, featuredRes, recentRes] = await Promise.all([
+    const [showcaseRes, featuredRes, recentRes, statsRes] = await Promise.all([
       listListings({ status: "PUBLISHED", isShowcase: true, sortBy: "newest" }),
       listListings({ status: "PUBLISHED", isFeatured: true, sortBy: "newest" }),
       listListings({ status: "PUBLISHED", sortBy: "newest" }),
+      getPublicStats(),
     ]);
     showcaseListings = showcaseRes.data.slice(0, 6);
     featuredListings = featuredRes.data.slice(0, 6);
     recentListings = recentRes.data.slice(0, 6);
+    stats = statsRes;
   } catch {
-    // Non-critical — page renders without listings
+    // Non-critical — page renders without listings or with fallback stats
   }
 
   return (
@@ -330,8 +329,7 @@ export default async function HomePage() {
           aria-hidden="true"
           className="absolute bottom-0 left-0 right-0 h-28 z-10"
           style={{
-            background:
-              "linear-gradient(to top, #f9f8f6 0%, transparent 100%)",
+            background: "linear-gradient(to top, #f9f8f6 0%, transparent 100%)",
           }}
         />
 
@@ -357,18 +355,15 @@ export default async function HomePage() {
           </div>
 
           <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            Antalya&apos;da{" "}
-            <span className="text-amber-400">Satılık</span> ve{" "}
-            <span className="text-amber-400">Kiralık</span>
+            Antalya&apos;da <span className="text-amber-400">Yeni Nesil</span>
             <br />
             Gayrimenkul
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-zinc-300 sm:text-lg">
-            Kepez&apos;den Konyaaltı&apos;na, Muratpaşa&apos;dan
-            Alanya&apos;ya — Antalya genelinde satılık daire, kiralık konut ve
-            yatırım fırsatları. Uzman danışman ekibimizle her adımda
-            yanınızdayız.
+            Kepez&apos;den Konyaaltı&apos;na, Muratpaşa&apos;dan Alanya&apos;ya
+            — Antalya genelinde satılık daire, kiralık konut ve yatırım
+            fırsatları. Uzman danışman ekibimizle her adımda yanınızdayız.
           </p>
 
           {/* Search */}
@@ -428,17 +423,32 @@ export default async function HomePage() {
       {/* ── Stats bar ─────────────────────────────────────────────────────────── */}
       <section className="border-b border-zinc-100 bg-white">
         <div className="mx-auto max-w-5xl grid grid-cols-2 divide-x divide-zinc-100 sm:grid-cols-4">
-          {STATS.map((s) => (
-            <div key={s.label} className="px-6 py-5 text-center">
-              <p className="text-2xl font-bold text-zinc-900">{s.value}</p>
-              <p className="mt-0.5 text-xs text-zinc-500">{s.label}</p>
-            </div>
-          ))}
+          <div className="px-6 py-5 text-center">
+            <p className="text-2xl font-bold text-zinc-900">
+              {stats ? `${stats.activeListings}+` : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500">Aktif İlan</p>
+          </div>
+          <div className="px-6 py-5 text-center">
+            <p className="text-2xl font-bold text-zinc-900">
+              {stats ? `${stats.completedSales}+` : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500">Tamamlanan Satış</p>
+          </div>
+          <div className="px-6 py-5 text-center">
+            <p className="text-2xl font-bold text-zinc-900">
+              {stats ? stats.expertConsultants : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500">Uzman Danışman</p>
+          </div>
+          <div className="px-6 py-5 text-center">
+            <p className="text-2xl font-bold text-zinc-900">5+</p>
+            <p className="mt-0.5 text-xs text-zinc-500">Yıl Deneyim</p>
+          </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-7xl px-4">
-
         {/* ── Vitrin İlanları ──────────────────────────────────────────────────── */}
         {showcaseListings.length > 0 && (
           <section className="mt-16">
@@ -520,13 +530,13 @@ export default async function HomePage() {
                   id="kepez-heading"
                   className="text-2xl font-bold text-zinc-900 sm:text-3xl"
                 >
-                  Kepez&apos;de Satılık Daire ve Yatırım Fırsatları
+                  Kepez&apos;de Yatırım Fırsatları
                 </h2>
                 <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-                  Antalya&apos;nın en hızlı büyüyen ilçesi Kepez, uygun
-                  fiyatlı konut seçenekleri ve yüksek kira getirisiyle
-                  yatırımcılar için cazip olmaya devam ediyor. Ofisimiz Şelale
-                  Caddesi&apos;nde yer alıyor; bölgeyi en iyi biz tanıyoruz.
+                  Antalya&apos;nın en hızlı büyüyen ilçesi Kepez, uygun fiyatlı
+                  konut seçenekleri ve yüksek kira getirisiyle yatırımcılar için
+                  cazip olmaya devam ediyor. Ofisimiz Şelale Caddesi&apos;nde
+                  yer alıyor; bölgeyi en iyi biz tanıyoruz.
                 </p>
                 <ul className="mt-5 space-y-2">
                   {[
@@ -569,10 +579,12 @@ export default async function HomePage() {
                     Kepez Bölge Verileri
                   </h3>
                   {[
-                    { label: "Ort. Satış Fiyatı (2+1)", value: "₺ 2.8M – 4.5M" },
+                    {
+                      label: "Ort. Satış Fiyatı (2+1)",
+                      value: "₺ 2.8M – 4.5M",
+                    },
                     { label: "Ort. Kira (2+1)", value: "₺ 15.000 – 22.000" },
                     { label: "Portföyümüzdeki İlan", value: "150+" },
-                    { label: "Tamamlanan İşlem", value: "80+" },
                   ].map((row) => (
                     <div
                       key={row.label}

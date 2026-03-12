@@ -1,5 +1,6 @@
 import { apiFetch, ApiRequestError } from "./client";
-import type { AdminUser, ConsultantPublicProfile } from "@/lib/types";
+import { getClientToken } from "@/lib/auth";
+import type { AdminUser, ConsultantPublicProfile, UserProfile } from "@/lib/types";
 
 export async function listAdminUsers(token?: string): Promise<AdminUser[]> {
   return apiFetch<AdminUser[]>("/api/admin/users", token ? { _token: token } : undefined);
@@ -65,6 +66,55 @@ export async function registerUser(dto: RegisterDto): Promise<AdminUser> {
       message: res.statusText,
       error: "Unknown",
     }));
+    throw new ApiRequestError(res.status, body);
+  }
+  return res.json();
+}
+
+// ── Authenticated user profile endpoints ──────────────────────────────────────
+
+export interface UpdateProfileDto {
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  bio?: string;
+  profilePhotoUrl?: string;
+}
+
+/** Get the currently authenticated user's profile (requires JWT). */
+export async function getMe(token?: string): Promise<UserProfile> {
+  return apiFetch<UserProfile>("/api/users/me", token ? { _token: token } : undefined);
+}
+
+/** Update the currently authenticated user's profile (requires JWT). */
+export async function updateMe(dto: UpdateProfileDto): Promise<UserProfile> {
+  return apiFetch<UserProfile>("/api/users/me", {
+    method: "PATCH",
+    body: JSON.stringify(dto),
+  });
+}
+
+/**
+ * Upload a profile photo file (JPEG/PNG/WebP, max 5 MB).
+ * Sends multipart/form-data to POST /api/users/me/photo.
+ * Returns the updated UserProfile with the new profilePhotoUrl.
+ */
+export async function uploadProfilePhoto(file: File): Promise<UserProfile> {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+  const base = apiBase.endsWith("/") ? apiBase.slice(0, -1) : apiBase;
+  const token = getClientToken();
+  const formData = new FormData();
+  formData.append("photo", file);
+
+  const res = await fetch(`${base}/api/users/me/photo`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ message: res.statusText }));
     throw new ApiRequestError(res.status, body);
   }
   return res.json();

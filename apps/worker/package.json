@@ -1,7 +1,7 @@
 {
   "name": "worker",
   "version": "0.0.1",
-  "description": "AREP automation worker — BullMQ job processor",
+  "description": "Realty Tunax automation worker — BullMQ job processor",
   "private": true,
   "scripts": {
     "start": "node dist/main",

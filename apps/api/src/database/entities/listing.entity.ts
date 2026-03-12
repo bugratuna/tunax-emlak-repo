@@ -183,6 +183,12 @@ export class ListingEntity {
   })
   listingNumber: string | null;
 
+  @Column({ name: 'is_sold', type: 'boolean', default: false })
+  isSold: boolean;
+
+  @Column({ name: 'sold_at', type: 'timestamptz', nullable: true })
+  soldAt: Date | null;
+
   @Column({ name: 'submitted_at', type: 'timestamptz', nullable: true })
   submittedAt: Date | null;
 

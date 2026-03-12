@@ -3,8 +3,9 @@ import Link from "next/link";
 import { getListing, getListingFeedback } from "@/lib/api/listings";
 import { StatusBadge } from "@/components/status-badge";
 import { ApiErrorMessage } from "@/components/api-error-message";
-import { ResubmitButton } from "./resubmit-button";
+import { CompleteSaleButton } from "../complete-sale-button";
 import { UnpublishButton } from "../unpublish-button";
+import { ResubmitButton } from "./resubmit-button";
 import { ApiRequestError } from "@/lib/api/client";
 import { getServerToken } from "@/lib/auth.server";
 import ConsultantListingWidgets from "./client-widgets";
@@ -127,7 +128,10 @@ export default async function ConsultantListingStatusPage({ params }: Props) {
               Genel sayfayı görüntüle →
             </Link>
           </p>
-          <UnpublishButton listingId={listing.id} block />
+          <div className="space-y-2">
+            <UnpublishButton listingId={listing.id} block />
+            <CompleteSaleButton listingId={listing.id} block />
+          </div>
         </div>
       )}
       {listing.status === "UNPUBLISHED" && (

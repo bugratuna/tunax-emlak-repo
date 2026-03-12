@@ -11,6 +11,7 @@ import { DevModule } from './dev/dev.module';
 import { LeadsModule } from './leads/leads.module';
 import { ListingsModule } from './listings/listings.module';
 import { MarketingModule } from './marketing/marketing.module';
+import { PublicModule } from './public/public.module';
 import { StoreModule } from './store/store.module';
 import { UsersModule } from './users/users.module';
 
@@ -27,6 +28,7 @@ import { UsersModule } from './users/users.module';
     MarketingModule,
     LeadsModule,
     ContactModule,
+    PublicModule,
     // DEV ONLY — routes literally absent in production
     ...(process.env.NODE_ENV === 'development' ? [DevModule] : []),
   ],

@@ -1,6 +1,6 @@
+import React, { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense } from "react";
 import { listListings } from "@/lib/api/listings";
 import type { ListingsQueryParams } from "@/lib/api/listings";
 import { ApiRequestError } from "@/lib/api/client";
@@ -10,6 +10,7 @@ import { FilterSidebar } from "./filter-sidebar";
 import { MapPanel } from "./map-panel-wrapper";
 import { ViewToggle } from "./view-toggle";
 import type { ViewMode } from "./view-toggle";
+import { SortSelect } from "./sort-select";
 import type { Listing } from "@/lib/types";
 import { getBlockedFilters, FILTER_FEATURE_GROUP_NAMES } from "@/lib/taxonomy";
 
@@ -67,6 +68,9 @@ interface SearchParams {
   accessibility?: RawParam;
   // sort
   sortBy?: RawParam;
+  // pagination
+  page?: RawParam;
+  limit?: RawParam;
   // view mode toggle (grid | list) — separate from the `view` feature-group filter
   viewMode?: RawParam;
 }
@@ -184,7 +188,9 @@ export default async function ListingsPage({ searchParams }: Props) {
       ? undefined
       : arr(params.housingType),
     accessibility: arr(params.accessibility),
-    sortBy: str(params.sortBy),
+    sortBy: str(params.sortBy) ?? "newest",
+    page: str(params.page) ? Number(str(params.page)) : 1,
+    limit: [10, 20, 100].includes(Number(str(params.limit))) ? Number(str(params.limit)) : 10,
   };
 
   // roomCounts multi-select is now handled by the backend (IN query).
@@ -195,12 +201,14 @@ export default async function ListingsPage({ searchParams }: Props) {
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
   let listings: Listing[] = [];
+  let total = 0;
   let fetchError: string | null = null;
   let filterNotAllowedError: string | null = null;
 
   try {
     const result = await listListings(backendParams);
     listings = result.data.filter((l) => l.status === "PUBLISHED");
+    total = result.total;
   } catch (e) {
     if (e instanceof ApiRequestError && e.status === 400) {
       const body = e.body as unknown as Record<string, unknown>;
@@ -222,6 +230,7 @@ export default async function ListingsPage({ searchParams }: Props) {
         try {
           const result = await listListings(sanitised);
           listings = result.data.filter((l) => l.status === "PUBLISHED");
+          total = result.total;
         } catch {
           fetchError = "İlanlar yüklenemedi. Lütfen sayfayı yenileyin.";
         }
@@ -290,6 +299,9 @@ export default async function ListingsPage({ searchParams }: Props) {
   const hasActiveFilters =
     currentParamEntries.length > 0 || selectedRoomCounts.length > 0;
 
+  const currentPage = Math.max(1, Number(str(params.page) ?? 1) || 1);
+  const pageSize = backendParams.limit as number;
+  const totalPages = Math.ceil(total / pageSize);
   const viewMode: ViewMode = str(params.viewMode) === "list" ? "list" : "grid";
 
   return (
@@ -315,9 +327,14 @@ export default async function ListingsPage({ searchParams }: Props) {
 
         <div className="flex items-center justify-between">
           <ActiveFilterChips params={params} />
-          <Suspense>
-            <ViewToggle current={viewMode} />
-          </Suspense>
+          <div className="flex items-center gap-2">
+            <Suspense>
+              <SortSelect current={str(params.sortBy) ?? "newest"} />
+            </Suspense>
+            <Suspense>
+              <ViewToggle current={viewMode} />
+            </Suspense>
+          </div>
         </div>
 
         {fetchError ? (
@@ -351,8 +368,106 @@ export default async function ListingsPage({ searchParams }: Props) {
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-sm text-zinc-500">
+            <div className="flex items-center gap-2">
+              <span>{total} ilan · Sayfa {currentPage} / {Math.max(1, totalPages)}</span>
+              {/* Page-size selector */}
+              <span className="text-zinc-300">|</span>
+              <span className="text-xs">Sayfa başına:</span>
+              <div className="flex gap-1">
+                {[10, 20, 100].map((n) => (
+                  <PageSizeLink key={n} params={params} size={n} current={pageSize}>
+                    {n}
+                  </PageSizeLink>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {currentPage > 1 && (
+                <PaginationLink params={params} page={currentPage - 1}>
+                  ← Önceki
+                </PaginationLink>
+              )}
+              {currentPage < totalPages && (
+                <PaginationLink params={params} page={currentPage + 1}>
+                  Sonraki →
+                </PaginationLink>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+// ── PaginationLink ────────────────────────────────────────────────────────────
+
+function PaginationLink({
+  params,
+  page,
+  children,
+}: {
+  params: SearchParams;
+  page: number;
+  children: React.ReactNode;
+}) {
+  const qs = new URLSearchParams();
+  for (const [k, raw] of Object.entries(params)) {
+    // carry all params except `page` (we set it explicitly below)
+    if (!raw || k === "page") continue;
+    const vals = Array.isArray(raw) ? raw : [raw];
+    for (const v of vals) if (v) qs.append(k, v);
+  }
+  if (page > 1) qs.set("page", String(page));
+  const q = qs.toString();
+  return (
+    <Link
+      href={`/listings${q ? `?${q}` : ""}`}
+      className="rounded-md border border-zinc-300 px-3 py-1 hover:bg-zinc-50"
+    >
+      {children}
+    </Link>
+  );
+}
+
+// ── PageSizeLink ──────────────────────────────────────────────────────────────
+
+function PageSizeLink({
+  params,
+  size,
+  current,
+  children,
+}: {
+  params: SearchParams;
+  size: number;
+  current: number;
+  children: React.ReactNode;
+}) {
+  const qs = new URLSearchParams();
+  for (const [k, raw] of Object.entries(params)) {
+    if (!raw || k === "page" || k === "limit") continue;
+    const vals = Array.isArray(raw) ? raw : [raw];
+    for (const v of vals) if (v) qs.append(k, v);
+  }
+  qs.set("limit", String(size));
+  // Reset to page 1 when changing page size
+  const q = qs.toString();
+  const isActive = size === current;
+  return (
+    <Link
+      href={`/listings${q ? `?${q}` : ""}`}
+      className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+        isActive
+          ? "bg-zinc-900 text-white"
+          : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }
 

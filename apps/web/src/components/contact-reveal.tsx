@@ -9,8 +9,12 @@ interface ContactRevealProps {
   consultantName: string;
 }
 
-export function ContactReveal({ listingId, consultantName }: ContactRevealProps) {
+export function ContactReveal({
+  listingId,
+  consultantName,
+}: ContactRevealProps) {
   const [phone, setPhone] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [revealed, setRevealed] = useState(false);
 
@@ -20,6 +24,7 @@ export function ContactReveal({ listingId, consultantName }: ContactRevealProps)
     try {
       const data = await getListingContact(listingId);
       setPhone(data.phone);
+      setPhoto(data.profilePhotoUrl);
       setRevealed(true);
     } catch {
       setPhone(null);
@@ -29,15 +34,34 @@ export function ContactReveal({ listingId, consultantName }: ContactRevealProps)
     }
   }
 
+  async function loadPhoto() {
+    try {
+      const data = await getListingContact(listingId);
+      setPhoto(data.profilePhotoUrl);
+    } catch {
+      setPhoto(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadPhoto();
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-5">
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-400">
         Danışman
       </h2>
-
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white">
-          {consultantName.slice(0, 2).toUpperCase()}
+          {photo ? (
+            <img
+              src={photo}
+              alt="Profil fotoğrafı"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            consultantName.slice(0, 2).toUpperCase()
+          )}
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-zinc-800">
@@ -58,7 +82,9 @@ export function ContactReveal({ listingId, consultantName }: ContactRevealProps)
               {phone}
             </a>
           ) : (
-            <p className="text-xs text-zinc-400">Telefon numarası mevcut değil.</p>
+            <p className="text-xs text-zinc-400">
+              Telefon numarası mevcut değil.
+            </p>
           )
         ) : (
           <button
