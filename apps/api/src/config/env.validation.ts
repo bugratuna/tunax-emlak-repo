@@ -220,6 +220,15 @@ export function validateEnv(): void {
       );
     }
 
+    // JWT expiry should be short in production — warn if using the 24h default
+    const tokenExpiry = process.env.JWT_ACCESS_TOKEN_EXPIRES_IN;
+    if (!tokenExpiry || tokenExpiry === '24h') {
+      console.warn(
+        `[Tunax] WARNING: JWT_ACCESS_TOKEN_EXPIRES_IN is "${tokenExpiry ?? '(unset, defaults to 24h)'}". ` +
+          `Recommend setting JWT_ACCESS_TOKEN_EXPIRES_IN=1h in production to limit token lifetime.`,
+      );
+    }
+
     // Seed users must be disabled in production
     if (process.env.FEATURE_SEED_USERS === 'true') {
       errors.push(

@@ -164,8 +164,9 @@ export class UsersService implements OnModuleInit {
     status?: UserStatus;
   }): Promise<SafeUser> {
     const existing = await this.repo.findOneBy({ email: input.email });
-    if (existing)
-      throw new ConflictException(`User ${input.email} already exists`);
+    // Generic message — do NOT include the email address; that would let an
+    // attacker enumerate registered accounts via repeated registration attempts.
+    if (existing) throw new ConflictException('E-posta adresi zaten kayıtlı.');
 
     const passwordHash = await bcrypt.hash(input.password, 10);
     const saved = await this.repo.save(

@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   open: boolean;
@@ -45,7 +45,7 @@ export function ConfirmModal({
             </div>
             <Dialog.Close
               aria-label="Close"
-              className="rounded p-1 text-zinc-400 hover:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+              className="cursor-pointer rounded p-1 text-zinc-400 transition-all hover:text-zinc-600 active:scale-90 focus:outline-none focus:ring-2 focus:ring-zinc-300"
             >
               <X size={16} />
             </Dialog.Close>
@@ -54,24 +54,16 @@ export function ConfirmModal({
           {children && <div className="mt-4">{children}</div>}
 
           <div className="mt-6 flex justify-end gap-3">
-            <Dialog.Close
-              disabled={loading}
-              className="rounded-md border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
-            >
-              Cancel
+            <Dialog.Close asChild disabled={loading}>
+              <Button variant="secondary">Cancel</Button>
             </Dialog.Close>
-            <button
+            <Button
               onClick={onConfirm}
               disabled={loading}
-              className={cn(
-                "rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50",
-                confirmVariant === "destructive"
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-zinc-900 hover:bg-zinc-700",
-              )}
+              variant={confirmVariant === "destructive" ? "destructive" : "primary"}
             >
               {loading ? "Processing…" : confirmLabel}
-            </button>
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

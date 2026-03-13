@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch, ApiRequestError } from "@/lib/api/client";
 import { decodePayload } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -127,13 +128,9 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
-            >
+            <Button type="submit" disabled={loading} size="lg" className="w-full">
               {loading ? "Giriş yapılıyor…" : "Giriş Yap"}
-            </button>
+            </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-zinc-500">

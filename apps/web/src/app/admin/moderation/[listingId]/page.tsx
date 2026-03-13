@@ -17,6 +17,7 @@ import { FeaturedToggle } from "./featured-toggle";
 import { ShowcaseToggle } from "./showcase-toggle";
 import { AdminUnpublishButton } from "./unpublish-button";
 import { ApiRequestError } from "@/lib/api/client";
+import { getMediaUrl } from "@/lib/media";
 import type { AuditLogEntry, ModerationReport, ScoringReport } from "@/lib/types";
 
 interface Props {
@@ -108,7 +109,7 @@ export default async function ModerationDetailPage({ params }: Props) {
                   }`}
                 >
                   <Image
-                    src={photo.publicUrl}
+                    src={getMediaUrl(photo)}
                     alt={`Fotoğraf ${i + 1}`}
                     fill
                     sizes="144px"

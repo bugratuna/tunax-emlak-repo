@@ -8,7 +8,9 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import {
@@ -150,6 +152,7 @@ export class ListListingsDto {
       'Leading digit is extracted and matched against roomCount column (OR semantics).',
   })
   @IsString()
+  @MaxLength(200) // reasonable upper bound; avoids oversized IN() list
   @IsOptional()
   roomCounts?: string;
 
@@ -461,6 +464,7 @@ export class ListListingsDto {
       'Case-insensitive substring match against listing title. Admin endpoint only.',
   })
   @IsString()
+  @MaxLength(200) // cap ILIKE query cost — prevents DB-level DoS via huge pattern
   @IsOptional()
   search?: string;
 
@@ -472,7 +476,7 @@ export class ListListingsDto {
     description:
       'Filter listings by consultant UUID. Used by consultant dashboard.',
   })
-  @IsString()
+  @IsUUID('4')
   @IsOptional()
   consultantId?: string;
 }

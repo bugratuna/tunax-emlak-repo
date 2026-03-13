@@ -36,7 +36,7 @@ export function ResubmitButton({ listingId }: { listingId: string }) {
         type="button"
         onClick={handleResubmit}
         disabled={loading}
-        className="rounded-md bg-amber-500 px-3 py-1 text-xs font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+        className="cursor-pointer rounded-md bg-amber-500 px-3 py-1 text-xs font-medium text-white transition-all hover:bg-amber-600 active:scale-[0.98] active:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
         title={error ?? undefined}
       >
         {loading ? "Gönderiliyor…" : "Yeniden Gönder"}

@@ -7,6 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -31,6 +32,8 @@ export class LeadsController {
 
   @Post()
   @HttpCode(201)
+  // 10 leads per 10 minutes per IP — prevents automated lead spam
+  @Throttle({ global: { ttl: 600_000, limit: 10 } })
   @ApiOperation({ summary: 'Submit a lead (public)' })
   @ApiCreatedResponse({
     description:

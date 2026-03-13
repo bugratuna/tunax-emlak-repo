@@ -45,8 +45,8 @@ export function UnpublishButton({ listingId, block = false }: Props) {
         disabled={loading}
         className={
           block
-            ? "w-full rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
-            : "rounded-md border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+            ? "w-full cursor-pointer rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition-all hover:bg-red-100 active:scale-[0.98] active:bg-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
+            : "cursor-pointer rounded-md border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition-all hover:bg-red-100 active:scale-[0.98] active:bg-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
         }
       >
         {loading ? "Kaldırılıyor…" : "Yayından Kaldır"}

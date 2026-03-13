@@ -11,6 +11,7 @@ import { PhotoGalleryWidget, MapWidget } from "./client-widgets";
 import { ContactReveal } from "@/components/contact-reveal";
 import { RichTextRenderer } from "@/components/rich-text-renderer";
 import { FEATURE_GROUP_LABELS } from "@/lib/taxonomy";
+import { getMediaUrl } from "@/lib/media";
 
 // ── Label maps ────────────────────────────────────────────────────────────────
 
@@ -381,7 +382,8 @@ function ConsultantCard({ consultantName }: { consultantName: string }) {
 }
 
 function SimilarCard({ listing }: { listing: Listing }) {
-  const cover = listing.media?.[0]?.url;
+  const coverPhoto = listing.media?.[0];
+  const cover = coverPhoto ? getMediaUrl(coverPhoto) : undefined;
   const price = listing.price;
   const priceStr = price
     ? `${price.amount.toLocaleString("tr-TR")} ${price.currency ?? "TRY"}`

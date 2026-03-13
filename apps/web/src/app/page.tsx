@@ -21,6 +21,7 @@ import { HeroSearchInput } from "@/components/hero-search-input";
 import { listListings } from "@/lib/api/listings";
 import { getPublicStats } from "@/lib/api/public";
 import type { Listing, PublicStats } from "@/lib/types";
+import { getMediaUrl } from "@/lib/media";
 
 // ── SEO Metadata ──────────────────────────────────────────────────────────────
 
@@ -123,7 +124,7 @@ function ListingCard({ listing }: { listing: Listing }) {
       <div className="relative h-48 w-full overflow-hidden bg-zinc-100">
         {cover ? (
           <Image
-            src={cover.publicUrl}
+            src={getMediaUrl(cover)}
             alt={listing.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"

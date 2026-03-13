@@ -13,6 +13,7 @@ import type { ViewMode } from "./view-toggle";
 import { SortSelect } from "./sort-select";
 import type { Listing } from "@/lib/types";
 import { getBlockedFilters, FILTER_FEATURE_GROUP_NAMES } from "@/lib/taxonomy";
+import { getMediaUrl } from "@/lib/media";
 
 // ── searchParams types ────────────────────────────────────────────────────────
 type RawParam = string | string[] | undefined;
@@ -585,15 +586,12 @@ function formatPrice(listing: Listing): string {
 
 function coverUrl(listing: Listing): string | null {
   if (!listing.media?.length) return null;
-  // Prefer isCover, fall back to first photo. Use publicUrl (not url).
+  // Prefer the isCover-flagged photo, fall back to first.
   const cover = listing.media.find((m) => m.isCover) ?? listing.media[0];
-  if (!cover?.publicUrl) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[ListingCard] listing ${listing.id} has media but missing publicUrl`);
-    }
-    return null;
-  }
-  return cover.publicUrl;
+  if (!cover) return null;
+  // Route all image delivery through the same-origin proxy so private-bucket
+  // images load correctly in both SSR-rendered HTML and CSR components.
+  return getMediaUrl(cover);
 }
 
 // ── Grid card (default) ───────────────────────────────────────────────────────

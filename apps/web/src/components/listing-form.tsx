@@ -6,6 +6,7 @@ import { createListing, updateListing, resubmitListing } from "@/lib/api/listing
 import type { Listing } from "@/lib/types";
 import { ApiErrorMessage } from "@/components/api-error-message";
 import { ApiRequestError } from "@/lib/api/client";
+import { Button } from "@/components/ui/button";
 import { NeighborhoodCombobox } from "@/components/neighborhood-combobox";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import {
@@ -612,13 +613,9 @@ export function ListingForm({ mode, initialValues, listingId }: ListingFormProps
       {apiError && <ApiErrorMessage error={apiError} />}
 
       <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-6">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={loading}>
           {loading ? "Gönderiliyor…" : submitLabel}
-        </button>
+        </Button>
       </div>
     </form>
   );

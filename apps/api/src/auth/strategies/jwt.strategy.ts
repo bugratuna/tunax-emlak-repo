@@ -17,6 +17,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload): Promise<JwtPayload> {
     const user = await this.usersService.findById(payload.sub);
     if (!user) throw new UnauthorizedException('User not found');
+    // Re-check status on every request so suspended/pending users can't
+    // continue using a previously issued token until it naturally expires.
+    if (user.status === 'SUSPENDED' || user.status === 'PENDING_APPROVAL') {
+      throw new UnauthorizedException('Account is not active');
+    }
     return payload;
   }
 }

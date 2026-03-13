@@ -33,6 +33,7 @@ import { ApproveDto } from './dto/approve.dto';
 import { GenerateReportDto } from './dto/generate-report.dto';
 import { RejectDto } from './dto/reject.dto';
 import { RequestChangesDto } from './dto/request-changes.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 import { InternalApiKeyGuard } from './guards/internal-api-key.guard';
 import { ModerationService } from './moderation.service';
 
@@ -102,6 +103,7 @@ export class ModerationController {
 
   @Post(':listingId/score')
   @HttpCode(201)
+  @SkipThrottle() // worker-to-API — already guarded by InternalApiKeyGuard
   @UseGuards(InternalApiKeyGuard)
   @ApiSecurity('internal-key')
   @ApiOperation({ summary: 'Generate score (INTERNAL — worker only)' })
@@ -121,6 +123,7 @@ export class ModerationController {
   }
 
   @Patch(':listingId/score/llm')
+  @SkipThrottle() // worker-to-API — already guarded by InternalApiKeyGuard
   @UseGuards(InternalApiKeyGuard)
   @ApiSecurity('internal-key')
   @ApiOperation({ summary: 'Attach LLM result to scoring report (INTERNAL)' })
@@ -137,6 +140,7 @@ export class ModerationController {
 
   @Post(':listingId/enrich')
   @HttpCode(201)
+  @SkipThrottle() // worker-to-API — already guarded by InternalApiKeyGuard
   @UseGuards(InternalApiKeyGuard)
   @ApiSecurity('internal-key')
   @ApiOperation({
@@ -156,6 +160,7 @@ export class ModerationController {
   }
 
   @Patch(':listingId/report/llm')
+  @SkipThrottle() // worker-to-API — already guarded by InternalApiKeyGuard
   @UseGuards(InternalApiKeyGuard)
   @ApiSecurity('internal-key')
   @ApiOperation({

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { uploadPhotos, deletePhoto, reorderPhotos } from "@/lib/api/listings";
 import type { MediaItem } from "@/lib/types";
+import { getOriginalMediaUrl } from "@/lib/media";
 
 const MAX_PHOTOS = 20;
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -299,7 +300,7 @@ export default function ListingPhotoManager({ listingId, initialPhotos }: Props)
               >
                 {/* Photo */}
                 <Image
-                  src={photo.url}
+                  src={getOriginalMediaUrl(photo)}
                   alt={`Fotoğraf ${idx + 1}`}
                   fill
                   sizes="(max-width: 640px) 33vw, 20vw"

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -18,8 +17,10 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -28,6 +29,8 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
+  // 5 attempts per 15-minute window per IP — brute-force protection
+  @Throttle({ global: { ttl: 900_000, limit: 5 } })
   @ApiOperation({ summary: 'Login — returns a JWT access token' })
   @ApiOkResponse({
     description: 'Login successful',
@@ -49,36 +52,20 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(201)
+  // 3 registrations per hour per IP — account-creation spam protection
+  @Throttle({ global: { ttl: 3_600_000, limit: 3 } })
   @UseInterceptors(FileInterceptor('profilePhoto'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary:
       'Public consultant registration — creates user with PENDING_APPROVAL status',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['firstName', 'lastName', 'email', 'phoneNumber', 'password'],
-      properties: {
-        firstName: { type: 'string', example: 'Ali' },
-        lastName: { type: 'string', example: 'Yılmaz' },
-        email: { type: 'string', format: 'email', example: 'ali@ornek.com' },
-        phoneNumber: { type: 'string', example: '05321234567' },
-        password: { type: 'string', minLength: 8, example: 'Gizli123!' },
-        profilePhoto: {
-          type: 'string',
-          format: 'binary',
-          description: 'jpg/png/webp, maks. 5 MB',
-        },
-      },
-    },
-  })
   @ApiCreatedResponse({
     description: 'Kullanıcı oluşturuldu — yönetici onayı bekleniyor.',
   })
   @ApiConflictResponse({ description: 'E-posta zaten kayıtlı.' })
   async register(
-    @Body() body: Record<string, string>,
+    @Body() dto: RegisterDto,
     @UploadedFile()
     profilePhoto?: {
       buffer: Buffer;
@@ -87,21 +74,12 @@ export class AuthController {
       originalname: string;
     },
   ) {
-    const { firstName, lastName, email, phoneNumber, password } = body;
-    if (!firstName || !lastName || !email || !phoneNumber || !password) {
-      throw new BadRequestException(
-        'firstName, lastName, email, phoneNumber ve password zorunludur.',
-      );
-    }
-    if (password.length < 8) {
-      throw new BadRequestException('Şifre en az 8 karakter olmalıdır.');
-    }
     return this.authService.register({
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      password,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
+      phoneNumber: dto.phoneNumber,
+      password: dto.password,
       profilePhoto,
     });
   }

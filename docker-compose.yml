@@ -8,8 +8,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-tunax}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-tunax}
+    # ⚠️  PRODUCTION: comment out or remove this ports block entirely.
+    # PostgreSQL must NEVER be reachable from the host network in production.
+    # Containers talk to each other via the service name "postgres_gis" — no host port needed.
+    # Also ensure EC2 security group has NO inbound rule for port 5432 from 0.0.0.0/0.
     ports:
-      - "5432:5432"
+      - "5432:5432"  # LOCAL DEV ONLY
     volumes:
       - postgis_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,8 +26,12 @@ services:
   redis:
     image: redis:7-alpine
     container_name: rt_redis
+    # ⚠️  PRODUCTION: comment out or remove this ports block entirely.
+    # Redis must NEVER be reachable from the host network in production.
+    # Containers talk to each other via the service name "redis" — no host port needed.
+    # Also ensure EC2 security group has NO inbound rule for port 6379 from 0.0.0.0/0.
     ports:
-      - "6379:6379"
+      - "6379:6379"  # LOCAL DEV ONLY
     volumes:
       - redis_data:/data
     healthcheck:

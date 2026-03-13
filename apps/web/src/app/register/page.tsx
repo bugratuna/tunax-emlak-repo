@@ -7,6 +7,7 @@ import Link from "next/link";
 import { UserCircle2 } from "lucide-react";
 import { registerUser } from "@/lib/api/users";
 import { ApiRequestError } from "@/lib/api/client";
+import { Button } from "@/components/ui/button";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -259,13 +260,9 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
-            >
+            <Button type="submit" disabled={loading} size="lg" className="w-full">
               {loading ? "Kaydediliyor…" : "Kayıt Ol"}
-            </button>
+            </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-zinc-500">

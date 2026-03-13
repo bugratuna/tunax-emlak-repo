@@ -19,6 +19,47 @@ if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
   );
 }
 
+// ── Content-Security-Policy ────────────────────────────────────────────────
+// 'unsafe-inline' in script-src is required by Next.js App Router (inline
+// scripts for hydration). Once the app adopts nonces this can be tightened.
+// The remaining directives block object embeds, base-tag injection, and
+// cross-origin form submissions regardless of inline script needs.
+// img-src includes blob: for Leaflet canvas and OSM tile hostnames.
+//
+// connect-src: must include the API origin explicitly when it differs from
+// the web app origin (e.g. localhost:3000 vs localhost:3001 in dev, or a
+// separate API domain in production). Without this, the browser CSP will
+// silently block all fetch() calls to the API, surfacing as a generic
+// "network unreachable" error even though the server is healthy.
+//
+// NEXT_PUBLIC_API_BASE_URL is baked into the bundle at build time, so it is
+// available here in next.config.ts. We extract only the origin
+// (protocol + host + port) to keep the CSP directive precise.
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+let apiOrigin = "";
+try {
+  if (apiBaseUrl) apiOrigin = new URL(apiBaseUrl).origin;
+} catch {
+  // Malformed URL — fall back to raw value so CSP is still emitted
+  apiOrigin = apiBaseUrl;
+}
+
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' blob: data: https://*.amazonaws.com https://*.cloudfront.net https://*.tile.openstreetmap.org",
+  "font-src 'self' data:",
+  // Include the API origin so browser fetch() to the API host is not blocked.
+  // When the API is on the same origin as the web app, the extra entry is
+  // harmless (browsers deduplicate). When they differ (different port/domain),
+  // this is required or every API call will throw a TypeError in the browser.
+  `connect-src 'self'${apiOrigin ? ` ${apiOrigin}` : ""}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
 // ── Security headers applied to all routes ────────────────────────────────
 const securityHeaders = [
   // Prevents MIME-type sniffing
@@ -34,6 +75,8 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
   },
+  // Blocks object embeds, base-tag injection, cross-origin forms
+  { key: "Content-Security-Policy", value: CSP },
 ];
 
 // HSTS: only add in production (localhost doesn't support HTTPS)

@@ -14,6 +14,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -465,6 +466,8 @@ export class ListingsController {
 
   @Post(':id/photos')
   @HttpCode(201)
+  // 30 upload requests per hour per IP — S3 bandwidth + processing cost protection
+  @Throttle({ global: { ttl: 3_600_000, limit: 30 } })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.CONSULTANT)
   @UseInterceptors(

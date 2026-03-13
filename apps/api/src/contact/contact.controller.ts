@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, Logger, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -31,6 +32,8 @@ export class ContactController {
 
   @Post()
   @HttpCode(200)
+  // 5 submissions per 10 minutes per IP — spam / lead-gen abuse protection
+  @Throttle({ global: { ttl: 600_000, limit: 5 } })
   @ApiOperation({ summary: 'Submit a contact form (public)' })
   @ApiOkResponse({ description: '{ received: true }' })
   submit(@Body() dto: ContactFormDto): { received: true } {

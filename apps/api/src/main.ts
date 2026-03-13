@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import helmet from 'helmet';
+import { json } from 'express';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -13,8 +14,18 @@ async function bootstrap() {
   // ── Security headers (helmet) ──────────────────────────────────────────────
   app.use(helmet());
 
+  // ── Explicit body size limit (JSON payloads) ───────────────────────────────
+  // Multipart (file uploads) is bounded per-endpoint via FilesInterceptor limits.
+  app.use(json({ limit: '512kb' }));
+
   app.setGlobalPrefix('api');
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,           // strip unknown properties
+      forbidNonWhitelisted: true, // reject (400) instead of silently strip
+      transform: true,
+    }),
+  );
 
   // ── CORS — driven by CORS_ORIGINS env var ─────────────────────────────────
   // Local dev default: http://localhost:3000

@@ -70,19 +70,19 @@ export function DecisionBar({ listingId }: { listingId: string }) {
       <div className="flex flex-wrap gap-3">
         <button
           onClick={() => setAction("approve")}
-          className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+          className="cursor-pointer rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-green-700 active:scale-[0.98] active:bg-green-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1"
         >
           Onayla
         </button>
         <button
           onClick={() => setAction("request-changes")}
-          className="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+          className="cursor-pointer rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-amber-600 active:scale-[0.98] active:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1"
         >
           Değişiklik İste
         </button>
         <button
           onClick={() => setAction("reject")}
-          className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-red-700 active:scale-[0.98] active:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
         >
           Reddet
         </button>

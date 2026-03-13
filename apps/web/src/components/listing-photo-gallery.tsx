@@ -3,19 +3,11 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import type { MediaItem } from "@/lib/types";
+import { getMediaUrl } from "@/lib/media";
 
 interface Props {
   photos: MediaItem[];
   title: string;
-}
-
-/**
- * Returns the URL to display publicly for a given photo.
- * Prefers the watermarked variant (branded delivery) and falls back to the
- * original for legacy images or when generation failed.
- */
-function publicSrc(photo: MediaItem): string {
-  return photo.watermarkedUrl ?? photo.url;
 }
 
 export default function ListingPhotoGallery({ photos, title }: Props) {
@@ -81,7 +73,7 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
           className="col-span-2 row-span-2 relative overflow-hidden focus:outline-none"
         >
           <Image
-            src={publicSrc(cover)}
+            src={getMediaUrl(cover)}
             alt={`${title} — 1`}
             fill
             sizes="50vw"
@@ -99,7 +91,7 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
             className="relative overflow-hidden focus:outline-none"
           >
             <Image
-              src={publicSrc(photo)}
+              src={getMediaUrl(photo)}
               alt={`${title} — ${idx + 2}`}
               fill
               sizes="25vw"
@@ -166,7 +158,7 @@ export default function ListingPhotoGallery({ photos, title }: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={publicSrc(photos[lightbox])}
+              src={getMediaUrl(photos[lightbox])}
               alt={`${title} — ${lightbox + 1}`}
               fill
               className="object-contain"
