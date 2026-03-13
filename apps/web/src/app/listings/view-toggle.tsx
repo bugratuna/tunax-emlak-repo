@@ -21,7 +21,7 @@ export function ViewToggle({ current }: { current: ViewMode }) {
       <button
         onClick={() => setView("grid")}
         aria-label="Kare görünüm"
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
           current === "grid"
             ? "bg-zinc-900 text-white"
             : "text-zinc-500 hover:text-zinc-800"
@@ -33,7 +33,7 @@ export function ViewToggle({ current }: { current: ViewMode }) {
       <button
         onClick={() => setView("list")}
         aria-label="Liste görünüm"
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
           current === "list"
             ? "bg-zinc-900 text-white"
             : "text-zinc-500 hover:text-zinc-800"

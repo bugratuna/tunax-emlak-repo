@@ -326,14 +326,15 @@ export default async function ListingsPage({ searchParams }: Props) {
 
         <MapPanel listings={listings} currentParams={currentParamString} />
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <ActiveFilterChips params={params} />
-          <div className="flex items-center gap-2">
-            <Suspense>
-              <SortSelect current={str(params.sortBy) ?? "newest"} />
-            </Suspense>
+          <div className="flex w-full justify-between items-center gap-2">
             <Suspense>
               <ViewToggle current={viewMode} />
+            </Suspense>
+
+            <Suspense>
+              <SortSelect current={str(params.sortBy) ?? "newest"} />
             </Suspense>
           </div>
         </div>
