@@ -21,7 +21,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,           // strip unknown properties
+      whitelist: true, // strip unknown properties
       forbidNonWhitelisted: true, // reject (400) instead of silently strip
       transform: true,
     }),

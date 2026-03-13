@@ -25,8 +25,8 @@ import { UsersModule } from './users/users.module';
     ThrottlerModule.forRoot([
       {
         name: 'global',
-        ttl: 60_000,  // 1-minute window (ms)
-        limit: 120,   // 120 requests per window per IP
+        ttl: 60_000, // 1-minute window (ms)
+        limit: 120, // 120 requests per window per IP
       },
     ]),
     DatabaseModule, // TypeORM — PostgreSQL + PostGIS (must be first)
