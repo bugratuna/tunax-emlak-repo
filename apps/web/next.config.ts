@@ -48,7 +48,7 @@ const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' blob: data: https://*.amazonaws.com https://*.cloudfront.net https://*.tile.openstreetmap.org",
+  "img-src 'self' blob: data: https://*.amazonaws.com https://*.cloudfront.net https://*.tile.openstreetmap.org https://unpkg.com",
   "font-src 'self' data:",
   // Include the API origin so browser fetch() to the API host is not blocked.
   // When the API is on the same origin as the web app, the extra entry is
@@ -58,6 +58,11 @@ const CSP = [
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
+  // Allow Google Maps embeds on the contact page.
+  // Without frame-src the browser falls back to default-src 'self' which
+  // blocks all cross-origin iframes — causing the "Bu içerik engellenmiştir"
+  // error in the Google Maps iframe.
+  "frame-src https://www.google.com https://maps.google.com",
 ].join("; ");
 
 // ── Security headers applied to all routes ────────────────────────────────

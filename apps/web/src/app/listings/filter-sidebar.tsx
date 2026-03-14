@@ -117,7 +117,8 @@ function SidebarSection({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between pb-2 text-xs font-semibold uppercase tracking-widest text-amber-700/70 transition hover:text-amber-700"
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center justify-between pb-2 text-xs font-semibold uppercase tracking-widest text-amber-700/70 transition hover:text-amber-700"
       >
         {title}
         <motion.span
@@ -167,7 +168,8 @@ function FeatureGroupAccordion({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between py-2.5 text-sm text-zinc-700"
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center justify-between py-2.5 text-sm text-zinc-700"
       >
         <span className="font-medium flex items-center gap-1.5">
           {label}
@@ -211,7 +213,7 @@ function FeatureGroupAccordion({
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.025, duration: 0.18 }}
-                    className={`rounded-full border px-2.5 py-1 text-xs transition-all ${
+                    className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                       active
                         ? "border-amber-500 bg-amber-500 text-white shadow-sm"
                         : "border-stone-200 bg-white text-zinc-600 hover:border-amber-300 hover:bg-amber-50"
@@ -233,7 +235,7 @@ function FeatureGroupAccordion({
 
 const inputCls =
   "w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-xs transition focus:border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-100";
-const selectCls = inputCls;
+const selectCls = inputCls + " cursor-pointer";
 const checkboxLabelCls =
   "flex items-center gap-2 text-sm text-zinc-600 cursor-pointer select-none accent-amber-500";
 
@@ -415,7 +417,7 @@ export function FilterSidebar() {
                     key={label}
                     type="button"
                     onClick={() => toggleRoomCount(label)}
-                    className={`rounded-lg border px-2.5 py-1 text-xs transition-all ${
+                    className={`cursor-pointer rounded-lg border px-2.5 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                       active
                         ? "border-amber-500 bg-amber-500 text-white shadow-sm"
                         : "border-stone-200 bg-white text-zinc-600 hover:border-amber-300 hover:bg-amber-50"
@@ -592,7 +594,7 @@ export function FilterSidebar() {
             <button
               type="button"
               onClick={() => router.push("?")}
-              className="w-full rounded-lg border border-amber-200 bg-amber-50 py-2 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
+              className="w-full cursor-pointer rounded-lg border border-amber-200 bg-amber-50 py-2 text-xs font-medium text-amber-700 transition hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             >
               Filtreleri Sıfırla
             </button>
@@ -608,7 +610,7 @@ export function FilterSidebar() {
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-4 left-4 z-40 flex items-center gap-2 rounded-full border border-amber-200 bg-white px-4 py-2 text-sm font-medium text-amber-700 shadow-lg transition hover:bg-amber-50"
+        className="lg:hidden fixed bottom-4 left-4 z-40 flex cursor-pointer items-center gap-2 rounded-full border border-amber-200 bg-white px-4 py-2 text-sm font-medium text-amber-700 shadow-lg transition hover:bg-amber-50"
       >
         <SlidersHorizontal size={15} />
         Filtrele
@@ -661,7 +663,8 @@ export function FilterSidebar() {
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition"
+                aria-label="Filtreleri kapat"
+                className="cursor-pointer rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 <X size={16} />
               </button>

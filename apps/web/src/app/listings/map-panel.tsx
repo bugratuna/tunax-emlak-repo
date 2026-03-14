@@ -12,7 +12,7 @@ const DEFAULT_ZOOM = 11;
 
 interface MapPanelProps {
   /** Filtered PUBLISHED listings. Map renders pins only for those with coordinates. */
-  listings: Pick<Listing, "id" | "title" | "price" | "location">[];
+  listings: Pick<Listing, "id" | "title" | "price" | "location" | "media">[];
   /** Current URL search params string so the bbox button can preserve other filters. */
   currentParams: string;
 }
@@ -20,6 +20,31 @@ interface MapPanelProps {
 function formatPrice(price: Listing["price"]): string {
   if (!price) return "";
   return `${price.amount.toLocaleString("tr-TR")} ${price.currency ?? "TRY"}`;
+}
+
+/** Minimal HTML escaper for Leaflet popup strings (not a React render tree). */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Returns the same-origin proxy URL for the cover photo, or null if none. */
+function coverProxyUrl(media: Listing["media"]): string | null {
+  if (!media?.length) return null;
+  const cover = media.find((m) => m.isCover) ?? media[0];
+  if (!cover) return null;
+  // Use same-origin proxy path so CSP img-src 'self' allows it.
+  if (cover.s3Key?.startsWith("listings/")) return `/api/media/${cover.s3Key}`;
+  try {
+    const key = new URL(cover.url).pathname.slice(1);
+    if (key.startsWith("listings/")) return `/api/media/${key}`;
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 /**
@@ -160,11 +185,13 @@ export default function MapPanel({ listings, currentParams }: MapPanelProps) {
           const { latitude, longitude } = listing.location!.coordinates!;
           const marker = L.marker([latitude, longitude]);
           const price = formatPrice(listing.price);
+          const photoUrl = coverProxyUrl(listing.media);
           marker.bindPopup(
             `<div style="min-width:160px">
-              <p style="font-weight:600;font-size:13px;margin:0 0 4px">${listing.title}</p>
-              ${price ? `<p style="font-size:12px;margin:0 0 6px;color:#555">${price}</p>` : ""}
-              <a href="/listings/${listing.id}" style="font-size:12px;color:#3b82f6;text-decoration:underline">
+              ${photoUrl ? `<img src="${esc(photoUrl)}" alt="${esc(listing.title)}" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-bottom:6px;display:block" loading="lazy" />` : ""}
+              <p style="font-weight:600;font-size:13px;margin:0 0 4px">${esc(listing.title)}</p>
+              ${price ? `<p style="font-size:12px;margin:0 0 6px;color:#555">${esc(price)}</p>` : ""}
+              <a href="/listings/${esc(listing.id)}" style="font-size:12px;color:#3b82f6;text-decoration:underline">
                 İlanı gör →
               </a>
             </div>`,
