@@ -13,6 +13,7 @@
     "lint:api": "cd apps/api && npm run lint:ci",
     "lint:web": "cd apps/web && npm run lint",
     "lint:worker": "cd apps/worker && npm run lint",
+    "lint:all": "npx concurrently -n \"api,worker,web\" -c \"blue,green,magenta\" \"npm run lint:api\" \"npm run lint:worker\" \"npm run lint:web\"",
     "start:all": "npx concurrently -n \"api,worker,web\" -c \"blue,green,magenta\" \"npm run start:api\" \"npm run start:worker\" \"npm run start:web\"",
     "start:api": "cd apps/api && npm run start:dev",
     "start:worker": "cd apps/worker && npm run start:dev",
